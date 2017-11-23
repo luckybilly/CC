@@ -1,5 +1,8 @@
 # CC : ComponentCaller 
-轻量级的android组件化开发框架，aar包大小不到40KB
+
+最新版本:[![Download](https://api.bintray.com/packages/hellobilly/android/CC/images/download.svg)](https://bintray.com/hellobilly/android/CC/_latestVersion)
+
+轻量级的android组件化开发框架，aar包不到40KB
 
 ## 目录结构
 - cc                        组件化框架基础库（主要）
@@ -7,7 +10,7 @@
 - demo                      demo主程序
 - demo_component_a          demo组件A
 - demo_component_b          demo组件B
-- component_protect_demo    添加跨app组件调用自定义权限限制的demo
+- component_protect_demo    添加跨app组件调用自定义权限限制的demo，在cc-settings-demo-b.gradle被依赖
 - cc-settings-demo-b.gradle actionProcessor自动注册的配置脚本demo
 - demo-debug.apk                demo安装包(包含demo/demo_component_a)
 - demo_component_b-debug.apk    demo组件B单独运行安装包
@@ -50,10 +53,11 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.android.application'
 
 //替换成
-apply from: rootProject.file('cc-settings.gradle')
-//注意：最好放在build.gradle代码的第一行
+apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+//注意：最好放在build.gradle中代码的第一行
 
 ```
+可参考[ComponentA的配置](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
  
 1.2.1 默认组件为library，若组件module需要以app单独安装到手机上运行，有以下2种方式：
 
@@ -63,10 +67,10 @@ module_name=true #module_name为具体每个module的名称
 ```
 - 在module的build.gradle中添加 `ext.runAsApp = true`
 
-    注意：需要添加到`apply from: rootProject.file('cc-settings.gradle')`之前
+    注意：需要添加到【步骤1.2】的`apply from: '.......'`之前
 
 #### 2. 快速上手
-2.1 定义组件(实现IComponent接口，需要保留无参构造方法)
+2.1 定义组件(实现[IComponent](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IComponent.java)接口，需要保留无参构造方法)
 ```java
 public class ComponentA implements IComponent {
     
@@ -93,7 +97,7 @@ public class ComponentA implements IComponent {
 }
 ```
 2.2 调用组件
-```
+```java
 //同步调用，直接返回结果
 CCResult result = CC.obtainBuilder("ComponentA").build().call();
 //或 异步调用，不需要回调结果
@@ -106,46 +110,56 @@ CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainThread(new ICompon
 #### 3. 进阶使用
 
 - 设置Context信息    
-    
-        builder.setContext(activity)
-    
-- 超时时间设置        
-
-        builder.setTimeout(1000)    
+```java
+builder.setContext(activity)
+```
+- 超时时间设置     
+```java
+builder.setTimeout(1000)    
+```
 - 参数传递           
-
-        builder.addParam("name", "billy").addParam("id", 12345)
+```java
+builder.addParam("name", "billy").addParam("id", 12345)
+```
 - 设置返回信息        
-        
-        CCResult.success(key1, value1).addData(key2, value2)
+```java
+CCResult.success(key1, value1).addData(key2, value2)
+```
 - 发送结果给调用方     
-        
-        CC.sendCCResult(cc.getCallId(), ccResult)        
-- 读取调用状态        
-
-        ccResult.isSuccess()
-- 读取调用错误信息     
-
-        ccResult.isSuccess()
-- 读取返回信息        
-
-        ccResult.getDataMap().get(key1)
-- 开启/关闭跨app调用            
-
-        CC.enableRemoteCC(trueOrFalse)
-- 开启/关闭debug日志打印        
-
-        CC.enableDebug(trueOrFalse);
-- 开启/关闭组件调用详细日志打印    
-
-        CC.enableVerboseLog(trueOrFalse);
+```java
+CC.sendCCResult(cc.getCallId(), ccResult)        
+```
+- 读取调用状态
+```java
+ccResult.isSuccess()
+```        
+- 读取调用错误信息
+```java
+ccResult.isSuccess()
+```     
+- 读取返回信息
+```java
+ccResult.getDataMap().get(key1)
+```        
+- 开启/关闭跨app调用
+```java
+CC.enableRemoteCC(trueOrFalse)
+```            
+- 开启/关闭debug日志打印
+```java
+CC.enableDebug(trueOrFalse);
+```        
+- 开启/关闭组件调用详细日志打印
+```java
+CC.enableVerboseLog(trueOrFalse);
+```    
 - 自定义拦截器
 
         1. 实现ICCInterceptor接口( 只有一个方法: intercept(Chain chain) )
         2. 调用chain.proceed()方法让调用链继续向下执行, 不调用以阻止本次CC
         2. 在调用chain.proceed()方法之前，可以修改cc的参数
         3. 在调用chain.proceed()方法之后，可以修改返回结果
-        可参考demo中的 MissYouInterceptor.java
+    可参考demo中的 [MissYouInterceptor.java](https://github.com/luckybilly/CC/blob/master/demo/src/main/java/com/billy/cc/demo/MissYouInterceptor.java)
 - 动态注册/反注册组件
     
         定义：区别于静态组件(IComponent)编译时自动注册到ComponentManager，动态组件不会自动注册，通过手动注册/反注册的方式工作
@@ -161,11 +175,19 @@ CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainThread(new ICompon
 - 一个组件可以处理多个action
 
         在onCall(CC cc)方法中cc.getActionName()获取action来分别处理
-        可参考demo_component_a、demo_component_b
+
+    可参考：[ComponentA](https://github.com/luckybilly/CC/blob/master/demo_component_a/src/main/java/com/billy/cc/demo/component/a/ComponentA.java)
 - 自定义的ActionProcessor自动注册到组件
 
-        可参考demo_component_b及cc-settings-demo-b.gradle
+    可参考[ComponentB](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/ComponentB.java)
+    及[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
 
+- 给跨app组件的调用添加自定义权限限制
+    - 新建一个module
+    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.1.0'`
+    - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
+    - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
+    
 
 ##### 详情可参考 demo/demo_component_a/demo_component_b 中的示例
 
@@ -198,7 +220,20 @@ CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainThread(new ICompon
     1. 请在手机系统的权限管理中对组件所在的app赋予自启动权限
     2. 请检查被调用的app里是否设置了CC.enableRemoteCC(false)，应该设置为true(默认值也为true)
 
+- 使用ActionProcessor来处理多个action，单独组件作为apk运行时能正常工作，打包到主app中则不能正常工作
+
+    ```groovy
+    //使用自定义的cc-settings.gradle文件时，主工程也要依赖此gradle文件替换
+    apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+    ```
+    参考[demo/build.gradle](https://github.com/luckybilly/CC/blob/master/demo/build.gradle)中的配置
+
+- 使用自定义权限后，不能正常进行跨app调用
+
+        每个组件都必须依赖自定义权限的module
+        若对该module的依赖在自定义cc-settings.gradle中，则每个组件都要apply这个gradle
+    参考[demo/build.gradle](https://github.com/luckybilly/CC/blob/master/demo/build.gradle)中的配置
 # 更新日志
 
-- 2017.11 V0.1.0版 初次发布
+- 2017.11.24 V0.1.0版 初次发布
 

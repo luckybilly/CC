@@ -1,5 +1,4 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     package="com.billy.cc.demo.component.protect" >
 
     <permission android:name="cc.permission.com.billy.cc.demo.REMOTE_CC" android:protectionLevel="signature" />

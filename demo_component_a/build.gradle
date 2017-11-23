@@ -1,5 +1,5 @@
+apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
 
-apply from: rootProject.file('cc-settings.gradle')
 android {
     compileSdkVersion rootProject.compileVersion
     buildToolsVersion rootProject.buildVersion
@@ -27,5 +27,4 @@ android {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile "com.android.support:appcompat-v7:${rootProject.supportVersion}"
-    compile project(':component_protect_demo')
 }
