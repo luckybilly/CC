@@ -2,7 +2,33 @@
 
 最新版本:[![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)
 
-轻量级的android组件化开发框架，aar包不到40KB
+## 特点
+- 轻量级的android组件化开发框架
+
+
+    aar包不到40KB
+- 集成简单,仅需4步即可完成集成：
+
+
+    添加自动注册插件
+    添加apply cc-settings.gradle文件
+    实现IComponent接口创建一个组件
+    使用CC.obtainBuilder("component_name").build().call()调用组件
+- 功能丰富
+
+
+    1. 支持组件间相互调用（不只是Activity跳转，支持任意指令的调用/回调）
+    2. 支持app间跨进程的组件调用(组件开发/调试时可单独作为app运行)
+    3. 支持app间调用的开关及权限设置（满足不同级别的安全需求，默认打开状态且不需要权限）
+    4. 支持同步/异步方式调用
+    5. 支持同步/异步方式实现组件
+    6. 调用方式不受实现方式的限制（例如:可以同步调用另一个组件的异步实现功能。注：不要在主线程同步调用耗时操作）
+    7. 支持添加自定义拦截器（按添加的先后顺序执行）
+    8. 支持超时设置
+    9. 支持手动取消
+    10. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
+    11. 支持动态注册/反注册组件(IDynamicComponent)
+    12. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
 
 ## 目录结构
 - cc                        组件化框架基础库（主要）
@@ -14,26 +40,9 @@
 - cc-settings-demo-b.gradle actionProcessor自动注册的配置脚本demo
 - demo-debug.apk                demo安装包(包含demo/demo_component_a)
 - demo_component_b-debug.apk    demo组件B单独运行安装包
-## 功能
-
-本组件化开发的基础库，包括以下功能：
-
-1. 支持组件间相互调用（不只是Activity跳转，可支持任意指令的调用/回调）
-2. 支持app间跨进程的组件调用(组件开发/调试时可单独作为app运行)
-3. 支持app间调用的开关及权限设置（满足不同级别的安全需求，默认打开状态且不需要权限）
-4. 支持同步/异步方式调用
-5. 支持同步/异步方式实现组件
-6. 调用方式不受实现方式的限制（例如:可以同步调用另一个组件的异步实现功能。注：不要在主线程同步调用耗时操作）
-7. 支持添加自定义拦截器
-8. 支持超时设置
-9. 支持手动取消
-10. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
-11. 支持动态注册/反注册组件(IDynamicComponent)
-12. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
-
 
 ## 集成
-下面介绍在Android Studio中进行集成的步骤
+下面介绍在Android Studio中进行集成的详细步骤
 
 #### 1. 添加引用
 1.1 在工程根目录的build.gradle中添加组件自动注册插件
