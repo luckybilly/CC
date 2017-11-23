@@ -25,7 +25,7 @@ ext {
     libraryDescription = '线程安全的对象池'
 
     siteUrl = 'https://github.com/luckybilly/CC'
-    gitUrl = 'https://github.com/luckybilly/CC.git'
+    gitUrl = 'git@github.com:luckybilly/CC.git'
 
     libraryVersion = '0.0.5' //要发布到 jcenter 上的版本号
 

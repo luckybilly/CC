@@ -1,6 +1,6 @@
 # CC : ComponentCaller 
 
-最新版本:[![Download](https://api.bintray.com/packages/hellobilly/android/CC/images/download.svg)](https://bintray.com/hellobilly/android/CC/_latestVersion)
+最新版本:[![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)
 
 轻量级的android组件化开发框架，aar包不到40KB
 
