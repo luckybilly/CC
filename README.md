@@ -206,6 +206,9 @@ CC.enableVerboseLog(trueOrFalse);
 
 不需要额外的混淆配置
 
+## 自动注册插件
+源码:[AutoRegister](https://github.com/luckybilly/AutoRegister)
+原理:[android扫描接口实现类并通过修改字节码自动生成注册表](http://blog.csdn.net/cdecde111/article/details/78074692)
 ## Q&A
 
 - 无法调用到组件
