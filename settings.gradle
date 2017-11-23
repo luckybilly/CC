@@ -1,0 +1,6 @@
+include ':cc'
+include ':pools'
+include ':demo'
+include ':demo_component_a'
+include ':component_protect_demo'
+include ':demo_component_b'

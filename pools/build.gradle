@@ -1,0 +1,41 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion rootProject.compileVersion
+    buildToolsVersion rootProject.buildVersion
+
+    defaultConfig {
+        minSdkVersion rootProject.minVersion
+        targetSdkVersion rootProject.compileVersion
+    }
+}
+
+
+sourceCompatibility = 1.7
+targetCompatibility = 1.7
+
+ext {
+    bintrayRepo = 'android'
+    bintrayName = 'objpool'
+
+    publishedGroupId = 'com.billy.android'
+    libraryName = 'ObjPool'
+    artifact = 'pools'
+
+    libraryDescription = '线程安全的对象池'
+
+    siteUrl = 'https://github.com/luckybilly/CC'
+    gitUrl = 'https://github.com/luckybilly/CC.git'
+
+    libraryVersion = '0.0.5' //要发布到 jcenter 上的版本号
+
+    developerId = 'billy'
+    developerName = 'billy'
+    developerEmail = 'okkanan@hotmail.com'
+
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+    allLicenses = ["Apache-2.0"]
+}
+
+apply from: rootProject.file('bintray.gradle')

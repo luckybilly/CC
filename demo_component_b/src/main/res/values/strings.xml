@@ -1,0 +1,5 @@
+<resources>
+    <string name="demo_b_app_name">Demo_B</string>
+    <string name="demo_b_username_hint">请输入用户名</string>
+    <string name="demo_b_click_login">点击登录</string>
+</resources>

@@ -1,0 +1,7 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.billy.cc.demo.component.a" >
+
+    <application >
+        <activity android:name="com.billy.cc.demo.component.a.ActivityA" />
+    </application>
+</manifest>

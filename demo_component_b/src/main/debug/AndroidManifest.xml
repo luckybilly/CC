@@ -1,0 +1,20 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.billy.cc.demo.component.b" >
+
+    <application
+        android:name="debug.MyApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/demo_b_app_name"
+        android:supportsRtl="true"
+        android:theme="@style/demo_b_AppTheme">
+        <activity android:name="com.billy.cc.demo.component.b.ActivityB">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name="com.billy.cc.demo.component.b.LoginActivity" />
+    </application>
+</manifest>

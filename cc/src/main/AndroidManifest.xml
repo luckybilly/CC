@@ -1,0 +1,17 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.billy.cc.core.component">
+
+    <application >
+        <!-- 使用子进程解决：在主线程中同步调用其它app的组件，由于广播接收器也是在主线程运行，导致当前app卡死的问题 -->
+        <receiver android:name="com.billy.cc.core.component.ComponentBroadcastReceiver"
+            android:process=":cc"
+            >
+            <intent-filter>
+                <action android:name="cc.action.com.billy.cc.libs.component.REMOTE_CC" />
+            </intent-filter>
+        </receiver>
+        <service android:exported="false" android:name="com.billy.cc.core.component.ComponentService" />
+
+    </application>
+
+</manifest>

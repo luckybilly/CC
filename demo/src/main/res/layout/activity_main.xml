@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    >
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="2"
+        >
+
+        <com.google.android.flexbox.FlexboxLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:flexWrap="wrap"
+            app:alignItems="stretch"
+            app:alignContent="stretch" >
+
+            <Button
+                android:id="@+id/componentAOpenActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="同步调A组件(页面跳转)"
+                />
+            <Button
+                android:id="@+id/componentAAsyncOpenActivity"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="异步调A组件(页面跳转)"
+                />
+            <Button
+                android:id="@+id/componentAGetData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="同步调A组件(获取数据)"
+                />
+            <Button
+                android:id="@+id/componentAAsyncGetData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="异步调A组件(获取数据)"
+                />
+            <Button
+                android:id="@+id/componentB"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="同步调B组件(页面跳转)"
+                />
+            <Button
+                android:id="@+id/componentBAsync"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="异步调B组件(慢请求5s)"
+                />
+            <Button
+                android:id="@+id/componentBGetData"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="同步调B组件(获取数据)"
+                />
+            <Button
+                android:id="@+id/componentBLogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="异步调B组件(模拟登录)"
+                />
+        </com.google.android.flexbox.FlexboxLayout>
+    </ScrollView>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="3"
+        android:background="#cccccc"
+        android:scrollbars="vertical"
+        >
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/console"
+            android:padding="10dp"
+            />
+    </ScrollView>
+
+</LinearLayout>
