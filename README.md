@@ -1,6 +1,13 @@
 # CC : ComponentCaller 
 
-最新版本:[![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)
+最新版本|[![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)
+---|---
+
+## demo演示
+
+[demo下载(包含主工程demo和demo_component_a)](https://github.com/luckybilly/CC/blob/master/demo-debug.apk)
+
+[demo_component_b下载](https://github.com/luckybilly/CC/blob/master/demo_component_b-debug.apk)
 
 ## 特点
 - 轻量级的android组件化开发框架
