@@ -32,7 +32,7 @@ public class MissYouInterceptor implements ICCInterceptor {
         Log.i("MissYouInterceptor", "callId=" + cc.getCallId() + ", params=" + params);
         //传递拦截器调用链
         // 不调用chain.proceed()方法, 可以中止调用链的继续传递（中止组件调用）
-        // 譬如：埋点组件
+        // 譬如：埋点组件调用网络请求组件发送埋点信息
         //      1. 可以添加一个本地缓存拦截器：无网络时直接缓存本地数据库，不调用埋点组件；
         //      2. 埋点返回结果 ccResult.isSuccess()为false，也缓存到本地数据库
         CCResult result = chain.proceed();

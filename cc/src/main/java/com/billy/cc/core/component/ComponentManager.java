@@ -4,7 +4,7 @@ import android.text.TextUtils;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -24,9 +24,9 @@ class ComponentManager {
             return thread;
         }
     };
-    private static final ExecutorService CC_THREAD_POOL = new ThreadPoolExecutor(2, Integer.MAX_VALUE,
+    static final ExecutorService CC_THREAD_POOL = new ThreadPoolExecutor(2, Integer.MAX_VALUE,
             60L, TimeUnit.SECONDS,
-            new LinkedBlockingQueue<Runnable>(), THREAD_FACTORY);
+            new SynchronousQueue<Runnable>(), THREAD_FACTORY);
 
     //加载类时自动调用初始化：注册所有组件
     //通过auto-register插件生成组件注册代码
@@ -79,7 +79,6 @@ class ComponentManager {
      */
     static CCResult call(CC cc) {
         String callId = cc.getCallId();
-        CC.CC_MAP.put(callId, cc);
         Chain chain = new Chain(cc);
         String componentName = cc.getComponentName();
         if (TextUtils.isEmpty(componentName)) {
@@ -96,12 +95,8 @@ class ComponentManager {
                         + " is not exists in " + cc.getContext().getPackageName()
                         + " and CC.enableRemoteCC is " + CC.CALL_REMOTE_CC_IF_NEED);
             } else {
-                //添加超时检测的拦截器
-                if (cc.getTimeout() > 0) {
-                    chain.addInterceptor(new TimeoutInterceptor());
-                }
                 if (component != null) {
-                    chain.addInterceptor(new LocalCCInterceptor(component, cc));
+                    chain.addInterceptor(new LocalCCInterceptor(component));
                 } else {
                     chain.addInterceptor(new RemoteCCInterceptor(cc));
                 }

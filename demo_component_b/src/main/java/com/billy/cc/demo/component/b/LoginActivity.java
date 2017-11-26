@@ -61,6 +61,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //判断是否为CC调用打开本页面
         if (callId != null) {
             CCResult result;
             if (TextUtils.isEmpty(username)) {

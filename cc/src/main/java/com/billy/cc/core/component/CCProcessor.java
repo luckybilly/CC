@@ -1,6 +1,10 @@
 package com.billy.cc.core.component;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import java.util.concurrent.Callable;
+import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 启动拦截器调用链
@@ -18,32 +22,85 @@ class CCProcessor implements Callable<CCResult> {
     public CCResult call() throws Exception {
         CC cc = chain.getCC();
         String callId = cc.getCallId();
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(callId, "process cc at thread:" + Thread.currentThread().getName());
-        }
-        if (cc.isCanceled()) {
-            return CCResult.error(CCResult.CODE_ERROR_CANCELED);
-        }
-        CCResult result = null;
+        //从开始调用的时候就开始进行监控，也许时间设置的很短，可能都不需要执行拦截器调用链
+        CCMonitor.addMonitorFor(cc);
+        CCResult result;
         try {
             if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "start interceptor chain");
+                int poolSize = ((ThreadPoolExecutor) ComponentManager.CC_THREAD_POOL).getPoolSize();
+                CC.verboseLog(callId, "process cc at thread:"
+                        + Thread.currentThread().getName() + ", pool size=" + poolSize);
             }
-            result = chain.proceed();
+            if (cc.isFinished()) {
+                //timeout, cancel, CC.sendCCResult(callId, ccResult)
+                result = cc.getResult();
+            } else {
+                try {
+                    if (CC.VERBOSE_LOG) {
+                        CC.verboseLog(callId, "start interceptor chain");
+                    }
+                    result = chain.proceed();
+                    if (CC.VERBOSE_LOG) {
+                        CC.verboseLog(callId, "end interceptor chain.CCResult:" + result);
+                    }
+                } catch(Exception e) {
+                    result = CCResult.defaultExceptionResult(e);
+                }
+            }
+            //返回的结果，永不为null，默认为CCResult.defaultNullResult()
+            if (result == null) {
+                result = CCResult.defaultNullResult();
+            }
             if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "end interceptor chain.CCResult:" + result);
+                CC.verboseLog(callId, "perform callback:" + cc.getCallback() + ", CCResult:" + result);
             }
+            performCallback(cc, result);
         } catch(Exception e) {
-            e.printStackTrace();
+            result = CCResult.defaultExceptionResult(e);
+        } finally {
+            CCMonitor.removeById(callId);
         }
-        //返回的结果，永不为null，默认为CCResult.defaultNullResult()
+        return result;
+    }
+
+    private static final Handler HANDLER = new Handler(Looper.getMainLooper());
+
+    private static void performCallback(CC cc, CCResult result) {
+        IComponentCallback callback = cc.getCallback();
+        if (callback == null) {
+            return;
+        }
         if (result == null) {
             result = CCResult.defaultNullResult();
         }
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(callId, "perform callback:" + cc.getCallback());
+        if (cc.isCallbackOnMainThread()) {
+            HANDLER.post(new CallbackRunnable(cc, result));
+        } else {
+            try{
+                callback.onResult(cc, result);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
         }
-        CCUtil.invokeCallback(cc, result);
-        return result;
+    }
+    private static class CallbackRunnable implements Runnable {
+        private final CC cc;
+        private IComponentCallback callback;
+        private CCResult result;
+
+        CallbackRunnable(CC cc, CCResult result) {
+            this.cc = cc;
+            this.callback = cc.getCallback();
+            this.result = result;
+        }
+
+        @Override
+        public void run() {
+            try{
+                callback.onResult(cc, result);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

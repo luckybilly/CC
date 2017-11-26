@@ -153,7 +153,7 @@ ccResult.isSuccess()
 ```        
 - 读取调用错误信息
 ```java
-ccResult.isSuccess()
+ccResult.getErrorMessage()
 ```     
 - 读取返回信息
 ```java
@@ -202,7 +202,7 @@ CC.enableVerboseLog(trueOrFalse);
 
 - 给跨app组件的调用添加自定义权限限制
     - 新建一个module
-    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.1.0'`
+    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.1.1'`
     - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
     - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
     
@@ -265,6 +265,12 @@ CC.enableVerboseLog(trueOrFalse);
         4. 调用组件时，使用cc.callAsyncCallbackOnMainThread(new IComponentCallback(){...})来接收返回结果
 
 # 更新日志
+
+- 2017.11.27 V0.1.1版
+    
+    
+        1. 优化超时的处理流程
+        2. 优化异步返回CCResult的处理流程
 
 - 2017.11.24 V0.1.0版 初次发布
 

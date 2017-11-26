@@ -52,7 +52,7 @@
                 android:id="@+id/componentBAsync"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="异步调B组件(慢请求5s)"
+                android:text="异步调B组件(慢请求3s)"
                 />
             <Button
                 android:id="@+id/componentBGetData"

@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -29,11 +28,12 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CC {
     private static final String TAG = "ComponentCaller";
-    private static final String VERBOSE_TAG = "CC_VERBOSE";
+    private static final String VERBOSE_TAG = "ComponentCaller_VERBOSE";
     /**
-     * 默认超时时间为1秒
+     * 默认超时时间为2秒
+     *
      */
-    private static final long DEFAULT_TIMEOUT = 1000;
+    private static final long DEFAULT_TIMEOUT = 2000;
     static boolean DEBUG = false;
     static boolean VERBOSE_LOG = false;
     /**
@@ -47,11 +47,15 @@ public class CC {
      */
     static boolean CALL_REMOTE_CC_IF_NEED = true;
 
-    static final ConcurrentHashMap<String, CC> CC_MAP = new ConcurrentHashMap<>();
+    private volatile CCResult result;
+
+    final byte[] wait4resultLock = new byte[0];
+
     private static Application application;
 
     static {
         try {
+            //通过反射的方式来获取当前进程的application对象
             application = (Application) Class.forName("android.app.ActivityThread")
                     .getMethod("currentApplication").invoke(null);
         } catch(Exception e) {
@@ -100,10 +104,11 @@ public class CC {
      * 调用超时时间，默认值（同步调用：1000， 异步调用：0）
      */
     private long timeout = -1;
+    long timeoutAt;
+    private final AtomicBoolean finished = new AtomicBoolean(false);
     private String callId;
-    private WeakReference<ICaller> caller;
-    private AtomicBoolean canceled = new AtomicBoolean(false);
-    private AtomicBoolean timeoutStatus = new AtomicBoolean(false);
+    private volatile boolean canceled = false;
+    private volatile boolean timeoutStatus = false;
 
     private CC(String componentName) {
         this.componentName = componentName;
@@ -262,7 +267,7 @@ public class CC {
         return params;
     }
 
-    public boolean isAsync() {
+    boolean isAsync() {
         return async;
     }
 
@@ -270,7 +275,7 @@ public class CC {
         return callbackOnMainThread;
     }
 
-    public long getTimeout() {
+    long getTimeout() {
         return timeout;
     }
 
@@ -278,12 +283,39 @@ public class CC {
         return callId;
     }
 
-    public boolean isCanceled() {
-        return canceled.get();
+    boolean isCanceled() {
+        return canceled;
     }
 
-    public boolean isTimeout() {
-        return timeoutStatus.get();
+    /**
+     * 判断是否需要中止运行，本次调用被手动取消或已超时。
+     * 组件在处理耗时操作时，要根据此状态进行判断，以免进行无效操作
+     * @return <code>true</code>:需要中止继续执行；false:可以继续运行
+     */
+    public boolean isStopped() {
+        return canceled || timeoutStatus;
+    }
+
+    boolean isTimeout() {
+        return timeoutStatus;
+    }
+
+    CCResult getResult() {
+        return result;
+    }
+
+    void setResult(CCResult result) {
+        if (this.result != null) {
+            return;
+        }
+        this.result = result;
+        try {
+            synchronized (wait4resultLock) {
+                wait4resultLock.notifyAll();
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
     }
 
     IComponentCallback getCallback() {
@@ -299,10 +331,6 @@ public class CC {
 
     List<ICCInterceptor> getInterceptors() {
         return interceptors;
-    }
-
-    void setCaller(ICaller caller) {
-        this.caller = new WeakReference<>(caller);
     }
 
     /**
@@ -341,8 +369,8 @@ public class CC {
             timeout = 0;
         }
         this.callId = nextCallId();
-        this.canceled.set(false);
-        this.timeoutStatus.set(false);
+        this.canceled = false;
+        this.timeoutStatus = false;
         if (VERBOSE_LOG) {
             verboseLog(callId, "start to callAsync:" + this);
         }
@@ -358,13 +386,14 @@ public class CC {
         this.callback = null;
         this.async = false;
         boolean mainThreadCallWithNoTimeout = timeout == 0 && Looper.getMainLooper() == Looper.myLooper();
-        //主线程下的同步调用必须设置超时时间，默认为1秒
+        //主线程下的同步调用必须设置超时时间，默认为2秒
         if (mainThreadCallWithNoTimeout || timeout < 0) {
             timeout = DEFAULT_TIMEOUT;
         }
+        setTimeoutAt();
         this.callId = nextCallId();
-        this.canceled.set(false);
-        this.timeoutStatus.set(false);
+        this.canceled = false;
+        this.timeoutStatus = false;
         if (VERBOSE_LOG) {
             verboseLog(callId, "start to call:" + this);
         }
@@ -372,46 +401,56 @@ public class CC {
     }
 
     /**
-     * 取消本组件的调用
+     * 设定超时
      */
-    public void cancel() {
-        if (!canceled.compareAndSet(false, true)) {
-            return;
-        }
-        if (this.caller != null) {
-            ICaller cancelable = this.caller.get();
-            if (cancelable != null) {
-                if (VERBOSE_LOG) {
-                    verboseLog(callId, "call CC.cancel()");
-                }
-                cancelable.cancel();
-            }
+    private void setTimeoutAt() {
+        if (timeout > 0) {
+            timeoutAt = System.currentTimeMillis() + timeout;
+        } else {
+            timeoutAt = 0;
         }
     }
 
+    /**
+     * 取消本组件的调用
+     */
+    public void cancel() {
+        if (markFinished()) {
+            canceled = true;
+            setResult(CCResult.error(CCResult.CODE_ERROR_CANCELED));
+            verboseLog(callId, "call cancel()");
+        } else {
+            verboseLog(callId, "call cancel(). but this cc is already finished");
+        }
+    }
+
+    boolean isFinished() {
+        return finished.get();
+    }
+
+    private boolean markFinished() {
+        return finished.compareAndSet(false, true);
+    }
+
     public static void cancel(String callId) {
-        CC cc = CC_MAP.get(callId);
+        verboseLog(callId, "call CC.cancel()");
+        CC cc = CCMonitor.getById(callId);
         if (cc != null) {
             cc.cancel();
         }
     }
-    public void timeout() {
-        if (!timeoutStatus.compareAndSet(false, true)) {
-            return;
-        }
-        if (this.caller != null) {
-            ICaller caller = this.caller.get();
-            if (caller != null) {
-                if (VERBOSE_LOG) {
-                    verboseLog(callId, "call timeout()");
-                }
-                caller.timeout();
-            }
+    void timeout() {
+        if (markFinished()) {
+            timeoutStatus = true;
+            setResult(CCResult.error(CCResult.CODE_ERROR_TIMEOUT));
+            verboseLog(callId, "timeout");
+        } else {
+            verboseLog(callId, "call timeout(). but this cc is already finished");
         }
     }
 
-    public static void timeout(String callId) {
-        CC cc = CC_MAP.get(callId);
+    static void timeout(String callId) {
+        CC cc = CCMonitor.getById(callId);
         if (cc != null) {
             cc.timeout();
         }
@@ -421,19 +460,25 @@ public class CC {
      * 在任意位置回调结果
      * 组件的onCall方法被调用后，<b>必须确保所有分支均会调用</b>到此方法将组件调用结果回调给调用方
      * @param callId 回调对象的调用id
-     * @param result 回调的结果
+     * @param ccResult 回调的结果
      */
-    public static void sendCCResult(String callId, CCResult result) {
+    public static void sendCCResult(String callId, CCResult ccResult) {
         if (VERBOSE_LOG) {
-            verboseLog(callId, "CCResult received by CC.sendCCResult(...).CCResult:" + result);
+            verboseLog(callId, "CCResult received by CC.sendCCResult(...).CCResult:" + ccResult);
         }
-        LocalCCInterceptor localCC = LocalCCInterceptor.RESULT_RECEIVER.get(callId);
-        if (localCC != null) {
-            if (result == null) {
-                logError("CC.sendCCResult called, But result is null. "
-                        + "ComponentName=" + localCC.cc.getComponentName());
+        CC cc = CCMonitor.getById(callId);
+        if (cc != null) {
+            if (cc.markFinished()) {
+                if (ccResult == null) {
+                    ccResult = CCResult.defaultNullResult();
+                    logError("CC.sendCCResult called, But ccResult is null, set it to CCResult.defaultNullResult(). "
+                            + "ComponentName=" + cc.getComponentName());
+                }
+                cc.setResult(ccResult);
+            } else {
+                logError("CC.sendCCResult called, But ccResult is null. "
+                        + "ComponentName=" + cc.getComponentName());
             }
-            localCC.receiveCCResult(result);
         } else {
             log("CCResult received, but cannot found callId:" + callId);
         }

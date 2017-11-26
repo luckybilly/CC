@@ -1,5 +1,7 @@
 package com.billy.cc.demo.component.b.processor;
 
+import android.util.Log;
+
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 
@@ -29,14 +31,25 @@ public class GetNetworkDataProcessor implements IActionProcessor {
 
         @Override
         public void run() {
-            try {
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            int maxStep = 6;
+            int step = 1;
+            for (; step <= maxStep; step++) {
+                //判断超时或取消状态
+                if (cc.isStopped()) {
+                    break;
+                }
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
-            //仅在未cancel时调用回调
-            if (!cc.isCanceled()) {
+
+            //仅在未中止时调用回调
+            if (!cc.isStopped()) {
                 CC.sendCCResult(cc.getCallId(), CCResult.success("networkdata", "data from network"));
+            } else {
+                Log.e("ComponentB", "get data from network stopped. step=" + step);
             }
         }
     }

@@ -43,11 +43,11 @@ public class ComponentService extends Service {
     @Override
     public int onStartCommand(final Intent intent, int flags, final int startId) {
         CC.log("ComponentService.onStartCommand");
-        new Processor(intent, startId).start();
+        ComponentManager.CC_THREAD_POOL.execute(new Processor(intent, startId));
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private class Processor extends Thread {
+    private class Processor implements Runnable {
         Intent intent;
         int startId;
         LocalSocket socket = null;

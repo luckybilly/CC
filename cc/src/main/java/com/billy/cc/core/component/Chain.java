@@ -1,7 +1,6 @@
 package com.billy.cc.core.component;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -23,14 +22,14 @@ public class Chain {
 
     void addInterceptor(ICCInterceptor interceptor) {
         if (interceptor != null) {
-            interceptors.add(interceptor);
+            this.interceptors.add(interceptor);
         }
     }
 
-    void setInterceptors(ICCInterceptor... interceptors) {
+    void setInterceptors(ICCInterceptor interceptor) {
         //异常情况：这里有可能把null添加进来
         this.interceptors.clear();
-        this.interceptors.addAll(Arrays.asList(interceptors));
+        addInterceptor(interceptor);
     }
 
     public CCResult proceed() {
@@ -38,26 +37,31 @@ public class Chain {
             return CCResult.defaultNullResult();
         }
         ICCInterceptor interceptor = interceptors.get(index++);
+        //处理异常情况：如果为拦截器为null，则执行下一个
         if (interceptor == null) {
-            //处理异常情况：如果为拦截器为null，则执行下一个
             return proceed();
         }
         String name = interceptor.getClass().getName();
         String callId = cc.getCallId();
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(callId, "start interceptor:" + name);
-        }
         CCResult result;
-        try {
-            result = interceptor.intercept(this);
-        } catch(Throwable e) {
-            //防止拦截器抛出异常
-            result = CCResult.defaultExceptionResult(e);
+        if (cc.isFinished()) {
+            //timeout, cancel, CC.sendCCResult(callId, ccResult)
+            result = cc.getResult();
+        } else {
+            if (CC.VERBOSE_LOG) {
+                CC.verboseLog(callId, "start interceptor:" + name);
+            }
+            try {
+                result = interceptor.intercept(this);
+            } catch(Throwable e) {
+                //防止拦截器抛出异常
+                result = CCResult.defaultExceptionResult(e);
+            }
+            if (CC.VERBOSE_LOG) {
+                CC.verboseLog(callId, "end interceptor:" + name + ".CCResult:" + result);
+            }
         }
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(callId, "end interceptor:" + name + ".CCResult:" + result);
-        }
-        //拦截器理论上不应该返回null，但为了防止意外，此处保持CCResult不为null
+        //拦截器理论上不应该返回null，但为了防止意外(自定义拦截器返回null、，此处保持CCResult不为null
         //消灭NPE
         if (result == null) {
             result = CCResult.defaultNullResult();

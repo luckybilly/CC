@@ -17,7 +17,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * app之间的组件调用
@@ -25,7 +24,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author billy.qi
  * @since 17/6/29 11:45
  */
-class RemoteCCInterceptor implements ICCInterceptor, ICaller {
+class RemoteCCInterceptor implements ICCInterceptor {
     /**
      * 组件app之间建立socket连接的最大等待时间
      */
@@ -57,10 +56,6 @@ class RemoteCCInterceptor implements ICCInterceptor, ICaller {
      */
     private volatile boolean ccProcessing = false;
     /**
-     * 回调控制器，避免超时后的重复回调
-     */
-    private AtomicBoolean resultReceived = new AtomicBoolean(false);
-    /**
      * socket通信是否已停止
      */
     private boolean stopped;
@@ -72,7 +67,6 @@ class RemoteCCInterceptor implements ICCInterceptor, ICaller {
 
     RemoteCCInterceptor(CC cc) {
         this.cc = cc;
-        this.cc.setCaller(this);
     }
 
     @Override
@@ -80,76 +74,29 @@ class RemoteCCInterceptor implements ICCInterceptor, ICaller {
         //是否需要wait：异步调用且未设置回调，则不需要wait
         boolean callbackNecessary = !cc.isAsync() || cc.getCallback() != null;
         startTime = System.currentTimeMillis();
-        //未被cancel
-        if (!resultReceived.get()) {
-            new ConnectTask().start();
-            if (!resultReceived.get() && callbackNecessary) {
-                String callId = cc.getCallId();
-                if (CC.VERBOSE_LOG) {
-                    CC.verboseLog(callId, "start waiting for CC.sendCCResult(\"" + callId
-                            + "\", ccResult)");
-                }
-                synchronized (lock) {
-                    try {
-                        lock.wait();
-                    } catch (InterruptedException ignored) {
-                    }
-                }
-                if (CC.VERBOSE_LOG) {
-                    CC.verboseLog(callId, "end waiting for CC.sendCCResult(\"" + callId
-                            + "\", ccResult), resultReceived=" + resultReceived);
-                }
+
+        new ConnectTask().start();
+        if (!cc.isFinished() && callbackNecessary) {
+            chain.addInterceptor(Wait4ResultInterceptor.getInstance());
+            chain.proceed();
+            if (cc.isCanceled()) {
+                stopCaller(MSG_CANCEL);
+            } else if (cc.isTimeout()) {
+                stopCaller(MSG_TIMEOUT);
             }
         }
-        if (result == null) {
-            result = CCResult.defaultNullResult();
-        }
-        cc.setCaller(null);
-        if (out != null) {
-            try{
-                out.close();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-        return result;
+        return cc.getResult();
     }
 
-    private void receiveCCResult(CCResult ccResult) {
-        if (!resultReceived.compareAndSet(false, true)) {
-            return;
-        }
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(cc.getCallId(), "final CCResult:" + ccResult);
-        }
-        synchronized (lock) {
-            result = ccResult;
-            lock.notifyAll();
-        }
-    }
-
-    private void stopCaller(int errorCode, String msg) {
-        if (resultReceived.get()) {
-            return;
-        }
+    private void stopCaller(String msg) {
         if (CC.VERBOSE_LOG) {
             CC.verboseLog(cc.getCallId(), "RemoteCC stopped (%s).", msg);
         }
         if (!ccProcessing) {
             stopConnection();
-            receiveCCResult(CCResult.error(errorCode));
         } else {
             sendToRemote(msg);
         }
-    }
-
-    @Override
-    public void cancel() {
-        stopCaller(CCResult.CODE_ERROR_CANCELED, MSG_CANCEL);
-    }
-    @Override
-    public void timeout() {
-        stopCaller(CCResult.CODE_ERROR_TIMEOUT, MSG_TIMEOUT);
     }
 
     private void sendToRemote(String str) {
@@ -173,7 +120,7 @@ class RemoteCCInterceptor implements ICCInterceptor, ICaller {
         public void run() {
             Context context = cc.getContext();
             if (context == null) {
-                receiveCCResult(CCResult.error(CCResult.CODE_ERROR_CONTEXT_NULL));
+                cc.setResult(CCResult.error(CCResult.CODE_ERROR_CONTEXT_NULL));
                 return;
             }
             //retrieve ComponentBroadcastReceiver permission
@@ -185,7 +132,7 @@ class RemoteCCInterceptor implements ICCInterceptor, ICaller {
                     receiverIntentFilterAction = "cc.action.com.billy.cc.libs.component.REMOTE_CC";
                 } catch(Exception e) {
                     e.printStackTrace();
-                    receiveCCResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
+                    cc.setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
                     return;
                 }
             }
@@ -236,10 +183,10 @@ class RemoteCCInterceptor implements ICCInterceptor, ICaller {
                 if (CC.VERBOSE_LOG) {
                     CC.verboseLog(callId, "localSocket received remote CCResult:" + str);
                 }
-                receiveCCResult(CCResult.fromString(str));
+                cc.setResult(CCResult.fromString(str));
             } catch(Exception e) {
                 e.printStackTrace();
-                receiveCCResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
+                cc.setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
             } finally {
                 if (lss != null) {
                     try {
@@ -267,7 +214,9 @@ class RemoteCCInterceptor implements ICCInterceptor, ICaller {
                 }
             }
             if (!ccProcessing) {
-                stopCaller(CCResult.CODE_ERROR_NO_COMPONENT_FOUND, "no component found");
+                cc.setResult(CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
+                stopConnection();
+                CC.verboseLog(cc.getCallId(), "no component found");
                 String cName = cc.getComponentName();
                 //跨app组件调用需要组件所在app满足2个条件：
                 // 1. 开启支持跨app调用 (CC.RESPONSE_FOR_REMOTE_CC = true;//默认为true，设置为false则关闭)
