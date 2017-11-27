@@ -1,6 +1,7 @@
 package com.billy.cc.core.component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -14,12 +15,14 @@ public class Chain {
 
     Chain(CC cc) {
         this.cc = cc;
-        if (cc != null && cc.getInterceptors() != null) {
-            interceptors.addAll(cc.getInterceptors());
-        }
         this.index = 0;
     }
 
+    void addInterceptors(Collection<ICCInterceptor> interceptors) {
+        if (interceptors != null && !interceptors.isEmpty()) {
+            this.interceptors.addAll(interceptors);
+        }
+    }
     void addInterceptor(ICCInterceptor interceptor) {
         if (interceptor != null) {
             this.interceptors.add(interceptor);
@@ -33,7 +36,7 @@ public class Chain {
     }
 
     public CCResult proceed() {
-        if (interceptors == null || index >= interceptors.size()) {
+        if (index >= interceptors.size()) {
             return CCResult.defaultNullResult();
         }
         ICCInterceptor interceptor = interceptors.get(index++);
@@ -45,7 +48,7 @@ public class Chain {
         String callId = cc.getCallId();
         CCResult result;
         if (cc.isFinished()) {
-            //timeout, cancel, CC.sendCCResult(callId, ccResult)
+            //timeout, cancel, CC.sendCCResult(callId, ccResult), cc.setResult, etc...
             result = cc.getResult();
         } else {
             if (CC.VERBOSE_LOG) {
@@ -61,11 +64,12 @@ public class Chain {
                 CC.verboseLog(callId, "end interceptor:" + name + ".CCResult:" + result);
             }
         }
-        //拦截器理论上不应该返回null，但为了防止意外(自定义拦截器返回null、，此处保持CCResult不为null
+        //拦截器理论上不应该返回null，但为了防止意外(自定义拦截器返回null，此处保持CCResult不为null
         //消灭NPE
         if (result == null) {
             result = CCResult.defaultNullResult();
         }
+        cc.setResult(result);
         return result;
     }
 

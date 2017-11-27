@@ -10,11 +10,11 @@ import java.util.concurrent.ThreadPoolExecutor;
  * 启动拦截器调用链
  * @author billy.qi
  */
-class CCProcessor implements Callable<CCResult> {
+class ChainProcessor implements Callable<CCResult> {
 
     private final Chain chain;
 
-    CCProcessor(Chain chain) {
+    ChainProcessor(Chain chain) {
         this.chain = chain;
     }
 
@@ -36,9 +36,7 @@ class CCProcessor implements Callable<CCResult> {
                 result = cc.getResult();
             } else {
                 try {
-                    if (CC.VERBOSE_LOG) {
-                        CC.verboseLog(callId, "start interceptor chain");
-                    }
+                    CC.verboseLog(callId, "start interceptor chain");
                     result = chain.proceed();
                     if (CC.VERBOSE_LOG) {
                         CC.verboseLog(callId, "end interceptor chain.CCResult:" + result);
@@ -47,19 +45,17 @@ class CCProcessor implements Callable<CCResult> {
                     result = CCResult.defaultExceptionResult(e);
                 }
             }
-            //返回的结果，永不为null，默认为CCResult.defaultNullResult()
-            if (result == null) {
-                result = CCResult.defaultNullResult();
-            }
-            if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "perform callback:" + cc.getCallback() + ", CCResult:" + result);
-            }
-            performCallback(cc, result);
         } catch(Exception e) {
             result = CCResult.defaultExceptionResult(e);
         } finally {
             CCMonitor.removeById(callId);
         }
+        //返回的结果，永不为null，默认为CCResult.defaultNullResult()
+        if (result == null) {
+            result = CCResult.defaultNullResult();
+        }
+        cc.setResult(result);
+        performCallback(cc, result);
         return result;
     }
 
@@ -67,16 +63,17 @@ class CCProcessor implements Callable<CCResult> {
 
     private static void performCallback(CC cc, CCResult result) {
         IComponentCallback callback = cc.getCallback();
+        if (CC.VERBOSE_LOG) {
+            CC.verboseLog(cc.getCallId(), "perform callback:" + cc.getCallback()
+                    + ", CCResult:" + result);
+        }
         if (callback == null) {
             return;
         }
-        if (result == null) {
-            result = CCResult.defaultNullResult();
-        }
         if (cc.isCallbackOnMainThread()) {
-            HANDLER.post(new CallbackRunnable(cc, result));
+            HANDLER.post(new CallbackRunnable(callback, cc, result));
         } else {
-            try{
+            try {
                 callback.onResult(cc, result);
             } catch(Exception e) {
                 e.printStackTrace();
@@ -88,15 +85,15 @@ class CCProcessor implements Callable<CCResult> {
         private IComponentCallback callback;
         private CCResult result;
 
-        CallbackRunnable(CC cc, CCResult result) {
+        CallbackRunnable(IComponentCallback callback, CC cc, CCResult result) {
             this.cc = cc;
-            this.callback = cc.getCallback();
+            this.callback = callback;
             this.result = result;
         }
 
         @Override
         public void run() {
-            try{
+            try {
                 callback.onResult(cc, result);
             } catch(Exception e) {
                 e.printStackTrace();

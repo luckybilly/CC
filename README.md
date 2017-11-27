@@ -14,7 +14,7 @@
 - 轻量级的android组件化开发框架
 
 
-        aar包不到40KB
+        aar包仅40+KB
 - 集成简单,仅需4步即可完成集成：
 
 
@@ -202,7 +202,7 @@ CC.enableVerboseLog(trueOrFalse);
 
 - 给跨app组件的调用添加自定义权限限制
     - 新建一个module
-    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.1.1'`
+    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.1.2'`
     - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
     - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
     

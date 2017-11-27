@@ -46,12 +46,13 @@ class ComponentManager {
                 if (TextUtils.isEmpty(name)) {
                     CC.logError("component " + component.getClass().getName()
                             + " register with an empty name. abort this component.");
-                } else if (hasComponent(name)) {
-                    CC.logError( "component (" + component.getClass().getName()
-                            + ") with name:" + name
-                            + " has already exists:" + COMPONENTS.get(name).getClass().getName());
                 } else {
-                    COMPONENTS.put(name, component);
+                    IComponent oldComponent = COMPONENTS.put(name, component);
+                    if (oldComponent != null) {
+                        CC.logError( "component (" + component.getClass().getName()
+                                + ") with name:" + name
+                                + " has already exists, replaced:" + oldComponent.getClass().getName());
+                    }
                 }
             } catch(Exception e) {
                 e.printStackTrace();
@@ -69,7 +70,7 @@ class ComponentManager {
     }
 
     static boolean hasComponent(String componentName) {
-        return COMPONENTS.get(componentName) != null;
+        return getComponentByName(componentName) != null;
     }
 
     /**
@@ -80,29 +81,15 @@ class ComponentManager {
     static CCResult call(CC cc) {
         String callId = cc.getCallId();
         Chain chain = new Chain(cc);
-        String componentName = cc.getComponentName();
-        if (TextUtils.isEmpty(componentName)) {
-            //没有指定要调用的组件名称，中止运行
-            chain.setInterceptors(new StopCCInterceptor(CCResult.CODE_ERROR_COMPONENT_NAME_EMPTY));
-        } else if (cc.getContext() == null) {
-            //context为null (没有设置context 且 CC中获取application失败)
-            chain.setInterceptors(new StopCCInterceptor(CCResult.CODE_ERROR_CONTEXT_NULL));
+        chain.addInterceptor(ValidateInterceptor.getInstance());
+        chain.addInterceptors(cc.getInterceptors());
+        if (hasComponent(cc.getComponentName())) {
+            chain.addInterceptor(LocalCCInterceptor.getInstance());
         } else {
-            IComponent component = COMPONENTS.get(componentName);
-            if (component == null && !CC.CALL_REMOTE_CC_IF_NEED) {
-                chain.setInterceptors(new StopCCInterceptor(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
-                CC.log("componentName=" + componentName
-                        + " is not exists in " + cc.getContext().getPackageName()
-                        + " and CC.enableRemoteCC is " + CC.CALL_REMOTE_CC_IF_NEED);
-            } else {
-                if (component != null) {
-                    chain.addInterceptor(new LocalCCInterceptor(component));
-                } else {
-                    chain.addInterceptor(new RemoteCCInterceptor(cc));
-                }
-            }
+            chain.addInterceptor(new RemoteCCInterceptor(cc));
         }
-        CCProcessor processor = new CCProcessor(chain);
+        chain.addInterceptor(Wait4ResultInterceptor.getInstance());
+        ChainProcessor processor = new ChainProcessor(chain);
         //异步调用，放到线程池中运行
         if (cc.isAsync()) {
             if (CC.VERBOSE_LOG) {
@@ -119,14 +106,21 @@ class ComponentManager {
             } catch (Exception e) {
                 ccResult = CCResult.defaultExceptionResult(e);
             }
-            if (ccResult == null) {
-                ccResult = CCResult.defaultNullResult();
-            }
             if (CC.VERBOSE_LOG) {
                 CC.verboseLog(callId, "cc finished.CCResult:" + ccResult);
             }
             //同步调用的返回结果，永不为null，默认为CCResult.defaultNullResult()
             return ccResult;
+        }
+    }
+
+    static IComponent getComponentByName(String componentName) {
+        return COMPONENTS.get(componentName);
+    }
+
+    static void threadPool(Runnable runnable) {
+        if (runnable != null) {
+            CC_THREAD_POOL.execute(runnable);
         }
     }
 }

@@ -43,7 +43,7 @@ public class ComponentService extends Service {
     @Override
     public int onStartCommand(final Intent intent, int flags, final int startId) {
         CC.log("ComponentService.onStartCommand");
-        ComponentManager.CC_THREAD_POOL.execute(new Processor(intent, startId));
+        ComponentManager.threadPool(new Processor(intent, startId));
         return super.onStartCommand(intent, flags, startId);
     }
 

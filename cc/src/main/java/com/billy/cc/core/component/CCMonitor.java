@@ -34,6 +34,10 @@ class CCMonitor {
                     new TimeoutMonitorThread().start();
                 }
             }
+            if (CC.VERBOSE_LOG) {
+                CC.verboseLog(cc.getCallId(), "totalCC count=" + CC_MAP.size()
+                        + ". add monitor for:" + cc);
+            }
         }
     }
 
@@ -79,7 +83,6 @@ class CCMonitor {
                     }
                     minTimeoutAt = min;
                 } catch (InterruptedException ignored) {
-                    //如果wait期间minTimeoutAt的值发生了变化，则重新计算wait
                 }
             }
             STOPPED.set(true);

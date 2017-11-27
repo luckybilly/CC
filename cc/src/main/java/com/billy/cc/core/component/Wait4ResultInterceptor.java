@@ -13,7 +13,7 @@ class Wait4ResultInterceptor implements ICCInterceptor {
     }
     private Wait4ResultInterceptor (){}
     /** 获取Wait4ResultInterceptor的单例对象 */
-    public static Wait4ResultInterceptor getInstance() {
+    static Wait4ResultInterceptor getInstance() {
         return Wait4ResultInterceptorHolder.INSTANCE;
     }
     //-------------------------单例模式 end --------------

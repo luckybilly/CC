@@ -55,11 +55,11 @@ class RemoteCCInterceptor implements ICCInterceptor {
      * 是否正在被其它app的组件进行处理
      */
     private volatile boolean ccProcessing = false;
+    private final boolean callbackNecessary;
     /**
      * socket通信是否已停止
      */
     private boolean stopped;
-    private long startTime;
     private BufferedWriter out;
     private String socketName;
     private static String receiverPermission;
@@ -67,17 +67,14 @@ class RemoteCCInterceptor implements ICCInterceptor {
 
     RemoteCCInterceptor(CC cc) {
         this.cc = cc;
+        //是否需要wait：异步调用且未设置回调，则不需要wait
+        callbackNecessary = !cc.isAsync() || cc.getCallback() != null;
     }
 
     @Override
     public CCResult intercept(Chain chain) {
-        //是否需要wait：异步调用且未设置回调，则不需要wait
-        boolean callbackNecessary = !cc.isAsync() || cc.getCallback() != null;
-        startTime = System.currentTimeMillis();
-
-        new ConnectTask().start();
+        ComponentManager.threadPool(new ConnectTask());
         if (!cc.isFinished() && callbackNecessary) {
-            chain.addInterceptor(Wait4ResultInterceptor.getInstance());
             chain.proceed();
             if (cc.isCanceled()) {
                 stopCaller(MSG_CANCEL);
@@ -114,13 +111,13 @@ class RemoteCCInterceptor implements ICCInterceptor {
         }
     }
 
-    private class ConnectTask extends Thread {
+    private class ConnectTask implements Runnable {
 
         @Override
         public void run() {
             Context context = cc.getContext();
             if (context == null) {
-                cc.setResult(CCResult.error(CCResult.CODE_ERROR_CONTEXT_NULL));
+                setResult(CCResult.error(CCResult.CODE_ERROR_CONTEXT_NULL));
                 return;
             }
             //retrieve ComponentBroadcastReceiver permission
@@ -132,7 +129,7 @@ class RemoteCCInterceptor implements ICCInterceptor {
                     receiverIntentFilterAction = "cc.action.com.billy.cc.libs.component.REMOTE_CC";
                 } catch(Exception e) {
                     e.printStackTrace();
-                    cc.setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
+                    setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
                     return;
                 }
             }
@@ -165,11 +162,14 @@ class RemoteCCInterceptor implements ICCInterceptor {
                             + " permission:" + receiverPermission);
                 }
                 context.sendBroadcast(intent, receiverPermission);
-                new CheckConnectTask().start();
+                ComponentManager.threadPool(new CheckConnectTask());
                 LocalSocket socket = lss.accept();
                 ccProcessing = true;
                 if (stopped) {
                     return;
+                }
+                synchronized (lock) {
+                    lock.notify();
                 }
 
                 out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
@@ -183,10 +183,10 @@ class RemoteCCInterceptor implements ICCInterceptor {
                 if (CC.VERBOSE_LOG) {
                     CC.verboseLog(callId, "localSocket received remote CCResult:" + str);
                 }
-                cc.setResult(CCResult.fromString(str));
+                setResult(CCResult.fromString(str));
             } catch(Exception e) {
                 e.printStackTrace();
-                cc.setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
+                setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
             } finally {
                 if (lss != null) {
                     try {
@@ -204,17 +204,25 @@ class RemoteCCInterceptor implements ICCInterceptor {
         }
     }
 
-    private class CheckConnectTask extends Thread {
+    void setResult(CCResult result) {
+        if (callbackNecessary) {
+            cc.setResult4Waiting(result);
+        } else {
+            cc.setResult(result);
+        }
+    }
+
+    private class CheckConnectTask implements Runnable {
         @Override
         public void run() {
-            while (!ccProcessing && System.currentTimeMillis() - startTime < CONNECT_DELAY) {
+            synchronized (lock) {
                 try {
-                    Thread.sleep(10);
+                    lock.wait(CONNECT_DELAY);
                 } catch (InterruptedException ignored) {
                 }
             }
             if (!ccProcessing) {
-                cc.setResult(CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
+                setResult(CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
                 stopConnection();
                 CC.verboseLog(cc.getCallId(), "no component found");
                 String cName = cc.getComponentName();

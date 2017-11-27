@@ -31,7 +31,6 @@ public class CC {
     private static final String VERBOSE_TAG = "ComponentCaller_VERBOSE";
     /**
      * 默认超时时间为2秒
-     *
      */
     private static final long DEFAULT_TIMEOUT = 2000;
     static boolean DEBUG = false;
@@ -64,7 +63,7 @@ public class CC {
     }
 
     /**
-     * 预留初始化方法
+     * 预留初始化方法(目前版本暂不需要)
      * 在Application.onCreate(...)中调用
      * @param app 为了防止反射获取application对象失败，预留此初始化功能
      */
@@ -101,7 +100,7 @@ public class CC {
     private final List<ICCInterceptor> interceptors = new ArrayList<>();
     private boolean callbackOnMainThread;
     /**
-     * 调用超时时间，默认值（同步调用：1000， 异步调用：0）
+     * 调用超时时间，默认值（同步调用：2000， 异步调用：0）
      */
     private long timeout = -1;
     long timeoutAt;
@@ -113,29 +112,46 @@ public class CC {
     private CC(String componentName) {
         this.componentName = componentName;
     }
-    
+
+    /**
+     * 创建CC对象的Builder<br>
+     * <b>此对象会被CC框架复用，请勿在程序中保存</b>
+     * @param componentName 要调用的组件名称
+     * @return 创建CC对象的Builder
+     */
     public static Builder obtainBuilder(String componentName) {
         return BUILDER_POOL.get(componentName);
     }
+
+    /**
+     * 获取当前app的Application对象
+     * @return application对象
+     */
     public static Application getApplication() {
         return application;
     }
 
+    /**
+     * CC的Builder,支持链式调用<br>
+     * 最终通过调用{@link Builder#build()}方法获取CC对象
+     * <b>此对象会被CC框架复用，请勿在程序中保存</b>
+     */
     public static class Builder implements ObjPool.Resetable, ObjPool.Initable<String> {
         private CC cr;
         
-        private Builder() {
-        }
+        private Builder() { }
 
+        /**
+         * 设置context
+         * @param context 设置为null时无效<br>
+         *                调用同一个app的组件时，组件实现方通过cc.getContext()将返回此值<br>
+         *                调用其它app的组件时，组件实现方通过cc.getContext()将返回组件所在app的Application对象
+         * @return Builder自身
+         */
         public Builder setContext(Context context) {
             if (context != null) {
                 cr.context = new WeakReference<>(context);
             }
-            return this;
-        }
-
-        public Builder setComponentName(String componentName) {
-            cr.componentName = componentName;
             return this;
         }
 
@@ -163,16 +179,31 @@ public class CC {
             return this;
         }
 
+        /**
+         * 用于调取同一个组件的不同action（可以理解为分组的概念：将不同的action分组在一个组件里对外提供服务）
+         * @param actionName action的名称，组件在执行时可根据此值执行不同的动作，返回不同的信息
+         * @return Builder自身
+         */
         public Builder setActionName(String actionName) {
             cr.actionName = actionName;
             return this;
         }
 
+        /**
+         * 设置组件调用的参数（将清空之前设置的参数列表）
+         * @param params 参数 {@link Map} 类型
+         * @return Builder自身
+         */
         public Builder setParams(Map<String, Object> params) {
             cr.params.clear();
             return addParams(params);
         }
 
+        /**
+         * 向组件调用的参数列表中添加参数
+         * @param params 参数 {@link Map} 类型
+         * @return Builder自身
+         */
         public Builder addParams(Map<String, Object> params) {
             if (params != null) {
                 for (String key : params.keySet()) {
@@ -204,6 +235,10 @@ public class CC {
             return this;
         }
 
+        /**
+         * 构建CC对象
+         * @return CC对象
+         */
         public CC build() {
             CC cr = this.cr;
             //回收复用builder
@@ -214,11 +249,18 @@ public class CC {
             return cr;
         }
 
+        /**
+         * 用于Builder对象池对此对象的重置
+         */
         @Override
         public void reset() {
             this.cr = null;
         }
 
+        /**
+         * 用于Builder对象池对此对象的初始化
+         * @param componentName 组件名称
+         */
         @Override
         public void init(String componentName) {
             this.cr = new CC(componentName);
@@ -305,10 +347,12 @@ public class CC {
     }
 
     void setResult(CCResult result) {
-        if (this.result != null) {
-            return;
-        }
+        finished.set(true);
         this.result = result;
+    }
+
+    void setResult4Waiting(CCResult result) {
+        setResult(result);
         try {
             synchronized (wait4resultLock) {
                 wait4resultLock.notifyAll();
@@ -394,6 +438,7 @@ public class CC {
         this.callId = nextCallId();
         this.canceled = false;
         this.timeoutStatus = false;
+        //加上开关判断，防止开关关闭的情况下也执行this.toString()方法
         if (VERBOSE_LOG) {
             verboseLog(callId, "start to call:" + this);
         }
@@ -417,7 +462,7 @@ public class CC {
     public void cancel() {
         if (markFinished()) {
             canceled = true;
-            setResult(CCResult.error(CCResult.CODE_ERROR_CANCELED));
+            setResult4Waiting(CCResult.error(CCResult.CODE_ERROR_CANCELED));
             verboseLog(callId, "call cancel()");
         } else {
             verboseLog(callId, "call cancel(). but this cc is already finished");
@@ -442,17 +487,10 @@ public class CC {
     void timeout() {
         if (markFinished()) {
             timeoutStatus = true;
-            setResult(CCResult.error(CCResult.CODE_ERROR_TIMEOUT));
+            setResult4Waiting(CCResult.error(CCResult.CODE_ERROR_TIMEOUT));
             verboseLog(callId, "timeout");
         } else {
             verboseLog(callId, "call timeout(). but this cc is already finished");
-        }
-    }
-
-    static void timeout(String callId) {
-        CC cc = CCMonitor.getById(callId);
-        if (cc != null) {
-            cc.timeout();
         }
     }
 
@@ -474,7 +512,7 @@ public class CC {
                     logError("CC.sendCCResult called, But ccResult is null, set it to CCResult.defaultNullResult(). "
                             + "ComponentName=" + cc.getComponentName());
                 }
-                cc.setResult(ccResult);
+                cc.setResult4Waiting(ccResult);
             } else {
                 logError("CC.sendCCResult called, But ccResult is null. "
                         + "ComponentName=" + cc.getComponentName());
@@ -508,7 +546,7 @@ public class CC {
      * 动态注册组件(类似于动态注册广播接收器BroadcastReceiver)
      * @param component 组件对象
      */
-    public static void registerComponent(IComponent component) {
+    public static void registerComponent(IDynamicComponent component) {
         ComponentManager.registerComponent(component);
     }
 
@@ -516,7 +554,7 @@ public class CC {
      * 动态反注册组件(类似于反注册广播接收器BroadcastReceiver)
      * @param component 组件对象
      */
-    public static void unregisterComponent(IComponent component) {
+    public static void unregisterComponent(IDynamicComponent component) {
         ComponentManager.unregisterComponent(component);
     }
 
