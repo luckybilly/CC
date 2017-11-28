@@ -352,9 +352,12 @@ public class CC {
     }
 
     void setResult4Waiting(CCResult result) {
-        setResult(result);
         try {
             synchronized (wait4resultLock) {
+                if (VERBOSE_LOG) {
+                    verboseLog(callId, "setResult4Waiting. CCResult:" + result);
+                }
+                setResult(result);
                 wait4resultLock.notifyAll();
             }
         } catch(Exception e) {
@@ -566,7 +569,7 @@ public class CC {
             if (context != null) {
                 prefix = context.getPackageName() + ":";
             } else {
-                prefix = ":::";
+                return ":::" + index.getAndIncrement();
             }
         }
         return prefix + index.getAndIncrement();
@@ -575,7 +578,8 @@ public class CC {
     static void verboseLog(String callId, String s, Object... args) {
         if (VERBOSE_LOG) {
             s = format(s, args);
-            Log.i(CC.VERBOSE_TAG, callId + " >>>> " + s);
+            Log.i(CC.VERBOSE_TAG, "(" + Thread.currentThread().getName() + ")"
+                    + callId + " >>>> " + s);
         }
     }
 

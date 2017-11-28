@@ -23,6 +23,11 @@
         实现IComponent接口创建一个组件
         使用CC.obtainBuilder("component_name").build().call()调用组件
     
+- 不需要初始化
+
+
+        不需要在Application.onCreate中执行初始化方法
+        不给负责优化App启动速度的同学添堵
 - 功能丰富
 
 
@@ -40,15 +45,16 @@
         12. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
 
 ## 目录结构
-- cc                        组件化框架基础库（主要）
-- cc-settings.gradle        组件化开发构建脚本（主要）
-- demo                      demo主程序
-- demo_component_a          demo组件A
-- demo_component_b          demo组件B
-- component_protect_demo    添加跨app组件调用自定义权限限制的demo，在cc-settings-demo-b.gradle被依赖
-- cc-settings-demo-b.gradle actionProcessor自动注册的配置脚本demo
-- demo-debug.apk                demo安装包(包含demo/demo_component_a)
-- demo_component_b-debug.apk    demo组件B单独运行安装包
+
+        - cc                            组件化框架基础库（主要）
+        - cc-settings.gradle            组件化开发构建脚本（主要）
+        - demo                          demo主程序
+        - demo_component_a              demo组件A
+        - demo_component_b              demo组件B
+        - component_protect_demo        添加跨app组件调用自定义权限限制的demo，在cc-settings-demo-b.gradle被依赖
+        - cc-settings-demo-b.gradle     actionProcessor自动注册的配置脚本demo
+        - demo-debug.apk                demo安装包(包含demo/demo_component_a)
+        - demo_component_b-debug.apk    demo组件B单独运行安装包
 
 ## 集成
 下面介绍在Android Studio中进行集成的详细步骤
@@ -202,7 +208,7 @@ CC.enableVerboseLog(trueOrFalse);
 
 - 给跨app组件的调用添加自定义权限限制
     - 新建一个module
-    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.1.2'`
+    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.2.0'`
     - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
     - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
     
@@ -266,6 +272,12 @@ CC.enableVerboseLog(trueOrFalse);
 
 # 更新日志
 
+- 2017.11.29 V0.2.0版
+
+
+        将跨进程调用接收LocalSocket信息的线程放入到线程池中
+        完善demo
+        
 - 2017.11.27 V0.1.1版
     
     

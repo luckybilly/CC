@@ -4,7 +4,7 @@
     <application
         android:name="debug.MyApp"
         android:allowBackup="false"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@mipmap/demo_b_ic_launcher"
         android:label="@string/demo_b_app_name"
         android:supportsRtl="true"
         android:theme="@style/demo_b_AppTheme">

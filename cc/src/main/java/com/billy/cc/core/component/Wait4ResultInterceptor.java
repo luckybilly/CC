@@ -22,24 +22,17 @@ class Wait4ResultInterceptor implements ICCInterceptor {
     public CCResult intercept(Chain chain) {
         CC cc = chain.getCC();
         String callId = cc.getCallId();
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(callId, "start waiting for CC.sendCCResult(\""
-                    + callId + "\", ccResult)");
-        }
         //等待调用CC.sendCCResult(callId, result)
-        if (!cc.isFinished()) {
-            synchronized (cc.wait4resultLock) {
+        synchronized (cc.wait4resultLock) {
+            if (!cc.isFinished()) {
                 try {
+                    CC.verboseLog(callId, "start waiting for CC.sendCCResult(...)");
                     cc.wait4resultLock.wait();
+                    CC.verboseLog(callId, "end waiting for CC.sendCCResult(...)");
                 } catch (InterruptedException ignored) {
                 }
             }
         }
-        CCResult result = cc.getResult();
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(callId, "end waiting for CC.sendCCResult(\"" + callId
-                    + "\", ccResult), CCResult:" + result);
-        }
-        return result;
+        return cc.getResult();
     }
 }

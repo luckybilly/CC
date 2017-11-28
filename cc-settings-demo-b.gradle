@@ -5,8 +5,8 @@
 //
 //------------------------------------------------
 
-//apply from: rootProject.file('cc-settings.gradle')
-apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+apply from: rootProject.file('cc-settings.gradle')
+//apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
 
 dependencies {
     //这里是为了示例给跨app组件调用添加权限验证

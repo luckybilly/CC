@@ -130,7 +130,7 @@ public class ComponentService extends Service {
                     .setParams(params)
                     .setTimeout(timeout)
                     .build();
-            new ReceiveMsgThread(cc, in).start();
+            ComponentManager.threadPool(new ReceiveMsgFromRemoteCaller(cc, in));
             CCResult ccResult = cc.call();
 
             if (CC.VERBOSE_LOG) {
@@ -153,11 +153,11 @@ public class ComponentService extends Service {
         }
     }
 
-    private class ReceiveMsgThread extends Thread {
-        CC cc;
+    private class ReceiveMsgFromRemoteCaller implements Runnable {
+        private CC cc;
         private BufferedReader in;
 
-        ReceiveMsgThread(CC cc, BufferedReader in) {
+        ReceiveMsgFromRemoteCaller(CC cc, BufferedReader in) {
             this.cc = cc;
             this.in = in;
         }
