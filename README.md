@@ -10,6 +10,9 @@
 
 [demo_component_b下载](https://github.com/luckybilly/CC/blob/master/demo_component_b-debug.apk)
 
+以上2个app都安装后的运行效果如下图所示
+![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
+
 ## 特点
 - 轻量级的android组件化开发框架
 
