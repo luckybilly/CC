@@ -21,18 +21,7 @@ class Wait4ResultInterceptor implements ICCInterceptor {
     @Override
     public CCResult intercept(Chain chain) {
         CC cc = chain.getCC();
-        String callId = cc.getCallId();
-        //等待调用CC.sendCCResult(callId, result)
-        synchronized (cc.wait4resultLock) {
-            if (!cc.isFinished()) {
-                try {
-                    CC.verboseLog(callId, "start waiting for CC.sendCCResult(...)");
-                    cc.wait4resultLock.wait();
-                    CC.verboseLog(callId, "end waiting for CC.sendCCResult(...)");
-                } catch (InterruptedException ignored) {
-                }
-            }
-        }
+        cc.wait4Result();
         return cc.getResult();
     }
 }

@@ -29,12 +29,6 @@ public class Chain {
         }
     }
 
-    void setInterceptors(ICCInterceptor interceptor) {
-        //异常情况：这里有可能把null添加进来
-        this.interceptors.clear();
-        addInterceptor(interceptor);
-    }
-
     public CCResult proceed() {
         if (index >= interceptors.size()) {
             return CCResult.defaultNullResult();

@@ -6,19 +6,19 @@
 
 ## demo演示
 
-[demo下载(包含主工程demo和demo_component_a)](https://github.com/luckybilly/CC/blob/master/demo-debug.apk)
+[demo下载(包含主工程demo和demo_component_a组件)](https://github.com/luckybilly/CC/blob/master/demo-debug.apk)
 
-[demo_component_b下载](https://github.com/luckybilly/CC/blob/master/demo_component_b-debug.apk)
+[demo_component_b组件单独运行的App(Demo_B)下载](https://github.com/luckybilly/CC/blob/master/demo_component_b-debug.apk)
 
-以上2个app都安装后的运行效果如下图所示
+以上2个app用来演示组件打包在主app内和单独安装时的组件调用，都安装在手机上之后的运行效果如下图所示
+
+        
+        由于跨app通信采用系统广播机制，请在权限设置中给Demo_B开启'自启动'权限
+        跨app通信仅用于开发期间单独运行组件app与主app间的通信
 
 ![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
 
 ## 特点
-- 轻量级的android组件化开发框架
-
-
-        aar包仅40+KB
 - 集成简单,仅需4步即可完成集成：
 
 
@@ -27,11 +27,6 @@
         实现IComponent接口创建一个组件
         使用CC.obtainBuilder("component_name").build().call()调用组件
     
-- 不需要初始化
-
-
-        不需要在Application.onCreate中执行初始化方法
-        不给负责优化App启动速度的同学添堵
 - 功能丰富
 
 
@@ -48,6 +43,17 @@
         11. 支持动态注册/反注册组件(IDynamicComponent)
         12. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
 
+- 执行过程全程监控
+
+
+        添加了详细的执行过程日志 
+        详细日志打印默认为关闭状态，打开方式：CC.enableVerboseLog(true);
+        
+- 不需要初始化
+
+
+        不需要在Application.onCreate中执行初始化方法
+        不给负责优化App启动速度的同学添堵
 ## 目录结构
 
         - cc                            组件化框架基础库（主要）

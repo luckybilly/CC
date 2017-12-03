@@ -17,6 +17,8 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * app之间的组件调用
@@ -39,14 +41,7 @@ class RemoteCCInterceptor implements ICCInterceptor {
     static final String KEY_TIMEOUT = "component_key_timeout";
     static final String KEY_SOCKET_NAME = "component_key_local_socket_name";
 
-    /**
-     * 调用结果
-     */
-    private CCResult result;
-    /**
-     * 同步锁
-     */
-    private final byte[] lock = new byte[0];
+    private CountDownLatch connectLatch = new CountDownLatch(1);
     /**
      * 发起组件调用的信息
      */
@@ -168,9 +163,7 @@ class RemoteCCInterceptor implements ICCInterceptor {
                 if (stopped) {
                     return;
                 }
-                synchronized (lock) {
-                    lock.notify();
-                }
+                connectLatch.countDown();
 
                 out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
                 in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -188,6 +181,9 @@ class RemoteCCInterceptor implements ICCInterceptor {
                 e.printStackTrace();
                 setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
             } finally {
+                if (connectLatch.getCount() > 0) {
+                    connectLatch.countDown();
+                }
                 if (lss != null) {
                     try {
                         lss.close();
@@ -215,13 +211,12 @@ class RemoteCCInterceptor implements ICCInterceptor {
     private class CheckConnectTask implements Runnable {
         @Override
         public void run() {
-            synchronized (lock) {
-                try {
-                    lock.wait(CONNECT_DELAY);
-                } catch (InterruptedException ignored) {
-                }
+            try {
+                connectLatch.await(CONNECT_DELAY, TimeUnit.MILLISECONDS);
+            } catch(Exception e) {
+                e.printStackTrace();
             }
-            if (!ccProcessing) {
+            if (!ccProcessing && !cc.isFinished()) {
                 setResult(CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
                 stopConnection();
                 CC.verboseLog(cc.getCallId(), "no component found");

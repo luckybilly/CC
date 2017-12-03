@@ -48,7 +48,7 @@ public class CC {
 
     private volatile CCResult result;
 
-    final byte[] wait4resultLock = new byte[0];
+    private final byte[] wait4resultLock = new byte[0];
 
     private static Application application;
 
@@ -362,6 +362,20 @@ public class CC {
             }
         } catch(Exception e) {
             e.printStackTrace();
+        }
+    }
+
+    void wait4Result() {
+        //等待调用CC.sendCCResult(callId, result)
+        synchronized (wait4resultLock) {
+            if (!isFinished()) {
+                try {
+                    verboseLog(callId, "start waiting for CC.sendCCResult(...)");
+                    wait4resultLock.wait();
+                    verboseLog(callId, "end waiting for CC.sendCCResult(...)");
+                } catch (InterruptedException ignored) {
+                }
+            }
         }
     }
 
