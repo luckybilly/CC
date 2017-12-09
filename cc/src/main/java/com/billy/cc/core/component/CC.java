@@ -1,9 +1,13 @@
 package com.billy.cc.core.component;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import android.os.Looper;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 import android.util.Log;
 
@@ -52,11 +56,17 @@ public class CC {
 
     private static Application application;
 
+    WeakReference<Activity> cancelOnDestroyActivity;
+
+    WeakReference<Fragment> cancelOnDestroyFragment;
+
+
     static {
         try {
             //通过反射的方式来获取当前进程的application对象
-            application = (Application) Class.forName("android.app.ActivityThread")
+            Application application = (Application) Class.forName("android.app.ActivityThread")
                     .getMethod("currentApplication").invoke(null);
+            init(application);
         } catch(Exception e) {
             e.printStackTrace();
         }
@@ -67,8 +77,13 @@ public class CC {
      * 在Application.onCreate(...)中调用
      * @param app 为了防止反射获取application对象失败，预留此初始化功能
      */
-    public static void init(Application app) {
-        application = app;
+    public static synchronized void init(Application app) {
+        if (application == null && app != null) {
+            application = app;
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
+                application.registerActivityLifecycleCallbacks(new CCMonitor.ActivityMonitor());
+            }
+        }
     }
     
     private static final ObjPool<Builder, String> BUILDER_POOL = new ObjPool<Builder, String>() {
@@ -90,9 +105,8 @@ public class CC {
     private final Map<String, Object> params = new HashMap<>();
     /**
      * 回调对象
-     * 采用弱引用防止内存泄露
      */
-    private WeakReference<IComponentCallback> callback;
+    private IComponentCallback callback;
     /**
      * 是否异步执行
      */
@@ -234,6 +248,31 @@ public class CC {
             }
             return this;
         }
+        /**
+         * 设置activity.onDestroy时自动cancel
+         * @param activity 监控此activity的生命周期，在onDestroy方法被调用后若cc未执行完则自动cancel
+         * @return Builder自身
+         */
+        public Builder cancelOnDestroyWith(Activity activity) {
+            if (activity != null) {
+                cr.cancelOnDestroyActivity = new WeakReference<>(activity);
+            }
+            return this;
+        }
+
+        /**
+         * 设置fragment.onDestroy时自动cancel
+         * @param fragment 监控此fragment的生命周期，在onDestroy方法被调用后若cc未执行完则自动cancel
+         * @return Builder自身
+         */
+        public Builder cancelOnDestroyWith(Fragment fragment) {
+            if (fragment != null) {
+                cr.cancelOnDestroyFragment = new WeakReference<>(fragment);
+            }
+            return this;
+        }
+
+
 
         /**
          * 构建CC对象
@@ -380,10 +419,35 @@ public class CC {
     }
 
     IComponentCallback getCallback() {
-        if (callback != null) {
-            return callback.get();
+        return callback;
+    }
+
+    /**
+     * 在onDestroy后，自动cancel
+     */
+    void cancelOnDestroy(Object reason) {
+        if (!isFinished()) {
+            if (VERBOSE_LOG) {
+                verboseLog(callId, "call cancel on " + reason + " destroyed");
+            }
+            cancel();
         }
-        return null;
+    }
+
+    void addCancelOnFragmentDestroyIfSet() {
+        if (cancelOnDestroyFragment == null) {
+            return;
+        }
+        Fragment fragment = cancelOnDestroyFragment.get();
+        if (fragment == null) {
+            return;
+        }
+        FragmentManager manager = fragment.getFragmentManager();
+        if (manager != null) {
+            manager.registerFragmentLifecycleCallbacks(
+                    new CCMonitor.FragmentMonitor(this)
+                    , false);
+        }
     }
 
     String getComponentName() {
@@ -422,7 +486,7 @@ public class CC {
 
     private String processCallAsync(IComponentCallback callback) {
         if (callback != null) {
-            this.callback = new WeakReference<>(callback);
+            this.callback = callback;
         }
         this.async = true;
         //调用方未设置超时时间，默认为无超时时间

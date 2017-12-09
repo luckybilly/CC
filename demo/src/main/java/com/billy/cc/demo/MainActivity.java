@@ -1,5 +1,6 @@
 package com.billy.cc.demo;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
@@ -10,6 +11,7 @@ import android.widget.Toast;
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponentCallback;
+import com.billy.cc.demo.lifecycle.LifecycleActivity;
 
 /**
  * @author billy
@@ -24,6 +26,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setContentView(R.layout.activity_main);
         textView = (TextView) findViewById(R.id.console);
         addOnClickListeners(R.id.componentAOpenActivity
+                , R.id.test_lifecycle
                 , R.id.componentAAsyncOpenActivity
                 , R.id.componentAGetData
                 , R.id.componentAAsyncGetData
@@ -47,6 +50,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         textView.setText("");
         CCResult result = null;
         switch (v.getId()) {
+            case R.id.test_lifecycle:
+                startActivity(new Intent(this, LifecycleActivity.class));
+                break;
             case R.id.componentAOpenActivity:
                 result = CC.obtainBuilder("ComponentA")
                         .setActionName("showActivityA")

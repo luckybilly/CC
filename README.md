@@ -1,4 +1,4 @@
-# CC : ComponentCaller 
+# CC : ComponentCaller (可关联生命周期的组件化开发框架)
 
 
 ##### [![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)  [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)
@@ -32,17 +32,18 @@
 
 
         1. 支持组件间相互调用（不只是Activity跳转，支持任意指令的调用/回调）
-        2. 支持app间跨进程的组件调用(组件开发/调试时可单独作为app运行)
-        3. 支持app间调用的开关及权限设置（满足不同级别的安全需求，默认打开状态且不需要权限）
-        4. 支持同步/异步方式调用
-        5. 支持同步/异步方式实现组件
-        6. 调用方式不受实现方式的限制（例如:可以同步调用另一个组件的异步实现功能。注：不要在主线程同步调用耗时操作）
-        7. 支持添加自定义拦截器（按添加的先后顺序执行）
-        8. 支持超时设置
-        9. 支持手动取消
-        10. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
-        11. 支持动态注册/反注册组件(IDynamicComponent)
-        12. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
+        2. 支持组件调用与Activity、Fragment的生命周期关联
+        3. 支持app间跨进程的组件调用(组件开发/调试时可单独作为app运行)
+        4. 支持app间调用的开关及权限设置（满足不同级别的安全需求，默认打开状态且不需要权限）
+        5. 支持同步/异步方式调用
+        6. 支持同步/异步方式实现组件
+        7. 调用方式不受实现方式的限制（例如:可以同步调用另一个组件的异步实现功能。注：不要在主线程同步调用耗时操作）
+        8. 支持添加自定义拦截器（按添加的先后顺序执行）
+        9. 支持超时设置
+        10. 支持手动取消
+        11. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
+        12. 支持动态注册/反注册组件(IDynamicComponent)
+        13. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
 
 - 执行过程全程监控
 
@@ -136,58 +137,85 @@ public class ComponentA implements IComponent {
 //同步调用，直接返回结果
 CCResult result = CC.obtainBuilder("ComponentA").build().call();
 //或 异步调用，不需要回调结果
-CC.obtainBuilder("ComponentA").build().callAsync();
+String callId = CC.obtainBuilder("ComponentA").build().callAsync();
 //或 异步调用，在子线程执行回调
-CC.obtainBuilder("ComponentA").build().callAsync(new IComponentCallback(){...});
+String callId = CC.obtainBuilder("ComponentA").build().callAsync(new IComponentCallback(){...});
 //或 异步调用，在主线程执行回调
-CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainThread(new IComponentCallback(){...});
+String callId = CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainThread(new IComponentCallback(){...});
 ```
 #### 3. 进阶使用
 
-- 设置Context信息    
 ```java
-builder.setContext(activity)
-```
-- 超时时间设置     
-```java
-builder.setTimeout(1000)    
-```
-- 参数传递           
-```java
-builder.addParam("name", "billy").addParam("id", 12345)
-```
-- 设置返回信息        
-```java
+//开启/关闭debug日志打印
+CC.enableDebug(trueOrFalse);    
+//开启/关闭组件调用详细日志打印
+CC.enableVerboseLog(trueOrFalse); 
+//开启/关闭跨app调用
+CC.enableRemoteCC(trueOrFalse)  
+//中止指定callId的组件调用任务
+CC.cancel(callId)
+//设置Context信息
+CC.obtainBuilder("ComponentA")...setContext(context)...build().callAsync()
+//关联Activity的生命周期，在onDestroy方法调用后自动执行cancel
+CC.obtainBuilder("ComponentA")...cancelOnDestroyWith(activity)...build().callAsync()
+//关联v4包Fragment的生命周期，在onDestroy方法调用后自动执行cancel
+CC.obtainBuilder("ComponentA")...cancelOnDestroyWith(fragment)...build().callAsync()
+//设置ActionName
+CC.obtainBuilder("ComponentA")...setActionName(actionName)...build().callAsync()
+//超时时间设置 
+CC.obtainBuilder("ComponentA")...setTimeout(1000)...build().callAsync()
+//参数传递
+CC.obtainBuilder("ComponentA")...addParam("name", "billy").addParam("id", 12345)...build().callAsync()
+
+
+//设置成功的返回信息
 CCResult.success(key1, value1).addData(key2, value2)
-```
-- 发送结果给调用方     
-```java
-CC.sendCCResult(cc.getCallId(), ccResult)        
-```
-- 读取调用状态
-```java
+//设置失败的返回信息
+CCResult.error(message).addData(key, value)
+//发送结果给调用方 
+CC.sendCCResult(cc.getCallId(), ccResult)
+//读取调用成功与否
 ccResult.isSuccess()
-```        
-- 读取调用错误信息
-```java
-ccResult.getErrorMessage()
-```     
-- 读取返回信息
-```java
-ccResult.getDataMap().get(key1)
-```        
-- 开启/关闭跨app调用
-```java
-CC.enableRemoteCC(trueOrFalse)
-```            
-- 开启/关闭debug日志打印
-```java
-CC.enableDebug(trueOrFalse);
-```        
-- 开启/关闭组件调用详细日志打印
-```java
-CC.enableVerboseLog(trueOrFalse);
+//读取调用状态码(0:success, <0: 组件调用失败, 1:调用到了组件，业务执行判断失败，如调用登录组件最终登录失败)
+ccResult.getCode()
+//读取调用错误信息
+ccResult.getErrorMessage()  
+//读取返回的附加信息
+Map<String, Object> data = ccResult.getDataMap();
+if (data != null) {
+    Object value = data.get(key)   
+}
 ```    
+状态码清单：
+```java
+// CC调用成功
+public static final int CODE_SUCCESS = 0;
+// 组件调用成功，但业务逻辑判定为失败
+public static final int CODE_ERROR_BUSINESS = 1;
+// 保留状态码：默认的请求错误code
+public static final int CODE_ERROR_DEFAULT = -1;
+// 没有指定组件名称
+public static final int CODE_ERROR_COMPONENT_NAME_EMPTY = -2;
+/**
+ * result不该为null
+ * 例如：组件回调时使用 CC.sendCCResult(callId, null) 或 interceptor返回null
+ */
+public static final int CODE_ERROR_NULL_RESULT = -3;
+// 调用过程中出现exception
+public static final int CODE_ERROR_EXCEPTION_RESULT = -4;
+// 没有找到组件能处理此次调用请求
+public static final int CODE_ERROR_NO_COMPONENT_FOUND = -5;
+// context 为null，通过反射获取application失败
+public static final int CODE_ERROR_CONTEXT_NULL = -6;
+// 跨app调用组件时，LocalSocket连接出错
+public static final int CODE_ERROR_CONNECT_FAILED = -7;
+// 取消
+public static final int CODE_ERROR_CANCELED = -8;
+// 超时
+public static final int CODE_ERROR_TIMEOUT = -9;
+// 未调用CC.sendCCResult(callId, ccResult)方法
+public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
+```
 - 自定义拦截器
 
         1. 实现ICCInterceptor接口( 只有一个方法: intercept(Chain chain) )
@@ -219,7 +247,7 @@ CC.enableVerboseLog(trueOrFalse);
 
 - 给跨app组件的调用添加自定义权限限制
     - 新建一个module
-    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.2.0'`
+    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.3.0'`
     - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
     - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
     
@@ -282,6 +310,11 @@ CC.enableVerboseLog(trueOrFalse);
         4. 调用组件时，使用cc.callAsyncCallbackOnMainThread(new IComponentCallback(){...})来接收返回结果
 
 # 更新日志
+
+- 2017.12.09 V0.3.0版
+
+    
+        添加Activity及Fragment生命周期关联的功能并添加对应的demo
 
 - 2017.11.29 V0.2.0版
 

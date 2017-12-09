@@ -25,6 +25,7 @@ android {
 
 dependencies {
     compile "com.billy.android:pools:0.0.5"
+    provided "com.android.support:appcompat-v7:${rootProject.supportVersion}"
 }
 
 sourceCompatibility = 1.7
@@ -43,7 +44,7 @@ ext {
     siteUrl = 'https://github.com/luckybilly/CC'
     gitUrl = 'git@github.com:luckybilly/CC.git'
 
-    libraryVersion = '0.2.0'
+    libraryVersion = '0.3.0'
 
     developerId = 'billy'
     developerName = 'billy'

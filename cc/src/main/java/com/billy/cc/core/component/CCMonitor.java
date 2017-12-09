@@ -1,5 +1,15 @@
 package com.billy.cc.core.component;
 
+import android.annotation.TargetApi;
+import android.app.Activity;
+import android.app.Application;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+
+import java.lang.ref.WeakReference;
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -7,7 +17,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * CC监控系统
  * 每个CC对象有自己的超时时间点，
  * 维护一个待监控的CC列表，当列表不为空时，启动一个线程进行监控
- * 每10ms循环遍历一次，若列表为空，则退出线程，下次添加监控的时候再启动一个新线程
  * @author billy.qi
  */
 class CCMonitor {
@@ -21,6 +30,7 @@ class CCMonitor {
     static void addMonitorFor(CC cc) {
         if (cc != null) {
             CC_MAP.put(cc.getCallId(), cc);
+            cc.addCancelOnFragmentDestroyIfSet();
             long timeoutAt = cc.timeoutAt;
             if (timeoutAt > 0) {
                 if (minTimeoutAt > timeoutAt) {
@@ -89,4 +99,50 @@ class CCMonitor {
         }
     }
 
+    /**
+     * activity lifecycle monitor
+     *
+     */
+    @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
+    static class ActivityMonitor implements Application.ActivityLifecycleCallbacks {
+        @Override public void onActivityCreated(Activity activity, Bundle savedInstanceState) { }
+        @Override public void onActivityStarted(Activity activity) { }
+        @Override public void onActivityResumed(Activity activity) { }
+        @Override public void onActivityPaused(Activity activity) { }
+        @Override public void onActivityStopped(Activity activity) { }
+        @Override public void onActivitySaveInstanceState(Activity activity, Bundle outState) { }
+        @Override public void onActivityDestroyed(Activity activity) {
+            Collection<CC> values = CC_MAP.values();
+            for (CC cc : values) {
+                if (!cc.isFinished() && cc.cancelOnDestroyActivity != null
+                        && cc.cancelOnDestroyActivity.get() == activity) {
+                    cc.cancelOnDestroy(activity);
+                }
+            }
+        }
+    }
+
+    static class FragmentMonitor extends FragmentManager.FragmentLifecycleCallbacks {
+        WeakReference<CC> reference;
+
+        FragmentMonitor(CC cc) {
+            this.reference = new WeakReference<>(cc);
+        }
+
+        @Override
+        public void onFragmentDestroyed(FragmentManager fm, Fragment f) {
+            if (reference != null) {
+                CC cc = reference.get();
+                if (cc != null && !cc.isFinished()) {
+                    WeakReference<Fragment> fragReference = cc.cancelOnDestroyFragment;
+                    if (fragReference != null) {
+                        Fragment fragment = fragReference.get();
+                        if (f == fragment) {
+                            cc.cancelOnDestroy(f);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }

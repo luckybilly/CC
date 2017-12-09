@@ -30,7 +30,7 @@ ext {
     buildVersion = '25.0.0'
     minVersion = 8
 
-    supportVersion = '25.1.0'
+    supportVersion = '25.3.1'
 }
 task clean(type: Delete) {
     delete rootProject.buildDir

@@ -8,7 +8,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="2"
+        android:layout_weight="1"
         >
 
         <com.google.android.flexbox.FlexboxLayout
@@ -66,13 +66,19 @@
                 android:layout_height="wrap_content"
                 android:text="异步调B组件(模拟登录)"
                 />
+            <Button
+                android:id="@+id/test_lifecycle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="生命周期关联(Activity/Fragment)"
+                />
         </com.google.android.flexbox.FlexboxLayout>
     </ScrollView>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="3"
+        android:layout_weight="1"
         android:background="#cccccc"
         android:scrollbars="vertical"
         >
