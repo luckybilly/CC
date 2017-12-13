@@ -1,6 +1,19 @@
 <resources>
     <string name="app_name">CC</string>
     <string name="turn2a">To A</string>
-    <string name="clickToCancel">再次点击可测试取消CC</string>
-    <string name="canceled">已取消</string>
+    <string name="clickToCancel">click to cancel</string>
+    <string name="canceled">canceled</string>
+    <string name="cc_network">network CC (3s)</string>
+    <string name="close_activity">finish Activity</string>
+    <string name="open_new_fragment">open a new fragment</string>
+    <string name="sync_a_open_page">sync call component A (open page)</string>
+    <string name="async_a_open_page">async call component A (open page)</string>
+    <string name="sync_a_get_data">sync call component A (get data)</string>
+    <string name="async_a_get_data">async call component A (get data)</string>
+    <string name="sync_b_open_page">sync call component B (open page)</string>
+    <string name="async_b_slow_request">async call component B (slow process:3s)</string>
+    <string name="sync_b_get_data">sync call component B (get data)</string>
+    <string name="async_b_login">async call component B (login simulation)</string>
+    <string name="life_cycle_relationship">(Activity/Fragment) lifecycle with login AOP</string>
+    <string name="life_cycle_fragment_notice">test fragment lifecycle\n callId=%s\n slow process cc (3s) invoked\nClick button to destroy current fragment and replace a new one.</string>
 </resources>

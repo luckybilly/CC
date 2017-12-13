@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 
 import com.billy.cc.core.component.CC;
+import com.billy.cc.demo.component.b.Global;
 import com.billy.cc.demo.component.b.LoginActivity;
 
 /**
@@ -19,6 +20,8 @@ public class LoginProcessor implements IActionProcessor {
 
     @Override
     public boolean onActionCall(CC cc) {
+        //clear login user info
+        Global.loginUserName = null;
         Context context = cc.getContext();
         Intent intent = new Intent(context, LoginActivity.class);
         if (!(context instanceof Activity)) {

@@ -1,0 +1,19 @@
+<resources>
+    <string name="app_name">CC</string>
+    <string name="turn2a">To A</string>
+    <string name="clickToCancel">再次点击可测试取消CC</string>
+    <string name="canceled">已取消</string>
+    <string name="cc_network">网络请求CC (3秒)</string>
+    <string name="close_activity">关闭Activity</string>
+    <string name="open_new_fragment">打开新的fragment</string>
+    <string name="sync_a_open_page">同步调A组件(页面跳转)</string>
+    <string name="async_a_open_page">异步调A组件(页面跳转)</string>
+    <string name="sync_a_get_data">同步调A组件(获取数据)</string>
+    <string name="async_a_get_data">异步调A组件(获取数据)</string>
+    <string name="sync_b_open_page">同步调B组件(页面跳转)</string>
+    <string name="async_b_slow_request">异步调B组件(慢请求3s)</string>
+    <string name="sync_b_get_data">同步调B组件(获取数据)</string>
+    <string name="async_b_login">异步调B组件(模拟登录)</string>
+    <string name="life_cycle_relationship">(Activity/Fragment)生命周期关联，登录AOP</string>
+    <string name="life_cycle_fragment_notice">测试fragment生命周期绑定\n当前 fragment callId=%s\nCC耗时请求（3秒）已发送\n点击按钮销毁当前fragment并打开一个新的fragment.</string>
+</resources>

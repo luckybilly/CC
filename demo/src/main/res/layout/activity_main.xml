@@ -22,55 +22,55 @@
                 android:id="@+id/componentAOpenActivity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="同步调A组件(页面跳转)"
+                android:text="@string/sync_a_open_page"
                 />
             <Button
                 android:id="@+id/componentAAsyncOpenActivity"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="异步调A组件(页面跳转)"
+                android:text="@string/async_a_open_page"
                 />
             <Button
                 android:id="@+id/componentAGetData"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="同步调A组件(获取数据)"
+                android:text="@string/sync_a_get_data"
                 />
             <Button
                 android:id="@+id/componentAAsyncGetData"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="异步调A组件(获取数据)"
+                android:text="@string/async_a_get_data"
                 />
             <Button
                 android:id="@+id/componentB"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="同步调B组件(页面跳转)"
+                android:text="@string/sync_b_open_page"
                 />
             <Button
                 android:id="@+id/componentBAsync"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="异步调B组件(慢请求3s)"
+                android:text="@string/async_b_slow_request"
                 />
             <Button
                 android:id="@+id/componentBGetData"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="同步调B组件(获取数据)"
+                android:text="@string/sync_b_get_data"
                 />
             <Button
                 android:id="@+id/componentBLogin"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="异步调B组件(模拟登录)"
+                android:text="@string/async_b_login"
                 />
             <Button
                 android:id="@+id/test_lifecycle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="生命周期关联(Activity/Fragment)"
+                android:text="@string/life_cycle_relationship"
                 />
         </com.google.android.flexbox.FlexboxLayout>
     </ScrollView>

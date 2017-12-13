@@ -1,0 +1,5 @@
+<resources>
+    <string name="demo_b_app_name">Demo_B</string>
+    <string name="demo_b_username_hint">enter you username</string>
+    <string name="demo_b_click_login">Login</string>
+</resources>

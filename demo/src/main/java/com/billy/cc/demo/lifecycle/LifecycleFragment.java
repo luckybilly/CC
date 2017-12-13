@@ -20,6 +20,7 @@ import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponentCallback;
 import com.billy.cc.demo.JsonFormat;
+import com.billy.cc.demo.R;
 
 
 /**
@@ -59,16 +60,13 @@ public class LifecycleFragment extends Fragment {
         layout.setOrientation(LinearLayout.VERTICAL);
         TextView textView = new TextView(context);
         layout.addView(textView);
-        textView.setText("测试fragment生命周期绑定"
-                + "\n当前 fragment index=" + curIndex
-                + "\nCC耗时请求（3秒）已发送"
-                + "\n点击按钮销毁当前fragment并打开一个新的fragment.");
         textView.setGravity(Gravity.CENTER);
-        CC.obtainBuilder("ComponentB")
+        CC cc = CC.obtainBuilder("ComponentB")
                 .setActionName("getNetworkData")
                 .cancelOnDestroyWith(this)
-                .build()
-                .callAsyncCallbackOnMainThread(new IComponentCallback() {
+                .build();
+        textView.setText(getString(R.string.life_cycle_fragment_notice, cc.getCallId()));
+        cc.callAsyncCallbackOnMainThread(new IComponentCallback() {
                     @Override
                     public void onResult(CC cc, CCResult result) {
                         String text = "callId=" + cc.getCallId() + "\n" + JsonFormat.format(result.toString());

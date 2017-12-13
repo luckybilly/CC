@@ -23,7 +23,6 @@ import com.billy.cc.core.component.CCResult;
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
 
     private EditText editText;
-    private String username;
     private String callId;
 
     @Override
@@ -48,12 +47,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View v) {
-        this.username = null;
         String username = editText.getText().toString().trim();
         if (TextUtils.isEmpty(username)) {
             Toast.makeText(this, R.string.demo_b_username_hint, Toast.LENGTH_SHORT).show();
         } else {
-            this.username = username;
+            Global.loginUserName = username;
             finish();
         }
     }
@@ -64,10 +62,10 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //判断是否为CC调用打开本页面
         if (callId != null) {
             CCResult result;
-            if (TextUtils.isEmpty(username)) {
+            if (TextUtils.isEmpty(Global.loginUserName)) {
                 result = CCResult.error("login canceled");
             } else {
-                result = CCResult.success("username", username);
+                result = CCResult.success(Global.KEY_USERNAME, Global.loginUserName);
             }
             //为确保不管登录成功与否都会调用CC.sendCCResult，在onDestroy方法中调用
             CC.sendCCResult(callId, result);

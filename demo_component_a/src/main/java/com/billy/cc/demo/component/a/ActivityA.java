@@ -17,7 +17,7 @@ public class ActivityA extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         TextView textView = new TextView(this);
         textView.setGravity(Gravity.CENTER);
-        textView.setText("ActivityA\nClick to back");
+        textView.setText("ActivityA\nClick to finish this activity");
         setContentView(textView);
         textView.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -16,19 +16,19 @@
             android:id="@+id/start_cc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="网络请求CC (3秒)"
+            android:text="@string/cc_network"
             />
         <Button
             android:id="@+id/finish_activity"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="关闭Activity"
+            android:text="@string/close_activity"
             />
         <Button
             android:id="@+id/replace_fragment"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="打开新的fragment"
+            android:text="@string/open_new_fragment"
             />
     </com.google.android.flexbox.FlexboxLayout>
 

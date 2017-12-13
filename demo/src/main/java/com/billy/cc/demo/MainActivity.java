@@ -1,6 +1,5 @@
 package com.billy.cc.demo;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
@@ -11,7 +10,6 @@ import android.widget.Toast;
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponentCallback;
-import com.billy.cc.demo.lifecycle.LifecycleActivity;
 
 /**
  * @author billy
@@ -49,14 +47,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     public void onClick(View v) {
         textView.setText("");
         CCResult result = null;
+        CC cc = null;
         switch (v.getId()) {
             case R.id.test_lifecycle:
-                startActivity(new Intent(this, LifecycleActivity.class));
+                CC.obtainBuilder("demo.lifecycle")
+                        .build()
+                        .callAsyncCallbackOnMainThread(printResultCallback);
                 break;
             case R.id.componentAOpenActivity:
-                result = CC.obtainBuilder("ComponentA")
+                cc = CC.obtainBuilder("ComponentA")
                         .setActionName("showActivityA")
-                        .build().call();
+                        .build();
+                result = cc.call();
                 break;
             case R.id.componentAAsyncOpenActivity:
                 CC.obtainBuilder("ComponentA")
@@ -64,9 +66,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .build().callAsyncCallbackOnMainThread(printResultCallback);
                 break;
             case R.id.componentAGetData:
-                result = CC.obtainBuilder("ComponentA")
+                cc = CC.obtainBuilder("ComponentA")
                         .setActionName("getInfo")
-                        .build().call();
+                        .build();
+                result = cc.call();
                 break;
             case R.id.componentAAsyncGetData:
                 CC.obtainBuilder("ComponentA")
@@ -75,9 +78,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .build().callAsyncCallbackOnMainThread(printResultCallback);
                 break;
             case R.id.componentB:
-                result = CC.obtainBuilder("ComponentB")
+                cc = CC.obtainBuilder("ComponentB")
                         .setActionName("showActivity")
-                        .build().call();
+                        .build();
+                result = cc.call();
                 break;
             case R.id.componentBAsync:
                 if (componentBCC != null) {
@@ -91,17 +95,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         @Override
                         public void onResult(CC cc, CCResult ccResult) {
                             componentBCC = null;
-                            showResult(ccResult);
+                            showResult(cc, ccResult);
                         }
                     });
                     Toast.makeText(this, R.string.clickToCancel, Toast.LENGTH_SHORT).show();
                 }
                 break;
             case R.id.componentBGetData:
-                result = CC.obtainBuilder("ComponentB")
+                cc = CC.obtainBuilder("ComponentB")
                         .setActionName("getData")
-                        .build()
-                        .call();
+                        .build();
+                result = cc.call();
                 break;
             case R.id.componentBLogin:
                 CC.obtainBuilder("ComponentB")
@@ -112,18 +116,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             default:
                 break;
         }
-        if (result != null) {
-            showResult(result);
+        if (cc != null && result != null) {
+            showResult(cc, result);
         }
     }
     IComponentCallback printResultCallback = new IComponentCallback() {
         @Override
         public void onResult(CC cc, CCResult result) {
-            showResult(result);
+            showResult(cc, result);
         }
     };
-    private void showResult(CCResult result) {
-        String text = JsonFormat.format(result.toString());
+    private void showResult(CC cc, CCResult result) {
+        String text = "result:\n" + JsonFormat.format(result.toString());
+        text += "\n\n---------------------\n\n";
+        text += "cc:\n" + JsonFormat.format(cc.toString());
         textView.setText(text);
     }
 
