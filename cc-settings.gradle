@@ -47,7 +47,7 @@ android {
     }
 }
 dependencies {
-    compile "com.billy.android:cc:0.3.0"
+    compile "com.billy.android:cc:0.3.1"
 //    compile project(":cc")
 }
 

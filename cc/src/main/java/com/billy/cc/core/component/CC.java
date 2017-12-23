@@ -344,8 +344,42 @@ public class CC {
         return actionName;
     }
 
+    /**
+     * get all params
+     * @return all params as map
+     */
     public Map<String, Object> getParams() {
         return params;
+    }
+
+    /**
+     * get param(auto class casted) by key
+     * @param key key for param
+     * @param defaultValue default value if not found or class cast error
+     * @param <T> class to cast for param
+     * @return class casted param
+     */
+    public <T> T getParamItem(String key, T defaultValue) {
+        T item = getParamItem(key);
+        if (item == null) {
+            return defaultValue;
+        }
+        return item;
+    }
+
+    /**
+     * get param(auto class casted) by key
+     * @param key key for param
+     * @param <T> class to cast for param
+     * @return class casted param
+     */
+    public <T> T getParamItem(String key) {
+        try {
+            return (T) params.get(key);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     boolean isAsync() {

@@ -312,6 +312,24 @@ public class CCResult {
         return data;
     }
 
+    public <T> T getDataItem(String key, T defaultValue) {
+        T item = getDataItem(key);
+        if (item == null) {
+            return defaultValue;
+        }
+        return item;
+    }
+    public <T> T getDataItem(String key) {
+        if (data != null) {
+            try {
+                return (T) data.get(key);
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return null;
+    }
+
     /**
      * 设置组件调用的返回信息内容
      * @param data 返回信息的内容
