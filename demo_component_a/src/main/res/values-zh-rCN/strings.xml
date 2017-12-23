@@ -1,0 +1,4 @@
+<resources>
+    <string name="demo_a_app_name">Demo_A</string>
+    <string name="demo_a_life_cycle_fragment_notice">测试fragment生命周期绑定\n当前 fragment callId=%s\nCC耗时请求（3秒）已发送\n点击按钮销毁当前fragment并打开一个新的fragment.</string>
+</resources>

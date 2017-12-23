@@ -1,4 +1,4 @@
-package com.billy.cc.demo;
+package com.billy.cc.demo.lifecycle;
 
 import android.app.Activity;
 import android.content.Context;
@@ -8,7 +8,6 @@ import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponent;
 import com.billy.cc.core.component.IComponentCallback;
-import com.billy.cc.demo.lifecycle.LifecycleActivity;
 
 /**
  * demo for AOP <br>

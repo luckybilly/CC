@@ -1,4 +1,4 @@
-package com.billy.cc.demo.lifecycle;
+package com.billy.cc.demo.component.a;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
@@ -19,8 +19,6 @@ import android.widget.Toast;
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponentCallback;
-import com.billy.cc.demo.JsonFormat;
-import com.billy.cc.demo.R;
 
 
 /**
@@ -65,7 +63,7 @@ public class LifecycleFragment extends Fragment {
                 .setActionName("getNetworkData")
                 .cancelOnDestroyWith(this)
                 .build();
-        textView.setText(getString(R.string.life_cycle_fragment_notice, cc.getCallId()));
+        textView.setText(getString(R.string.demo_a_life_cycle_fragment_notice, cc.getCallId()));
         cc.callAsyncCallbackOnMainThread(new IComponentCallback() {
                     @Override
                     public void onResult(CC cc, CCResult result) {

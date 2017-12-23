@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -66,15 +67,38 @@ public class LifecycleActivity extends AppCompatActivity implements View.OnClick
                 finish();
                 break;
             case R.id.replace_fragment:
-                Fragment fragment = new LifecycleFragment();
-                FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-                trans.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
-                trans.replace(R.id.fragment, fragment);
-                trans.commit();
+                //demo for get fragment from other component
+                CC.obtainBuilder("demo.ComponentA")
+                        .setActionName("getLifecycleFragment")
+                        .build()
+                        .callAsyncCallbackOnMainThread(fragmentCallback);
                 break;
             default:
                 break;
         }
+    }
+
+    IComponentCallback fragmentCallback = new IComponentCallback() {
+        @Override
+        public void onResult(CC cc, CCResult result) {
+            if (result.isSuccess()) {
+                //call component a for LifecycleFragment success
+                Fragment fragment = result.getDataItem("fragment");
+                int i = result.getDataItem("intttt");
+                Log.e("tagggggg", "int value=" + i);
+                if (fragment != null) {
+                    showFragment(fragment);
+                }
+            } else {
+                showResult(result);
+            }
+        }
+    };
+    private void showFragment(Fragment fragment) {
+        FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+        trans.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
+        trans.replace(R.id.fragment, fragment);
+        trans.commit();
     }
 
     IComponentCallback printResultCallback = new IComponentCallback() {

@@ -15,6 +15,7 @@ import com.billy.cc.core.component.IComponentCallback;
  * @author billy
  */
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    public static final String COMPONENT_NAME_A = "demo.ComponentA";
 
     private TextView textView;
 
@@ -55,24 +56,24 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .callAsyncCallbackOnMainThread(printResultCallback);
                 break;
             case R.id.componentAOpenActivity:
-                cc = CC.obtainBuilder("ComponentA")
+                cc = CC.obtainBuilder(COMPONENT_NAME_A)
                         .setActionName("showActivityA")
                         .build();
                 result = cc.call();
                 break;
             case R.id.componentAAsyncOpenActivity:
-                CC.obtainBuilder("ComponentA")
+                CC.obtainBuilder(COMPONENT_NAME_A)
                         .setActionName("showActivityA")
                         .build().callAsyncCallbackOnMainThread(printResultCallback);
                 break;
             case R.id.componentAGetData:
-                cc = CC.obtainBuilder("ComponentA")
+                cc = CC.obtainBuilder(COMPONENT_NAME_A)
                         .setActionName("getInfo")
                         .build();
                 result = cc.call();
                 break;
             case R.id.componentAAsyncGetData:
-                CC.obtainBuilder("ComponentA")
+                CC.obtainBuilder(COMPONENT_NAME_A)
                         .setActionName("getInfo")
                         .addInterceptor(new MissYouInterceptor())
                         .build().callAsyncCallbackOnMainThread(printResultCallback);

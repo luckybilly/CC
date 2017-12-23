@@ -1,9 +1,9 @@
-# CC : ComponentCaller (可关联生命周期的组件化开发框架)
+## CC : ComponentCaller (可关联生命周期的组件化开发框架)
 
 
 ##### [![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)  [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion) [![Hex.pm](https://img.shields.io/hexpm/l/plug.svg)](https://www.apache.org/licenses/LICENSE-2.0)
 
-[技术方案原理](http://blog.csdn.net/cdecde111/article/details/78705386)
+技术方案原理: [![](https://badge.juejin.im/entry/5a2b94e251882531926ea50a/likes.svg?style=flat-square)](https://juejin.im/post/5a2b92e4f265da430d57f047)
 
 ## demo演示
 
@@ -44,7 +44,7 @@
         11. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
         12. 支持动态注册/反注册组件(IDynamicComponent)
         13. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
-        14. 尽可能的解决了使用姿势不正确导致的crash： 
+        14. 尽可能的解决了使用姿势不正确导致的crash，降低产品线上crash率： 
             14.1 组件调用处、回调处、组件实现处的crash全部在框架内部catch住
             14.2 同步返回或异步回调的CCResult对象一定不为null，避免空指针
 
@@ -259,11 +259,22 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
 
 - 给跨app组件的调用添加自定义权限限制
     - 新建一个module
-    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:0.3.0'`
+    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:x.x.x'`
     - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
     - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
-    
-
+   
+- 跨组件获取Fragment、View等对象，以Fragment对象为例：
+    - 在组件实现方通过`CCResult.addData(key, fragment)`将Fragment对象返回给调用方
+    - 在组件调用方通过如下方式从CCResult中取出Fragment对象
+        ```java
+        Fragment fragment = (Fragment)CCResult.getDataMap().get(key)
+        //或
+        Fragment fragment = CCResult.getDataItem(key)
+        ```
+        
+    可参考demo:
+    在[ComponentA](https://github.com/luckybilly/CC/blob/master/demo_component_a/src/main/java/com/billy/cc/demo/component/a/ComponentA.java)中提供LifecycleFragment
+    在[LifecycleActivity](https://github.com/luckybilly/CC/blob/master/demo/src/main/java/com/billy/cc/demo/lifecycle/LifecycleActivity.java)中获取LifecycleFragment
 ##### 详情可参考 demo/demo_component_a/demo_component_b 中的示例
 
 
@@ -322,6 +333,18 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
         4. 调用组件时，使用cc.callAsyncCallbackOnMainThread(new IComponentCallback(){...})来接收返回结果
 
 # 更新日志
+
+- 2017.12.23 V0.3.1版
+
+        
+        1. 为获取CC和CCResult对象中Map里的对象提供便捷方法，无需再进行类型判断和转换
+            WhateEverClass classObj = cc.getParamItem(String key, WhateEverClass defaultValue)
+            WhateEverClass classObj = cc.getParamItem(String key)
+            WhateEverClass classObj = ccResult.getDataItem(String key, WhateEverClass defaultValue)
+            WhateEverClass classObj = ccResult.getDataItem(String key)
+        2. demo中新增演示跨组件获取Fragment对象
+            
+        
 
 - 2017.12.09 V0.3.0版
 

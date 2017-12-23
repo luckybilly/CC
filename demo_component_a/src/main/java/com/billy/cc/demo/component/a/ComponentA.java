@@ -16,7 +16,7 @@ public class ComponentA implements IComponent {
     public String getName() {
         //组件的名称，调用此组件的方式：
         // CC.obtainBuilder("ComponentA")...build().callAsync()
-        return "ComponentA";
+        return "demo.ComponentA";
     }
 
     /**
@@ -34,6 +34,10 @@ public class ComponentA implements IComponent {
             case "showActivityA":
                 openActivity(cc);
                 break;
+            case "getLifecycleFragment":
+                //demo for provide fragment object to other component
+                getLifecycleFragment(cc);
+                break;
             case "getInfo":
                 getInfo(cc);
                 break;
@@ -44,6 +48,12 @@ public class ComponentA implements IComponent {
                 break;
         }
         return false;
+    }
+
+    private void getLifecycleFragment(CC cc) {
+        CC.sendCCResult(cc.getCallId(), CCResult.success("fragment", new LifecycleFragment())
+            .addData("int", 1)
+        );
     }
 
     private void getInfo(CC cc) {
