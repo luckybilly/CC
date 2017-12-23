@@ -5,7 +5,7 @@
     <string name="canceled">已取消</string>
     <string name="cc_network">网络请求CC (3秒)</string>
     <string name="close_activity">关闭Activity</string>
-    <string name="open_new_fragment">打开新的fragment</string>
+    <string name="open_new_fragment">从其它组件获取新的fragment并显示</string>
     <string name="sync_a_open_page">同步调A组件(页面跳转)</string>
     <string name="async_a_open_page">异步调A组件(页面跳转)</string>
     <string name="sync_a_get_data">同步调A组件(获取数据)</string>
@@ -15,4 +15,5 @@
     <string name="sync_b_get_data">同步调B组件(获取数据)</string>
     <string name="async_b_login">异步调B组件(模拟登录)</string>
     <string name="life_cycle_relationship">(Activity/Fragment)生命周期关联，登录AOP</string>
+    <string name="call_fragment_method">与跨组件的fragment对象通信</string>
 </resources>

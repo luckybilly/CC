@@ -38,6 +38,9 @@ public class ComponentA implements IComponent {
                 //demo for provide fragment object to other component
                 getLifecycleFragment(cc);
                 break;
+            case "lifecycleFragment.addText":
+                lifecycleFragmentDoubleText(cc);
+                break;
             case "getInfo":
                 getInfo(cc);
                 break;
@@ -48,6 +51,17 @@ public class ComponentA implements IComponent {
                 break;
         }
         return false;
+    }
+
+    private void lifecycleFragmentDoubleText(CC cc) {
+        LifecycleFragment lifecycleFragment = cc.getParamItem("fragment");
+        if (lifecycleFragment != null) {
+            String text = cc.getParamItem("text", "");
+            lifecycleFragment.addText(text);
+            CC.sendCCResult(cc.getCallId(), CCResult.success());
+        } else {
+            CC.sendCCResult(cc.getCallId(), CCResult.error("no fragment params"));
+        }
     }
 
     private void getLifecycleFragment(CC cc) {

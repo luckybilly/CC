@@ -29,6 +29,7 @@ public class LifecycleFragment extends Fragment {
     static int index = 1;
     private int curIndex;
     private TextView log;
+    private TextView textView;
 
     public LifecycleFragment() {
         curIndex = index++;
@@ -56,14 +57,13 @@ public class LifecycleFragment extends Fragment {
         LinearLayout layout = new LinearLayout(context);
         scrollView.addView(layout);
         layout.setOrientation(LinearLayout.VERTICAL);
-        TextView textView = new TextView(context);
+        textView = new TextView(context);
         layout.addView(textView);
         textView.setGravity(Gravity.CENTER);
         CC cc = CC.obtainBuilder("ComponentB")
                 .setActionName("getNetworkData")
                 .cancelOnDestroyWith(this)
                 .build();
-        textView.setText(getString(R.string.demo_a_life_cycle_fragment_notice, cc.getCallId()));
         cc.callAsyncCallbackOnMainThread(new IComponentCallback() {
                     @Override
                     public void onResult(CC cc, CCResult result) {
@@ -72,6 +72,7 @@ public class LifecycleFragment extends Fragment {
                         log(text);
                     }
                 });
+        textView.setText(getString(R.string.demo_a_life_cycle_fragment_notice, cc.getCallId()));
         log = new TextView(context);
         
         layout.addView(log);
@@ -88,5 +89,16 @@ public class LifecycleFragment extends Fragment {
     public void onDestroy() {
         super.onDestroy();
         log("TestFragment.onDestroy:" + curIndex);
+    }
+
+    public void addText(final String text) {
+        if (textView != null && !TextUtils.isEmpty(text)) {
+            textView.post(new Runnable() {
+                @Override
+                public void run() {
+                    textView.append("\n" + text);
+                }
+            });
+        }
     }
 }

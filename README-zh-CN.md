@@ -43,7 +43,8 @@
         10. 支持手动取消
         11. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
         12. 支持动态注册/反注册组件(IDynamicComponent)
-        13. 支持组件间传递Fragment等非基础类型的对象（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
+        13. 支持组件间传递Fragment、自定义View等（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
+            13.1 不仅仅是获取Fragment、自定义View的对象，并支持后续的通信。
         14. 尽可能的解决了使用姿势不正确导致的crash，降低产品线上crash率： 
             14.1 组件调用处、回调处、组件实现处的crash全部在框架内部catch住
             14.2 同步返回或异步回调的CCResult对象一定不为null，避免空指针
@@ -263,7 +264,7 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
     - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
     - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
    
-- 跨组件获取Fragment、View等对象，以Fragment对象为例：
+- 跨组件获取Fragment、View等对象并支持后续与这些对象通信，以Fragment对象为例：
     - 在组件实现方通过`CCResult.addData(key, fragment)`将Fragment对象返回给调用方
     - 在组件调用方通过如下方式从CCResult中取出Fragment对象
         ```java
@@ -272,7 +273,7 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
         Fragment fragment = CCResult.getDataItem(key)
         ```
         
-    可参考demo:
+    后续通信方式可参考demo:
     在[ComponentA](https://github.com/luckybilly/CC/blob/master/demo_component_a/src/main/java/com/billy/cc/demo/component/a/ComponentA.java)中提供LifecycleFragment
     在[LifecycleActivity](https://github.com/luckybilly/CC/blob/master/demo/src/main/java/com/billy/cc/demo/lifecycle/LifecycleActivity.java)中获取LifecycleFragment
 ##### 详情可参考 demo/demo_component_a/demo_component_b 中的示例

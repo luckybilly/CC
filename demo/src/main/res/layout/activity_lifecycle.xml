@@ -30,6 +30,12 @@
             android:layout_height="wrap_content"
             android:text="@string/open_new_fragment"
             />
+        <Button
+            android:id="@+id/call_fragment_method"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/call_fragment_method"
+            />
     </com.google.android.flexbox.FlexboxLayout>
 
     <TextView

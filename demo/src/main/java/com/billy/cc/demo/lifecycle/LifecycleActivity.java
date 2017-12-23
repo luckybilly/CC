@@ -6,7 +6,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -25,6 +24,7 @@ import com.billy.cc.demo.R;
 public class LifecycleActivity extends AppCompatActivity implements View.OnClickListener {
 
     private TextView textView;
+    Fragment fragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -34,6 +34,7 @@ public class LifecycleActivity extends AppCompatActivity implements View.OnClick
         addOnClickListeners(R.id.start_cc
                             , R.id.finish_activity
                             , R.id.replace_fragment
+                            , R.id.call_fragment_method
                             );
 
     }
@@ -73,6 +74,15 @@ public class LifecycleActivity extends AppCompatActivity implements View.OnClick
                         .build()
                         .callAsyncCallbackOnMainThread(fragmentCallback);
                 break;
+            case R.id.call_fragment_method:
+                //send message to current fragment
+                CC.obtainBuilder("demo.ComponentA")
+                        .setActionName("lifecycleFragment.addText")
+                        .addParam("fragment", fragment)
+                        .addParam("text", "text from LifecycleActivity")
+                        .build()
+                        .callAsyncCallbackOnMainThread(printResultCallback);
+                break;
             default:
                 break;
         }
@@ -84,8 +94,6 @@ public class LifecycleActivity extends AppCompatActivity implements View.OnClick
             if (result.isSuccess()) {
                 //call component a for LifecycleFragment success
                 Fragment fragment = result.getDataItem("fragment");
-                int i = result.getDataItem("intttt");
-                Log.e("tagggggg", "int value=" + i);
                 if (fragment != null) {
                     showFragment(fragment);
                 }
@@ -95,10 +103,13 @@ public class LifecycleActivity extends AppCompatActivity implements View.OnClick
         }
     };
     private void showFragment(Fragment fragment) {
-        FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
-        trans.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
-        trans.replace(R.id.fragment, fragment);
-        trans.commit();
+        if (fragment != null) {
+            this.fragment = fragment;
+            FragmentTransaction trans = getSupportFragmentManager().beginTransaction();
+            trans.setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left);
+            trans.replace(R.id.fragment, fragment);
+            trans.commit();
+        }
     }
 
     IComponentCallback printResultCallback = new IComponentCallback() {
