@@ -198,6 +198,10 @@ Map<String, Object> data = ccResult.getDataMap();
 if (data != null) {
     Object value = data.get(key)   
 }
+// 根据key从map中获取内容的便捷方式（自动完成类型转换，若key不存在则返回null）：
+User user = ccResult.getDataItem(key); //读取CCResult.data中的item
+Teacher teacher = cc.getParamItem(key); //读取CC.params中的item
+
 ```    
 状态码清单：
 ```java
