@@ -270,7 +270,7 @@ dynamic components do not automatically register and work through manual registr
 
 You can easily do AOP work with CC, such as:
 
-Activity open requires user login: 
+1. Activity open requires user login: 
 
 - check the user login status before startActivity
 - already login: 
@@ -281,6 +281,36 @@ Activity open requires user login:
     - login failed: CC.sendCCResult(callId, CCResult.error("login failed"));
 
 demo: see[LifecycleComponent.java](https://github.com/luckybilly/CC/blob/master/demo/src/main/java/com/billy/cc/demo/LifecycleComponent.java)
+
+2. Pre-load activity data before context.startActivity with [PreLoader](https://github.com/luckybilly/PreLoader)
+
+- define a component for open the activity
+```java
+public class ComponentA implements IComponent {
+
+    @Override
+    public String getName() {
+        return "demo.ComponentA";
+    }
+
+    @Override
+    public boolean onCall(CC cc) {
+        int preLoaderId = PreLoader.preLoad(new Loader());
+        Intent intent = new Intent(this, PreLoadBeforeLaunchActivity.class);
+        intent.putExtra("preLoaderId", preLoaderId);
+        startActivity(intent);
+        CC.sendCCResult(cc.getCallId(), CCResult.success());
+        return false;
+    }
+}
+```
+
+- call that component by CC to open activity
+```java
+// pre-load is needless here, the logistic of component are all inside that component itself
+CC.obtainBuilder("demo.ComponentA").build().call();
+```
+
 
 ## Proguard
 
