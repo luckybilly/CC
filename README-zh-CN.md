@@ -337,6 +337,14 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
         3. 在跳转的Activity中回调信息时，不用setResult, 通过CC.sendCCResult(callId, result)来回调结果
         4. 调用组件时，使用cc.callAsyncCallbackOnMainThread(new IComponentCallback(){...})来接收返回结果
 
+# 交流
+
+<a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=5fdd1171114b5a1eb80ea0be00b392c2e3e8ab6f278f182a07e959e80d4c9409"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="CC交流群" title="CC交流群"></a>
+
+或者扫描下方二维码加群聊
+
+![image](image/CC_QQ.png)
+
 # 更新日志
 
 - 2017.12.23 V0.3.1版
