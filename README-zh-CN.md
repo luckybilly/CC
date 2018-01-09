@@ -95,7 +95,7 @@
 ```groovy
 buildscript {
     dependencies {
-        classpath 'com.billy.android:autoregister:1.0.4'
+        classpath 'com.billy.android:autoregister:x.x.x'
     }
 }
 ```
