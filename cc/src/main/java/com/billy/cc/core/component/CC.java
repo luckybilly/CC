@@ -527,6 +527,7 @@ public class CC {
         if (timeout < 0) {
             timeout = 0;
         }
+        setTimeoutAt();
         this.callId = nextCallId();
         this.canceled = false;
         this.timeoutStatus = false;
