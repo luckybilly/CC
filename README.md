@@ -9,7 +9,7 @@
 最新版本| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/AutoRegister/images/download.svg)](https://bintray.com/hellobilly/android/AutoRegister/_latestVersion)
 
 
-技术方案原理: [![](https://badge.juejin.im/entry/5a2b94e251882531926ea50a/likes.svg?style=flat-square)](https://juejin.im/post/5a2b92e4f265da430d57f047)
+技术方案原理: [Wiki](https://github.com/luckybilly/CC/wiki)
 
 ## demo演示
 
