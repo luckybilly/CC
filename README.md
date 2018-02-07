@@ -1,6 +1,6 @@
 ## CC : ComponentCaller (可关联生命周期的组件化开发框架)
 
-[English](README-en-US.md)
+【[English README](README-en-US.md)】
 
 [![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
