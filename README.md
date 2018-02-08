@@ -19,9 +19,6 @@
 
 以上2个app用来演示组件打包在主app内和单独安装时的组件调用，都安装在手机上之后的运行效果如下图所示
 
-        
-        由于跨app通信采用系统广播机制，请在权限设置中给Demo_B开启'自启动'权限
-        跨app通信仅用于开发期间单独运行组件app与主app间的通信
 
 ![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
 
@@ -304,6 +301,7 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
         1. 请按照本文档的集成说明排查
         2. 请确认调用的组件名称(CC.obtainBuilder(componentName)与组件类定定义的名称(getName()的返回值)是否一致
         3. 请确认actionName是否与组件中定义的一致
+        4. 开发阶段，若跨app调用失败(错误码: -5)，可在application.onCreate中显示调用CC.enableRemoteCC(true);
 
 
 - 调用异步实现的组件时，IComponentCallback.onResult方法没有执行
@@ -352,6 +350,12 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
 ![image](image/CC_QQ.png)
 
 # 更新日志
+
+- 2018.02.09 V0.5.0版
+
+        
+        在组件作为app运行时，通过显式调用如下代码来解决在部分设备上无法被其它app调用的问题
+        CC.enableRemoteCC(true);//建议在Application.onCreate方法中调用
 
 - 2018.02.07 V0.4.0版
 
