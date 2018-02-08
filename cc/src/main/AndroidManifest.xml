@@ -8,6 +8,7 @@
             >
             <intent-filter>
                 <action android:name="cc.action.com.billy.cc.libs.component.REMOTE_CC" />
+                <action android:name="${applicationId}.cc.action.REMOTE_CC.awake" />
             </intent-filter>
         </receiver>
         <service android:exported="false" android:name="com.billy.cc.core.component.ComponentService" />

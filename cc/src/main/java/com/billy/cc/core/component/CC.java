@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
@@ -62,13 +63,9 @@ public class CC {
 
 
     static {
-        try {
-            //通过反射的方式来获取当前进程的application对象
-            Application application = (Application) Class.forName("android.app.ActivityThread")
-                    .getMethod("currentApplication").invoke(null);
-            init(application);
-        } catch(Exception e) {
-            e.printStackTrace();
+        Application app = CCUtil.initApplicaiton();
+        if (app != null) {
+            init(app);
         }
     }
 
@@ -744,5 +741,19 @@ public class CC {
     public static void enableRemoteCC(boolean enable) {
         RESPONSE_FOR_REMOTE_CC = enable;
         CALL_REMOTE_CC_IF_NEED = enable;
+        if (enable && application != null && isMainProcess()) {
+            // 启动":cc"进程
+            // 解决'组件以app运行时在部分设备上由于应用没有自启动权限而无法被其它app调用'的问题
+            Intent intent = new Intent(application.getPackageName()
+                    + ".cc.action.REMOTE_CC.awake");
+            application.sendBroadcast(intent);
+        }
+    }
+
+    /**
+     * 当前进程是否以包名在运行（当前进程是否为主进程）
+     */
+    public static boolean isMainProcess(){
+        return CCUtil.isMainProcess();
     }
 }
