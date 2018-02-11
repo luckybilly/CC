@@ -301,7 +301,7 @@ public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
         1. 请按照本文档的集成说明排查
         2. 请确认调用的组件名称(CC.obtainBuilder(componentName)与组件类定定义的名称(getName()的返回值)是否一致
         3. 请确认actionName是否与组件中定义的一致
-        4. 开发阶段，若跨app调用失败(错误码: -5)，可在application.onCreate中显示调用CC.enableRemoteCC(true);
+        4. 开发阶段，若跨app调用失败(错误码: -5)，可在application.onCreate中显式地调用CC.enableRemoteCC(true);
 
 
 - 调用异步实现的组件时，IComponentCallback.onResult方法没有执行
