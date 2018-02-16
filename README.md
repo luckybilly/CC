@@ -11,6 +11,8 @@
 
 技术方案原理: [Wiki](https://github.com/luckybilly/CC/wiki)
 
+[多个维度对比一些有代表性的开源android组件化开发方案](https://github.com/luckybilly/AndroidComponentizeLibs)
+
 ## demo演示
 
 [demo下载(包含主工程demo和demo_component_a组件)](https://github.com/luckybilly/CC/blob/master/demo-debug.apk)
