@@ -15,9 +15,9 @@
 
 ## demo演示
 
-[demo下载(包含主工程demo和demo_component_a组件)](https://github.com/luckybilly/CC/blob/master/demo-debug.apk)
+[demo下载(包含主工程demo和demo_component_a组件)](https://github.com/luckybilly/CC/raw/master/demo-debug.apk)
 
-[demo_component_b组件单独运行的App(Demo_B)下载](https://github.com/luckybilly/CC/blob/master/demo_component_b-debug.apk)
+[demo_component_b组件单独运行的App(Demo_B)下载](https://github.com/luckybilly/CC/raw/master/demo_component_b-debug.apk)
 
 以上2个app用来演示组件打包在主app内和单独安装时的组件调用，都安装在手机上之后的运行效果如下图所示
 
