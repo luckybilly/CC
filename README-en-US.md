@@ -10,9 +10,9 @@ Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/ima
 
 ## demo download
 
-[Main App(contains demo and demo_component_a)](https://github.com/luckybilly/CC/blob/master/demo-debug.apk)
+[Main App(contains demo and demo_component_a)](https://github.com/luckybilly/CC/raw/master/demo-debug.apk)
 
-[demo_component_b (Demo_B)](https://github.com/luckybilly/CC/blob/master/demo_component_b-debug.apk)
+[demo_component_b (Demo_B)](https://github.com/luckybilly/CC/raw/master/demo_component_b-debug.apk)
 
 demo shows cc works on component in or not in main app.
 it looks like below via running both of above app on your device and launch demo app.
