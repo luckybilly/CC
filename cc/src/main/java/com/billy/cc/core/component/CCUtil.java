@@ -1,17 +1,17 @@
 package com.billy.cc.core.component;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
+import org.json.JSONObject;
+
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
 import android.content.Context;
-
-import org.json.JSONObject;
-
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author billy.qi
@@ -89,7 +89,7 @@ class CCUtil {
      * 反射获取application对象
      * @return application
      */
-    static Application initApplicaiton() {
+    static Application initApplication() {
         try {
             //通过反射的方式来获取当前进程的application对象
             Application app = (Application) Class.forName("android.app.ActivityThread")
