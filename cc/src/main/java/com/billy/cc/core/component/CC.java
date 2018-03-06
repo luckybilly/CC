@@ -63,7 +63,7 @@ public class CC {
 
 
     static {
-        Application app = CCUtil.initApplicaiton();
+        Application app = CCUtil.initApplication();
         if (app != null) {
             init(app);
         }
