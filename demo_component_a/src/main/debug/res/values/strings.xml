@@ -1,0 +1,4 @@
+<resources>
+    <string name="demo_a_app_name">Demo_A</string>
+    <string name="demo_a_life_cycle_fragment_notice">test fragment lifecycle\n callId=%s\n slow process cc (3s) invoked\nClick button to destroy current fragment and replace a new one.</string>
+</resources>
