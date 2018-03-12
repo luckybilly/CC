@@ -1,6 +1,7 @@
 package com.billy.cc.demo.component.b;
 
 import com.billy.cc.core.component.CC;
+import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponent;
 import com.billy.cc.demo.component.b.processor.IActionProcessor;
 
@@ -65,6 +66,7 @@ public class ComponentB implements IComponent {
         if (processor != null) {
             return processor.onActionCall(cc);
         }
+        CC.sendCCResult(cc.getCallId(), CCResult.error("has not support for action:" + cc.getActionName()));
         return false;
     }
 
