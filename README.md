@@ -22,6 +22,14 @@
 
 ![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
 
+## 快速理解CC
+
+定义组件：将自身的业务(页面跳转及服务调用等)封装起来提供给外部调用，并返回执行的结果
+
+调用组件：根据组件名称、业务名称及其它参数调用指定组件的指定业务，并获得执行的结果
+
+组件将业务完全隔离在自身内部，仅暴露组件名称(ComponentName)、业务名称(actionName)、参数列表及返回值等信息给外部调用
+
 ## 使用CC的理由
 
 
