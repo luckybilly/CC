@@ -43,6 +43,17 @@ android {
                     exclude 'debug/**'
                 }
             }
+            // 注：2018-03-12推荐：将源码放到src/main/debug/java目录下
+            if (runAsApp) {
+                //debug模式下，如果存在src/main/debug/java，则自动将其添加到java源码目录
+                if (project.file('src/main/debug/java').exists()) {
+                    java.srcDirs = ['src/main/java', 'src/main/debug/java']
+                }
+                //debug模式下，如果存在src/main/debug/res，则自动将其添加到资源目录
+                if (project.file('src/main/debug/res').exists()) {
+                    res.srcDirs = ['src/main/res', 'src/main/debug/res']
+                }
+            }
         }
     }
 }
