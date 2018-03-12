@@ -72,6 +72,12 @@
                 android:layout_height="wrap_content"
                 android:text="@string/life_cycle_relationship"
                 />
+            <Button
+                android:id="@+id/componentKt"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/call_kotlin_component"
+                />
         </com.google.android.flexbox.FlexboxLayout>
     </ScrollView>
 

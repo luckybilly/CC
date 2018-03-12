@@ -1,4 +1,4 @@
-include ':cc'
+include ':cc', ':demo_component_kt'
 include ':pools'
 include ':demo'
 include ':demo_component_a'

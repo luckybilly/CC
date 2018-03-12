@@ -16,5 +16,6 @@
     <string name="async_b_login">async call component B (login simulation)</string>
     <string name="life_cycle_relationship">(Activity/Fragment) lifecycle with login AOP</string>
     <string name="call_fragment_method">send message to fragment</string>
+    <string name="call_kotlin_component">kotlin</string>
 
 </resources>

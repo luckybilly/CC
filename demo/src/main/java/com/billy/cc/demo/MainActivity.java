@@ -33,6 +33,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 , R.id.componentBAsync
                 , R.id.componentBGetData
                 , R.id.componentBLogin
+                , R.id.componentKt
         );
     }
 
@@ -111,6 +112,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.componentBLogin:
                 CC.obtainBuilder("ComponentB")
                         .setActionName("login")
+                        .build()
+                        .callAsyncCallbackOnMainThread(printResultCallback);
+                break;
+            case R.id.componentKt:
+                CC.obtainBuilder("demo.ktComponent")
+                        .setActionName("showActivity")
                         .build()
                         .callAsyncCallbackOnMainThread(printResultCallback);
                 break;

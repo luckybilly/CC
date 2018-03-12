@@ -4,9 +4,9 @@
 
     <application android:name=".MyApp"
         android:allowBackup="true"
-        android:icon="@mipmap/demo_a_ic_launcher"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/demo_a_ic_launcher_round"
+        android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity android:name="com.billy.cc.demo.MainActivity">
