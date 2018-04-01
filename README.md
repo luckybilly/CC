@@ -41,12 +41,12 @@
         实现IComponent接口创建一个组件
         使用CC.obtainBuilder("component_name").build().call()调用组件
 - 完全的代码隔离：CC支持跨app调用组件，开发时组件之间无需互相依赖
-    
-    
+
+
         组件以app方式独立运行时不需要依赖任何其它组件，从源头上隔离代码
         无需担心与主app的相互调用，从一开始组件化改造就可以单组件运行
         跟打包在主app中运行是一样的效果，能大大降低组件化改造的难度
-        
+
 - 改造成本低：接入时可基本不改原有代码，原有组件的拆分工作不影响整体组件化改造，[参考文章](https://github.com/luckybilly/CC/wiki/%E8%B0%81%E9%98%BB%E7%A2%8D%E4%BA%86%E4%BD%A0%E5%81%9A%E7%BB%84%E4%BB%B6%E5%8C%96%E5%BC%80%E5%8F%91%EF%BC%9F)
 - 组件层面的AOP支持：可以在组件内部AOP完成登录验证和权限验证等功能，调用方无需关注，[参考文章](https://github.com/luckybilly/CC/wiki/CC%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5(1)%EF%BC%9A%E5%AE%9E%E7%8E%B0%E7%99%BB%E5%BD%95%E6%88%90%E5%8A%9F%E5%86%8D%E8%BF%9B%E5%85%A5%E7%9B%AE%E6%A0%87%E7%95%8C%E9%9D%A2%E5%8A%9F%E8%83%BD)
 - Fragment/View的组件化支持：支持组件调用方式获取及后续的功能调用，业务完全内聚，[参考文章](https://github.com/luckybilly/CC/wiki/CC%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5(2)%EF%BC%9AFragment%E5%92%8CView%E7%9A%84%E7%BB%84%E4%BB%B6%E5%8C%96)
@@ -97,7 +97,7 @@
 
 #### 1. 添加引用
 在工程根目录的build.gradle中添加组件自动注册插件
- 
+
 ```groovy
 buildscript {
     dependencies {
@@ -119,8 +119,15 @@ apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.
 
 ```
 
+#### 3.修改需要导入依赖配置
+
+```groovy
+project.ext.addComponent('demo_component_kt')
+project.ext.addComponent('demo_component_b', project(':demo_component_b'))
+```
+
 可参考[ComponentA的配置](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
- 
+
 默认组件为library，若组件module需要以app单独安装到手机上运行，有以下2种方式：
 
 - 在工程根目录的 local.properties 中添加配置
@@ -129,7 +136,7 @@ module_name=true #module_name为具体每个module的名称
 ```
 - 在module的build.gradle中添加 `ext.runAsApp = true`
 
-    注意：需要添加到【步骤1.2】的`apply from: '.......'`之前
+    注意：需要添加到【步骤1.2】的`apply from: '.......'`之前，ext.runAsApp优先级高于local.properties
 
 #### 3. 实现IComponent接口创建组件
 

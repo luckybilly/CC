@@ -17,7 +17,7 @@ Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/ima
 demo shows cc works on component in or not in main app.
 it looks like below via running both of above app on your device and launch demo app.
 
-        
+
         Notice: calling across apps is only compat for develop time
         you need to turnon the permission 'auto start' for Demo_B to make it worked if the process of Demo_B is not alive. 
 
@@ -85,7 +85,7 @@ it looks like below via running both of above app on your device and launch demo
 ## How to Use
 
 #### 1. add classpath
- 
+
 ```groovy
 buildscript {
     dependencies {
@@ -102,15 +102,22 @@ apply plugin: 'com.android.application'
 //replace to
 apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
 ```
+#### 3.modification requires importing dependency configuration.
+
+```groovy
+project.ext.addComponent('demo_component_kt')
+project.ext.addComponent('demo_component_b', project(':demo_component_b'))
+```
+
 see [demo_component_a/build.gradle](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
- 
+
 module is setting as library by default. there are 2 ways to set as application for single launch apk:
 
 2.1 modify local.properties
 ```properties
 demo_component_b=true # run as application for module: demo_component_b
 ```
-2.2 modify module/build.gradle: add `ext.runAsApp = true` before `apply from: '...cc-settings.gradle'`:
+2.2 modify module/build.gradle: add `ext.runAsApp = true` before `apply from: '...cc-settings.gradle'`,ext.runAsApp priority is higher than local.properties.
 ```groovy
 ext.runAsApp = true
 apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
@@ -195,7 +202,7 @@ Map<String, Object> data = ccResult.getDataMap();
 if (data != null) {
     Object value = data.get(key)   
 }
-```    
+```
 CCResult code list:
 
 | code        | error status    |
@@ -223,7 +230,7 @@ CCResult code list:
     see demo: [MissYouInterceptor.java](https://github.com/luckybilly/CC/blob/master/demo/src/main/java/com/billy/cc/demo/MissYouInterceptor.java)
     
 - register/unregister dynamic component
-    
+
 Definition: Unlike the static component (IComponent), which is automatically registered to ComponentManager at compile time, 
 dynamic components do not automatically register and work through manual registration/unregistration
 
@@ -231,14 +238,14 @@ dynamic components do not automatically register and work through manual registr
         2. It is necessary to call CC.registerComponent(component) manually, similar to the BroadcastReceiver dynamic registration
         3. It is necessary to call CC.unregisterComponent(component) manually, similar to the BroadcastReceiver dynamic unregistration
         4. Other usage are the same as static components
-        
+
 - You can have multiple modules include in a module
 
-        
+
         In a module, you can have multiple implementation classes for the IComponent interface (or IDynamicComponent interface)
         IComponents are automatically registered to the component management class ComponentManager at compile time
         IDynamicComponents are not
-        
+
 - A component can process multiple actions
 
         In the onCall(CC cc) method, gets actions to handle separately via cc.getActionName()
