@@ -35,6 +35,8 @@ dependencies {
     compile 'com.google.android:flexbox:0.3.0'
     compile project(':component_protect_demo')
     compile project(':demo_component_a')
-    implementation project(':demo_component_kt')
+//    implementation project(':demo_component_kt')
 //    compile project(':demo_component_b')
+    project.ext.addComponent('demo_component_kt')
+    project.ext.addComponent('demo_component_b', project(':demo_component_b'))
 }
