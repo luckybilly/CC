@@ -1,27 +1,56 @@
-//先读取build.gradle中的ext.runAsApp设置
+//先加载local.properties文件
+Properties localProperties = new Properties()
+try {
+    def localFile = project.rootProject.file('local.properties')
+    if (localFile != null && localFile.exists()) {
+        localProperties.load(localFile.newDataInputStream())
+    }
+} catch (Exception ignored) {
+    println("local.properties not found")
+}
+//读取build.gradle中的ext.runAsApp设置,runAsApp优先级高于local.properties
 def runAsApp = ext.has('runAsApp')
 if (runAsApp) {
     runAsApp = ext.runAsApp
 } else {
-    //再读取local.properties中配置，例如： demo_component_a=true
-    Properties localProperties = new Properties()
-    try {
-        def localFile = project.rootProject.file('local.properties')
-        if (localFile != null && localFile.exists()) {
-            localProperties.load(localFile.newDataInputStream())
-        }
-    } catch (Exception ignored) {
-    }
+    //build.gradle中没有配置
+    //再从local.properties中读取配置，例如： demo_component_a=true
+    //注：如果采用local.properties读取配置，每次修改需要重新同步一下
     runAsApp = 'true' == localProperties.getProperty(project.name)
+    //设置到ext中，供module的build.gradle使用（例如用于设置sourceSets配置）
+    ext.runAsApp = runAsApp
 }
-//设置到ext中，供module的build.gradle使用（例如用于设置sourceSets配置）
-ext.runAsApp = runAsApp
 if (runAsApp) {
     apply plugin: 'com.android.application'
 } else {
     apply plugin: 'com.android.library'
 }
 
+ext.addComponent = { componentName, dependency = null ->
+    def componentProject = rootProject.subprojects.find { it.name == componentName }
+    def app  //是否为配置为以application方式编译
+    if (componentProject && componentProject.ext.has('runAsApp')) {
+        app = componentProject.ext.runAsApp
+    } else {
+        app = 'true' == localProperties.getProperty(componentName)
+    }
+    if (!app) {
+        def dependencyMode = ((project.gradle.gradleVersion as float) >= 4.1) ? 'runtimeOnly' : 'apk'
+        if (dependency) {
+            //通过参数传递的依赖方式，如：
+            // project(':moduleName')
+            // 或
+            // 'com.billy.demo:demoA:1.1.0'
+            project.dependencies.add(dependencyMode, dependency)
+        } else if (componentProject) {
+            //第二个参数未传，默认为按照module来进行依赖
+            project.dependencies.add(dependencyMode, project(":$componentName"))
+        } else {
+            throw new RuntimeException(" The ${componentName} component configuration error: " +
+                    "param 'dependency' is not specified and ${componentName} is not a module in current project")
+        }
+    }
+}
 repositories {
     maven { url rootProject.file("repo-local") }
     jcenter()
