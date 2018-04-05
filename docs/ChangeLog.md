@@ -1,6 +1,19 @@
 
 # 更新日志
 
+- 2018.04.06 更新cc-settings.gradle
+
+
+        1. 废弃ext.runAsApp参数设置，（目前仍然兼容其功能，但不再推荐使用）
+        2. 新增使用ext.mainApp=true来标记主app module
+        3. 新增依赖组件的方式（功能见README，用法示例见demo/build.gradle）： 
+            dependencies {
+                addComponent 'demo_component_a' //会默认添加依赖：project(':demo_component_a')
+                addComponent 'demo_component_kt', project(':demo_component_kt') //module方式
+                addComponent 'demo_component_b', 'com.billy.demo:demo_b:1.1.0'  //maven方式
+            }
+        
+
 - 2018.02.09 V0.5.0版
 
         
