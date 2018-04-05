@@ -1,4 +1,4 @@
-ext.runAsApp = true
+ext.mainApp = true  //设置为true，表示此module为主app module，一直以application方式编译
 apply from: rootProject.file('cc-settings-demo-b.gradle')
 
 android {
@@ -34,9 +34,24 @@ dependencies {
     compile "com.android.support:appcompat-v7:${rootProject.supportVersion}"
     compile 'com.google.android:flexbox:0.3.0'
     compile project(':component_protect_demo')
-    compile project(':demo_component_a')
-//    implementation project(':demo_component_kt')
-//    compile project(':demo_component_b')
-    project.ext.addComponent('demo_component_kt')
-    project.ext.addComponent('demo_component_b', project(':demo_component_b'))
+
+    //Notice:组件之间不要互相依赖，只在主app module依赖其它组件
+    //使用addComponent(源码在cc-settings.gradle中)添加对组件的依赖可以达到如下效果:
+    // 1. 组件切换library和application方式编译时只需在local.properties中进行设置，不需要修改app module中的依赖列表
+    //      且运行主app module时会自动将【设置为以app方式编译的组件module】从依赖列表中排除
+    // 2. 避免调试时切换library和application方式修改主app中的依赖项被误提交到代码仓库，导致jenkins集成打包时功能缺失
+    // 3. 避免直接调用组件中的代码及资源
+    //对组件库的依赖格式： addComponent dependencyName [, realDependency]
+    //  dependencyName: 组件库的名称，推荐直接使用使用module的名称
+    //  realDependency(可选): 组件库对应的实际依赖，可以是module依赖，也可以是maven依赖
+    //    如果未配置realDependency，将自动依赖 project(":$dependencyName")
+    //    realDependency可以为如下2种中的一种:
+    //      module依赖 : project(':demo_component_b') //如果module名称跟dependencyName相同，可省略(推荐)
+    //      maven依赖  : 'com.billy.demo:demoB:1.1.0' //如果使用了maven私服，请使用此方式
+    addComponent 'demo_component_a'
+    addComponent 'demo_component_kt'
+
+    //单独运行demo_component_b时，只需在local.properties中添加demo_component_b=true即可
+    // 此处无需修改，再次运行demo:assembleXxx时将不会把demo_component_b打包进apk
+    addComponent 'demo_component_b', project(':demo_component_b') // 这里参数2可以省略
 }
