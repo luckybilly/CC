@@ -114,29 +114,20 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.android.application'
 
 //替换成
+//ext.mainApp = true //设置为true，表示此module为主app module，一直以application方式编译
 apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
 //注意：最好放在build.gradle中代码的第一行
 
 ```
 
-#### 3.修改需要导入依赖配置
-
-```groovy
-project.ext.addComponent('demo_component_kt')
-project.ext.addComponent('demo_component_b', project(':demo_component_b'))
-```
-
-可参考[ComponentA的配置](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
-
-默认组件为library，若组件module需要以app单独安装到手机上运行，有以下2种方式：
-
-- 在工程根目录的 local.properties 中添加配置
+默认组件module为library，若组件需要以app单独安装到手机上运行，可以在工程根目录的`local.properties`中添加配置
 ```properties
-module_name=true #module_name为具体每个module的名称
+module_name=true #module_name为具体每个module的名称，设置为true代表以application方式编译
 ```
-- 在module的build.gradle中添加 `ext.runAsApp = true`
 
-    注意：需要添加到【步骤1.2】的`apply from: '.......'`之前，ext.runAsApp优先级高于local.properties
+可参考[主app module: demo/build.gradle的配置](https://github.com/luckybilly/CC/blob/master/demo/build.gradle)
+和[组件module: demo_component_a/build.gradle的配置](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
+
 
 #### 3. 实现IComponent接口创建组件
 
@@ -184,6 +175,32 @@ String callId = CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainTh
 
 更多使用方式请戳[这里](docs/Usage.md)
 
+#### 2018-04-06 补充：
+
+注意：组件之间不要互相依赖，在主app module中按如下方式添加对所有组件module的依赖：
+
+```groovy
+dependencies {
+    addComponent 'demo_component_a' //会默认添加依赖：project(':demo_component_a')
+    addComponent 'demo_component_kt', project(':demo_component_kt') //module方式
+    addComponent 'demo_component_b', 'com.billy.demo:demo_b:1.1.0'  //maven方式
+}
+```
+
+用法示例见[demo](https://github.com/luckybilly/CC/blob/master/demo/build.gradle)
+
+按照此方式添加的依赖有以下特点：
+
+- 方便：组件切换library和application方式编译时，只需在local.properties中进行设置，不需要修改app module中的依赖列表
+    - 运行主app module时会自动将【设置为以app方式编译的组件module】从依赖列表中排除
+- 安全：避免调试时切换library和application方式修改主app中的依赖项被误提交到代码仓库，导致jenkins集成打包时功能缺失
+- 隔离：避免直接调用组件中的代码及资源
+
+注意：
+
+CC会优先调用app内部的组件，只有在内部找不到对应组件且未设置`CC.enableRemoteCC(false)`时才会尝试进行跨app组件调用
+
+所以，单组件以app运行调试时，如果主app要主动与此组件进行通信，请确保主app中没有包含此组件(Tips:最简单的方式是重新Run一次主app module)
 
 ## 状态码清单
 
