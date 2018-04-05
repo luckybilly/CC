@@ -102,12 +102,6 @@ apply plugin: 'com.android.application'
 //replace to
 apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
 ```
-#### 3.modification requires importing dependency configuration.
-
-```groovy
-project.ext.addComponent('demo_component_kt')
-project.ext.addComponent('demo_component_b', project(':demo_component_b'))
-```
 
 see [demo_component_a/build.gradle](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
 
@@ -160,6 +154,17 @@ String callId = CC.obtainBuilder("demo.ComponentA").build().callAsync(new ICompo
 //Asynchronous call, result callback on main thread
 String callId = CC.obtainBuilder("demo.ComponentA").build().callAsyncCallbackOnMainThread(new IComponentCallback(){...});
 ```
+
+#### More: Add dependencies in main app module for all component modules like below:
+
+```groovy
+dependencies {
+    addComponent 'demo_component_a' //default add dependency: project(':demo_component_a')
+    addComponent 'demo_component_kt', project(':demo_component_kt')
+    addComponent 'demo_component_b', 'com.billy.demo:demo_b:1.1.0'
+}
+
+
 ## Advance usage
 
 ```java
