@@ -1,4 +1,4 @@
-## CC : ComponentCaller (使用简单但功能强大的安卓组件化框架)
+## CC : ComponentCaller (基于组件总线的安卓组件化框架)
 
 【[English README](README-en-US.md)】
 
