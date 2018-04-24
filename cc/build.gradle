@@ -24,8 +24,8 @@ android {
 }
 
 dependencies {
-    compile "com.billy.android:pools:0.0.5"
-    provided "com.android.support:appcompat-v7:${rootProject.supportVersion}"
+    implementation "com.billy.android:pools:0.0.5"
+    compileOnly "com.android.support:appcompat-v7:${rootProject.supportVersion}"
 }
 
 sourceCompatibility = 1.7
