@@ -69,7 +69,7 @@ ext.addComponent = { dependencyName, realDependency = null ->
         app = 'true' == localProperties.getProperty(dependencyName)
     }
     if (!app) {
-        def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'runtimeOnly' : 'apk'
+        def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
         if (realDependency) {
             //通过参数传递的依赖方式，如：
             // project(':moduleName')
