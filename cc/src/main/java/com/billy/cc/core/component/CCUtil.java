@@ -1,17 +1,17 @@
 package com.billy.cc.core.component;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import org.json.JSONObject;
-
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningAppProcessInfo;
 import android.app.Application;
 import android.content.Context;
+
+import org.json.JSONObject;
+
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author billy.qi
@@ -29,7 +29,11 @@ class CCUtil {
                 while (keys.hasNext()) {
                     String key = keys.next();
                     try {
-                        params.put(key, json.get(key));
+                        Object value = json.get(key);
+                        if (value == JSONObject.NULL) {
+                            value = null;
+                        }
+                        params.put(key, value);
                     } catch(Exception e) {
                         e.printStackTrace();
                     }

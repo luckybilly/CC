@@ -1,6 +1,11 @@
 
 # 更新日志
 
+- 2018.05.17 V1.0.0版 Fix issue [#23](https://github.com/luckybilly/CC/issues/23)
+
+
+        修复跨app调用组件时传递的参数为null导致`cc.getParamItem(key)`抛异常的问题
+
 - 2018.04.06 更新cc-settings.gradle
 
 
