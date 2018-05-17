@@ -114,7 +114,7 @@ android {
                     exclude 'debug/**'
                 }
             }
-            // 注：2018-03-12推荐：将源码放到src/main/debug/java目录下
+            // 注：2018-03-12推荐：将组件单独以app运行时的测试代码及资源放到src/main/debug/目录下
             if (runAsApp) {
                 //debug模式下，如果存在src/main/debug/assets，则自动将其添加到assets源码目录
                 if (project.file('src/main/debug/assets').exists()) {
@@ -133,7 +133,8 @@ android {
     }
 }
 def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
-project.dependencies.add(dependencyMode, "com.billy.android:cc:0.5.0")
+//project.dependencies.add(dependencyMode, project(":cc"))
+project.dependencies.add(dependencyMode, "com.billy.android:cc:1.0.0")
 
 
 
