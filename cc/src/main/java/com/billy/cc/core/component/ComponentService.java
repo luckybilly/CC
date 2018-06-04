@@ -5,16 +5,9 @@ import android.content.Intent;
 import android.net.LocalSocket;
 import android.net.LocalSocketAddress;
 import android.os.IBinder;
-import android.text.TextUtils;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.util.Map;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 /**
  * app之间的组件调用处理
@@ -51,9 +44,9 @@ public class ComponentService extends Service {
         Intent intent;
         int startId;
         LocalSocket socket = null;
-        PrintWriter out = null;
+        ObjectOutputStream out = null;
         private CC cc;
-        private BufferedReader in;
+        private ObjectInputStream in;
 
         Processor(Intent intent, int startId) {
             this.intent = intent;
@@ -97,7 +90,8 @@ public class ComponentService extends Service {
             try {
                 socket = new LocalSocket();
                 socket.connect(new LocalSocketAddress(socketName));
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                in = new ObjectInputStream(socket.getInputStream());
+                out = new ObjectOutputStream(socket.getOutputStream());
             } catch(Exception e) {
                 e.printStackTrace();
             }
@@ -109,40 +103,39 @@ public class ComponentService extends Service {
                 CC.log("remote component call failed. name:" + socketName);
                 return;//建立连接失败，忽略此次需要处理的任务（无法返回结果）
             }
-            String actionName = intent.getStringExtra(RemoteCCInterceptor.KEY_ACTION_NAME);
-            String str = intent.getStringExtra(RemoteCCInterceptor.KEY_PARAMS);
-            Map<String, Object> params = null;
-            if (!TextUtils.isEmpty(str)) {
-                try{
-                    JSONObject json = new JSONObject(str);
-                    params = CCUtil.convertToMap(json);
-                } catch(Exception e) {
-                    e.printStackTrace();
+            RemoteCC remoteCC = null;
+            try {
+                remoteCC = (RemoteCC) in.readObject();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+            CCResult ccResult;
+            if (remoteCC != null) {
+                if (CC.VERBOSE_LOG) {
+                    CC.verboseLog(callId, "start to perform remote cc.");
                 }
-            }
-            long timeout = intent.getLongExtra(RemoteCCInterceptor.KEY_TIMEOUT, 0);
-            if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "start to perform remote cc.");
-            }
-            //由于RemoteCCInterceptor中已处理同步/异步调用的逻辑，此处直接同步调用即可
-            cc = CC.obtainBuilder(componentName)
-                    .setActionName(actionName)
-                    .setParams(params)
-                    .setTimeout(timeout)
-                    .build();
-            ComponentManager.threadPool(new ReceiveMsgFromRemoteCaller(cc, in));
-            CCResult ccResult = cc.call();
+                //由于RemoteCCInterceptor中已处理同步/异步调用的逻辑，此处直接同步调用即可
+                cc = CC.obtainBuilder(componentName)
+                        .setActionName(remoteCC.getActionName())
+                        .setParams(remoteCC.getParams())
+                        .setTimeout(remoteCC.getTimeout())
+                        .withoutGlobalInterceptor() //避免重复调用拦截器
+                        .build();
+                ComponentManager.threadPool(new ReceiveMsgFromRemoteCaller(cc, in));
+                ccResult = cc.call();
 
-            if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "finished perform remote cc.CCResult:" + ccResult);
+                if (CC.VERBOSE_LOG) {
+                    CC.verboseLog(callId, "finished perform remote cc.CCResult:" + ccResult);
+                }
+            } else {
+                ccResult = CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED);
             }
 
             if (socket != null && socket.isConnected()) {
                 try{
-                    out = new PrintWriter(new BufferedWriter(new OutputStreamWriter(
-                            socket.getOutputStream())), true);
                     //将结果返回给组件调用方
-                    out.println(ccResult.toString());
+                    out.writeObject(new RemoteCCResult(ccResult));
+                    out.flush();
                 } catch(Exception e) {
                     e.printStackTrace();
                     CC.log(callId + " remote component call failed. socket send result failed");
@@ -155,18 +148,18 @@ public class ComponentService extends Service {
 
     private class ReceiveMsgFromRemoteCaller implements Runnable {
         private CC cc;
-        private BufferedReader in;
+        private ObjectInputStream in;
 
-        ReceiveMsgFromRemoteCaller(CC cc, BufferedReader in) {
+        ReceiveMsgFromRemoteCaller(CC cc, ObjectInputStream in) {
             this.cc = cc;
             this.in = in;
         }
 
         @Override
         public void run() {
-            String msg;
+            Object msg;
             try{
-                while((msg = in.readLine()) != null) {
+                while((msg = in.readObject()) != null) {
                     if (CC.VERBOSE_LOG) {
                         CC.verboseLog(cc.getCallId(), "receive message by localSocket:\"" + msg + "\"");
                     }

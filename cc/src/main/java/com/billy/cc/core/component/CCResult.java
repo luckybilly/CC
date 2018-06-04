@@ -70,6 +70,10 @@ public class CCResult {
      * 未调用CC.sendCCResult(callId, ccResult)方法
      */
     public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
+    /**
+     * 跨app组件调用时对象传输出错，可能是自定义类型没有共用
+     */
+    public static final int CODE_ERROR_REMOTE_CC_DELIVERY_FAILED = -11;
 
     /**
      * CC调用是否成功
@@ -184,7 +188,9 @@ public class CCResult {
      * 尝试将json字符串转成CCResult对象
      * @param str json字符串
      * @return CCResult对象
+     * @deprecated
      */
+    @Deprecated
     public static CCResult fromString(String str) {
         if (!TextUtils.isEmpty(str)) {
             try{
@@ -196,6 +202,7 @@ public class CCResult {
         }
         return null;
     }
+    @Deprecated
     private static CCResult fromJSONObject(JSONObject json) {
         CCResult result = null;
         if (json != null) {

@@ -45,7 +45,7 @@ ext {
     siteUrl = 'https://github.com/luckybilly/CC'
     gitUrl = 'git@github.com:luckybilly/CC.git'
 
-    libraryVersion = '1.0.0'
+    libraryVersion = '1.1.0'
 
     developerId = 'billy'
     developerName = 'billy'

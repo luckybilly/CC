@@ -9,6 +9,8 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import static com.billy.cc.core.component.GlobalCCInterceptorManager.INTERCEPTORS;
+
 /**
  * 组件调用管理类
  * @author billy.qi
@@ -37,6 +39,15 @@ class ComponentManager {
 //  }
 
     /**
+     * 提前初始化所有全局拦截器
+     */
+    static void init(){
+        //调用此方法时，虚拟机会加载ComponentManager类
+        //会自动执行static块中的组件自动注册，调用组件类的无参构造方法
+        //如果不提动调用此方法，static块中的代码将在第一次进行组件调用时(cc.callXxx())执行
+    }
+
+    /**
      * 注册组件
      */
     static void registerComponent(IComponent component) {
@@ -52,6 +63,9 @@ class ComponentManager {
                         CC.logError( "component (" + component.getClass().getName()
                                 + ") with name:" + name
                                 + " has already exists, replaced:" + oldComponent.getClass().getName());
+                    } else if (CC.DEBUG) {
+                        CC.log("register component success! component name = '"
+                                + name + "', class = " + component.getClass().getName());
                     }
                 }
             } catch(Exception e) {
@@ -82,6 +96,9 @@ class ComponentManager {
         String callId = cc.getCallId();
         Chain chain = new Chain(cc);
         chain.addInterceptor(ValidateInterceptor.getInstance());
+        if (!cc.isWithoutGlobalInterceptor()) {
+            chain.addInterceptors(INTERCEPTORS);
+        }
         chain.addInterceptors(cc.getInterceptors());
         if (hasComponent(cc.getComponentName())) {
             chain.addInterceptor(LocalCCInterceptor.getInstance());

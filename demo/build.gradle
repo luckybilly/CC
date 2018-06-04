@@ -53,4 +53,5 @@ dependencies {
     //单独运行demo_component_b时，只需在local.properties中添加demo_component_b=true即可
     // 此处无需修改，再次运行demo:assembleXxx时将不会把demo_component_b打包进apk
     addComponent 'demo_component_b', project(':demo_component_b') // 这里参数2可以省略
+    implementation project(':demo_base')
 }

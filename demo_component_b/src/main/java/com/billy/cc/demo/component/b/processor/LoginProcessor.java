@@ -21,7 +21,7 @@ public class LoginProcessor implements IActionProcessor {
     @Override
     public boolean onActionCall(CC cc) {
         //clear login user info
-        Global.loginUserName = null;
+        Global.loginUser = null;
         Context context = cc.getContext();
         Intent intent = new Intent(context, LoginActivity.class);
         if (!(context instanceof Activity)) {

@@ -64,7 +64,7 @@
         1. 支持组件间相互调用（不只是Activity跳转，支持任意指令的调用/回调）
         2. 支持组件调用与Activity、Fragment的生命周期关联
         3. 支持app间跨进程的组件调用(组件开发/调试时可单独作为app运行)
-        4. 支持app间调用的开关及权限设置（满足不同级别的安全需求，默认打开状态且不需要权限）
+        4. 支持app间调用的开关及权限设置（默认为关闭状态，调用CC.enableRemoteCC(true)打开）
         5. 支持同步/异步方式调用
         6. 支持同步/异步方式实现组件
         7. 调用方式不受实现方式的限制（例如:可以同步调用另一个组件的异步实现功能。注：不要在主线程同步调用耗时操作）
@@ -84,11 +84,13 @@
         - cc                            组件化框架基础库（主要）
         - cc-settings.gradle            组件化开发构建脚本（主要）
         - demo                          demo主程序
+        - demo_base                     demo公共库(base类、util类、公共Bean等)
         - demo_component_a              demo组件A
         - demo_component_b              demo组件B
         - demo_component_kt             demo组件(kotlin)
+        - demo_interceptors             demo全局拦截器(如果有多个app并且拦截器不同，可以创建多个module给不同app使用)
         - component_protect_demo        添加跨app组件调用自定义权限限制的demo，在cc-settings-demo-b.gradle被依赖
-        - cc-settings-demo-b.gradle     actionProcessor自动注册的配置脚本demo
+        - cc-settings-demo-b.gradle     演示如何自定义配置文件，如：添加actionProcessor自动注册的配置
         - demo-debug.apk                demo安装包(包含demo/demo_component_a/demo_component_kt)
         - demo_component_b-debug.apk    demo组件B单独运行安装包
 
@@ -218,6 +220,7 @@ CC会优先调用app内部的组件，只有在内部找不到对应组件且未
 | -8 | 已取消 |
 | -9 | 已超时 |
 | -10 | component.onCall(cc) return false, 未调用CC.sendCCResult(callId, ccResult)方法 |
+| -11 | 跨app组件调用时对象传输出错，可能是自定义类型没有共用，请查看Logcat |
 
 
 ## 混淆配置

@@ -15,6 +15,7 @@ public class MyApp extends Application {
         super.onCreate();
         CC.enableVerboseLog(true);
         CC.enableDebug(true);
+        CC.init(this);
         CC.enableRemoteCC(true);
     }
 }

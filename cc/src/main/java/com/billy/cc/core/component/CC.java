@@ -45,11 +45,11 @@ public class CC {
      * 为了方便开发调试，默认设置为允许响应跨app组件调用
      * 为了安全，app上线时可以将此值设置为false，避免被恶意调用
      */
-    static boolean RESPONSE_FOR_REMOTE_CC = true;
+    static boolean RESPONSE_FOR_REMOTE_CC = false;
     /**
-     * 如果调用到当前app内没有的组件，是否尝试去其它app内调用（每人为true）
+     * 如果调用到当前app内没有的组件，是否尝试去其它app内调用（默认为false）
      */
-    static boolean CALL_REMOTE_CC_IF_NEED = true;
+    static boolean CALL_REMOTE_CC_IF_NEED = false;
 
     private volatile CCResult result;
 
@@ -61,6 +61,7 @@ public class CC {
 
     WeakReference<Fragment> cancelOnDestroyFragment;
 
+    private volatile boolean waiting;
 
     static {
         Application app = CCUtil.initApplication();
@@ -70,16 +71,34 @@ public class CC {
     }
 
     /**
-     * 预留初始化方法(目前版本暂不需要)
+     * 初始化方法
+     * 仅初始化CC，不初始化组件和拦截器
      * 在Application.onCreate(...)中调用
-     * @param app 为了防止反射获取application对象失败，预留此初始化功能
+     * @param app Application
      */
     public static synchronized void init(Application app) {
+        init(app, false, false);
+    }
+
+    /**
+     * 初始化方法
+     * 同时初始化组件和全局拦截器
+     * @param app Application
+     * @param initComponents 如果设置为true则同时初始化组件
+     * @param initGlobalInterceptors 如果设置为true则同时初始化全局拦截器
+     */
+    public static synchronized void init(Application app, boolean initComponents, boolean initGlobalInterceptors) {
         if (application == null && app != null) {
             application = app;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
                 application.registerActivityLifecycleCallbacks(new CCMonitor.ActivityMonitor());
             }
+        }
+        if (initComponents) {
+            ComponentManager.init();
+        }
+        if (initGlobalInterceptors) {
+            GlobalCCInterceptorManager.init();
         }
     }
     
@@ -119,6 +138,7 @@ public class CC {
     private String callId;
     private volatile boolean canceled = false;
     private volatile boolean timeoutStatus = false;
+    private boolean withoutGlobalInterceptor = false;
 
     private CC(String componentName) {
         this.componentName = componentName;
@@ -197,6 +217,11 @@ public class CC {
          */
         public Builder setActionName(String actionName) {
             cr.actionName = actionName;
+            return this;
+        }
+
+        public Builder withoutGlobalInterceptor() {
+            cr.withoutGlobalInterceptor = true;
             return this;
         }
 
@@ -311,6 +336,7 @@ public class CC {
         put(json, "componentName", componentName);
         put(json, "actionName", actionName);
         put(json, "timeout", timeout);
+        put(json, "withoutGlobalInterceptor", withoutGlobalInterceptor);
         put(json, "callbackOnMainThread", callbackOnMainThread);
         put(json, "params", CCUtil.convertToJson(params));
         put(json, "interceptors", interceptors);
@@ -412,6 +438,10 @@ public class CC {
         return timeoutStatus;
     }
 
+    boolean isWithoutGlobalInterceptor() {
+        return withoutGlobalInterceptor;
+    }
+
     CCResult getResult() {
         return result;
     }
@@ -425,10 +455,14 @@ public class CC {
         try {
             synchronized (wait4resultLock) {
                 if (VERBOSE_LOG) {
-                    verboseLog(callId, "setResult4Waiting. CCResult:" + result);
+                    verboseLog(callId, "setResult" + (waiting ? "4Waiting" : "")
+                            + ". CCResult:" + result);
                 }
                 setResult(result);
-                wait4resultLock.notifyAll();
+                if (waiting) {
+                    waiting = false;
+                    wait4resultLock.notifyAll();
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -441,6 +475,7 @@ public class CC {
             if (!isFinished()) {
                 try {
                     verboseLog(callId, "start waiting for CC.sendCCResult(...)");
+                    waiting = true;
                     wait4resultLock.wait();
                     verboseLog(callId, "end waiting for CC.sendCCResult(...)");
                 } catch (InterruptedException ignored) {
@@ -671,6 +706,25 @@ public class CC {
         ComponentManager.unregisterComponent(component);
     }
 
+    /**
+     * 注册一个全局拦截器
+     * 每个拦截器类型只能注册一次
+     * {@link IGlobalCCInterceptor}接口的直接实现类默认会自动注册，无需手动添加
+     * 若不需要自动注册，可使用子接口的方式来定义
+     * @param interceptor 全局拦截器
+     */
+    public static void registerGlobalInterceptor(IGlobalCCInterceptor interceptor) {
+        GlobalCCInterceptorManager.registerGlobalInterceptor(interceptor);
+    }
+
+    /**
+     * 注销一个全局拦截器
+     * @param clazz 拦截器的类型
+     */
+    public static void unregisterGlobalInterceptor(Class<? extends IGlobalCCInterceptor> clazz) {
+        GlobalCCInterceptorManager.unregisterGlobalInterceptor(clazz);
+    }
+
     private static String prefix;
     private static AtomicInteger index = new AtomicInteger(1);
     private String nextCallId() {
@@ -694,15 +748,15 @@ public class CC {
     }
 
     static void log(String s, Object... args) {
-        if (DEBUG && application != null) {
+        if (DEBUG) {
             s = format(s, args);
-            Log.i(CC.TAG, application.getPackageName() + " ---- " + s);
+            Log.i(CC.TAG, s);
         }
     }
     static void logError(String s, Object... args) {
-        if (DEBUG && application != null) {
+        if (DEBUG) {
             s = format(s, args);
-            Log.e(CC.TAG, application.getPackageName() + " ---- " + s);
+            Log.e(CC.TAG, s);
         }
     }
 
@@ -736,6 +790,7 @@ public class CC {
      * 开关跨app调用组件支持，默认为打开状态
      *  1. 某个componentName当前app中不存在时，是否尝试调用其它app的此组件
      *  2. 接收到跨app调用时，是否执行本次调用
+     *  3. 建议仅在开发阶段调试时打开，正式发布时关闭
      * @param enable 开关（true：会执行，默认值为true； false：不会）
      */
     public static void enableRemoteCC(boolean enable) {
