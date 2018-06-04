@@ -25,9 +25,9 @@ if (runAsApp) {
     //再从local.properties中读取配置，例如： demo_component_a=true
     //注：如果采用local.properties读取配置，每次修改需要重新同步(Sync Project)一下
     runAsApp = 'true' == localProperties.getProperty(project.name)
-    //设置到ext中，供module的build.gradle使用（例如用于设置sourceSets配置）
-    ext.runAsApp = runAsApp
 }
+//设置到ext中，供module的build.gradle使用（例如用于设置sourceSets配置）
+ext.runAsApp = runAsApp
 if (runAsApp) {
     apply plugin: 'com.android.application'
 } else {
