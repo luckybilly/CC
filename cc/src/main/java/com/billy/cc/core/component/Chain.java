@@ -18,7 +18,7 @@ public class Chain {
         this.index = 0;
     }
 
-    void addInterceptors(Collection<ICCInterceptor> interceptors) {
+    void addInterceptors(Collection<? extends ICCInterceptor> interceptors) {
         if (interceptors != null && !interceptors.isEmpty()) {
             this.interceptors.addAll(interceptors);
         }

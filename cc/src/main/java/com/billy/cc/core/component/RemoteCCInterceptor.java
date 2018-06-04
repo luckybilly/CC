@@ -11,12 +11,8 @@ import android.net.LocalSocketAddress;
 import android.os.Build;
 import android.text.TextUtils;
 
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -34,12 +30,9 @@ class RemoteCCInterceptor implements ICCInterceptor {
     static final String MSG_CANCEL = "cancel";
     static final String MSG_TIMEOUT = "timeout";
 
-    static final String KEY_CALL_ID = "component_key_call_id";
-    static final String KEY_PARAMS = "component_key_params";
-    static final String KEY_ACTION_NAME = "component_key_action_name";
-    static final String KEY_COMPONENT_NAME = "component_key_component_name";
-    static final String KEY_TIMEOUT = "component_key_timeout";
-    static final String KEY_SOCKET_NAME = "component_key_local_socket_name";
+    static final String KEY_CALL_ID = "cc_component_key_call_id";
+    static final String KEY_COMPONENT_NAME = "cc_component_key_component_name";
+    static final String KEY_SOCKET_NAME = "cc_component_key_local_socket_name";
 
     private CountDownLatch connectLatch = new CountDownLatch(1);
     /**
@@ -55,7 +48,7 @@ class RemoteCCInterceptor implements ICCInterceptor {
      * socket通信是否已停止
      */
     private boolean stopped;
-    private BufferedWriter out;
+    private ObjectOutputStream out;
     private String socketName;
     private static String receiverPermission;
     private static String receiverIntentFilterAction;
@@ -97,8 +90,7 @@ class RemoteCCInterceptor implements ICCInterceptor {
         }
         if (out != null) {
             try {
-                out.write(str);
-                out.newLine();
+                out.writeObject(str);
                 out.flush();
             } catch(Exception e) {
                 e.printStackTrace();
@@ -138,18 +130,16 @@ class RemoteCCInterceptor implements ICCInterceptor {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
                 intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
             }
-            intent.putExtra(KEY_COMPONENT_NAME, cc.getComponentName());
-            intent.putExtra(KEY_ACTION_NAME, cc.getActionName());
-            intent.putExtra(KEY_TIMEOUT, cc.getTimeout());
-            JSONObject params = new JSONObject(cc.getParams());
-            intent.putExtra(KEY_PARAMS, params.toString());
             String callId = cc.getCallId();
-            intent.putExtra(KEY_CALL_ID, callId);
             socketName = "lss:" + callId;
+            RemoteCC remoteCC = new RemoteCC(cc);
+            remoteCC.setCallId(callId);
+            intent.putExtra(KEY_COMPONENT_NAME, cc.getComponentName());
+            intent.putExtra(KEY_CALL_ID, callId);
             intent.putExtra(KEY_SOCKET_NAME, socketName);
             LocalServerSocket lss = null;
             //send broadcast for remote cc connection
-            BufferedReader in = null;
+            ObjectInputStream in = null;
             try {
                 lss = new LocalServerSocket(socketName);
                 if (CC.VERBOSE_LOG) {
@@ -165,18 +155,34 @@ class RemoteCCInterceptor implements ICCInterceptor {
                 }
                 connectLatch.countDown();
 
-                out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-                in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                out = new ObjectOutputStream(socket.getOutputStream());
+                in = new ObjectInputStream(socket.getInputStream());
+                try {
+                    out.writeObject(remoteCC);
+                    out.flush();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
+                    return;
+                }
                 if (CC.VERBOSE_LOG) {
                     CC.verboseLog(callId, "localSocket connect success. " +
                             "start to wait for remote CCResult.");
                 }
                 //blocking for CCResult
-                String str = in.readLine();
-                if (CC.VERBOSE_LOG) {
-                    CC.verboseLog(callId, "localSocket received remote CCResult:" + str);
+                Object obj;
+                try {
+                    obj = in.readObject();
+                } catch(Exception e) {
+                    e.printStackTrace();
+                    setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
+                    return;
                 }
-                setResult(CCResult.fromString(str));
+                if (CC.VERBOSE_LOG) {
+                    CC.verboseLog(callId, "localSocket received remote CCResult:" + obj);
+                }
+                RemoteCCResult result = (RemoteCCResult) obj;
+                setResult(result.toCCResult());
             } catch(Exception e) {
                 e.printStackTrace();
                 setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
