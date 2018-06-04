@@ -33,13 +33,14 @@
 ## 使用CC的理由
 
 
-- 集成简单,仅需4步即可完成集成：
+- 集成简单,仅需5步即可完成集成：
 
 
         在根目录build.gradle中添加自动注册插件
         添加apply cc-settings.gradle文件
         实现IComponent接口创建一个组件
         使用CC.obtainBuilder("component_name").build().call()调用组件
+        在主app中添加对组件module的依赖,如: addComponent 'demo_component_a'
 - 完全的代码隔离：CC支持跨app调用组件，开发时组件之间无需互相依赖
 
 
@@ -94,7 +95,7 @@
         - demo-debug.apk                demo安装包(包含demo/demo_component_a/demo_component_kt)
         - demo_component_b-debug.apk    demo组件B单独运行安装包
 
-## 集成(共4步)
+## 集成(共5步)
 下面介绍在Android Studio中进行集成的详细步骤
 
 #### 1. 添加引用
@@ -108,7 +109,7 @@ buildscript {
 }
 ```
 
-#### 2. 在每个module(包括主app)的build.gradle中：
+#### 2. 在每个组件module(包括主app)的build.gradle中：
 
 ```groovy
 apply plugin: 'com.android.library'
@@ -177,11 +178,15 @@ String callId = CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainTh
 
 更多使用方式请戳[这里](docs/Usage.md)
 
-#### 2018-04-06 补充：
+#### 5. 在主app module中按如下方式添加对所有组件module的依赖
 
-注意：组件之间不要互相依赖，在主app module中按如下方式添加对所有组件module的依赖：
+注意：组件之间不要互相依赖
 
 ```groovy
+apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+
+//...
+
 dependencies {
     addComponent 'demo_component_a' //会默认添加依赖：project(':demo_component_a')
     addComponent 'demo_component_kt', project(':demo_component_kt') //module方式
@@ -232,10 +237,19 @@ CC会优先调用app内部的组件，只有在内部找不到对应组件且未
 原理:[android扫描接口实现类并通过修改字节码自动生成注册表](http://blog.csdn.net/cdecde111/article/details/78074692)
 
 
-
-## [常见问题](docs/Q&A.md)
-
 ## [更新日志](docs/ChangeLog.md)
+
+## 遇到问题怎么办？
+
+- 先打开CC的日志开关，看完整的调用过程日志，这往往能帮助我们找到问题
+```java
+CC.enableDebug(true);  //普通调试日志，会提示一些错误信息
+CC.enableVerboseLog(true);  //组件调用的详细过程日志，用于跟踪整个调用过程
+```
+- 看[Wiki](https://github.com/luckybilly/CC/wiki)
+- 看[常见问题](docs/Q&A.md)
+- 看[issue](https://github.com/luckybilly/CC/issues)
+- 加下方的QQ群提问
 
 ## QQ群
 
