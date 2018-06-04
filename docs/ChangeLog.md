@@ -2,23 +2,34 @@
 # 更新日志
 
 - 2018.06.04 V1.1.0 重大更新
-~~~
-    1. 新增支持全局拦截器： 
-        实现IGlobalCCInterceptor接口即可，插件会自动完成注册 (配合最新的cc-settings.gradle文件使用)
-        CC调用时，可通过withoutGlobalInterceptor()对当前CC禁用所有全局拦截器
-    2. 跨app调用时，新增支持自定义类型的参数
-        实现IParamJsonConverter接口即可，插件会自动完成注册 (配合最新的cc-settings.gradle文件使用)
-        自定义Bean的类型无需实现Serializable/Parcelable接口
-        需要跨app传递的bean类型需要下沉到公共库，通信双方都依赖此库以实现类型发送和接受
-        参考：LoginActivity
-    3. 新增一种状态码： -11
-        只会在跨app调用组件时发生，代表参数传递错误，可以通过查看Logcat了解详细信息
-    4. 跨app调用默认状态改为关闭，可手动打开： CC.enableRemoteCC(true)
-~~~
+
+
+        1. 新增支持全局拦截器： 
+            实现IGlobalCCInterceptor接口即可，插件会自动完成注册 (配合最新的cc-settings.gradle文件使用)
+            CC调用时，可通过withoutGlobalInterceptor()对当前CC禁用所有全局拦截器
+        2. 跨app调用时，新增支持自定义类型的参数
+            实现IParamJsonConverter接口即可，插件会自动完成注册 (配合最新的cc-settings.gradle文件使用)
+            自定义Bean的类型无需实现Serializable/Parcelable接口
+            需要跨app传递的bean类型需要下沉到公共库，通信双方都依赖此库以实现类型发送和接受
+            参考：LoginActivity
+        3. 新增一种状态码： -11
+            只会在跨app调用组件时发生，代表参数传递错误，可以通过查看Logcat了解详细信息
+        4. 跨app调用默认状态改为关闭，可手动打开： CC.enableRemoteCC(true)
+        5. 修改cc-settings.gradle
+            增加IGlobalCCInterceptor和IParamJsonConverter的自动注册配置
+            将autoregister的参数配置改为可添加的方式(原来是覆盖式),参考：cc-settings-demo-b.gradle
+
 链接：
+
+全局拦截器：
 [IGlobalCCInterceptor](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IGlobalCCInterceptor.java)
+
+跨app调用时的参数转换工具：
 [IParamJsonConverter](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IParamJsonConverter.java)
+
 [LoginActivity](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/LoginActivity.java)
+
+[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
 
 - 2018.05.17 V1.0.0版 Fix issue [#23](https://github.com/luckybilly/CC/issues/23)
 
