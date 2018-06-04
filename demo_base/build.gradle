@@ -1,15 +1,14 @@
-apply plugin: 'com.android.library'
+apply from: rootProject.file('cc-settings.gradle')
 
 android {
     compileSdkVersion rootProject.compileVersion
     buildToolsVersion rootProject.buildVersion
 
     defaultConfig {
-        minSdkVersion rootProject.minVersion
+        minSdkVersion 8
         targetSdkVersion rootProject.compileVersion
         versionCode 1
         versionName "1.0"
-
     }
 
     buildTypes {
@@ -22,6 +21,5 @@ android {
 }
 
 dependencies {
-    implementation "com.billy.android:cc:1.1.0"
-//    compile project(":cc")
+    implementation 'com.google.code.gson:gson:2.8.4'
 }

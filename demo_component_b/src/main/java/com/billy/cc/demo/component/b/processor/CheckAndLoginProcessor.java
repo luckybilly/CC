@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.Looper;
-import android.text.TextUtils;
 import android.widget.Toast;
 
 import com.billy.cc.core.component.CC;
@@ -29,9 +28,9 @@ public class CheckAndLoginProcessor implements IActionProcessor {
 
     @Override
     public boolean onActionCall(CC cc) {
-        if (!TextUtils.isEmpty(Global.loginUserName)) {
+        if (Global.loginUser != null) {
             //already login, return username
-            CCResult result = CCResult.success(Global.KEY_USERNAME, Global.loginUserName);
+            CCResult result = CCResult.success(Global.KEY_USER, Global.loginUser);
             CC.sendCCResult(cc.getCallId(), result);
             return false;
         }
