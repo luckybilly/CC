@@ -4,10 +4,10 @@
 - 2018.06.04 V1.1.0 重大更新
 ~~~
     1. 新增支持全局拦截器： 
-        实现IGlobalCCInterceptor接口即可，插件会自动完成注册
+        实现IGlobalCCInterceptor接口即可，插件会自动完成注册 (配合最新的cc-settings.gradle文件使用)
         CC调用时，可通过withoutGlobalInterceptor()对当前CC禁用所有全局拦截器
     2. 跨app调用时，新增支持自定义类型的参数
-        实现IParamJsonConverter接口即可，插件会自动完成注册
+        实现IParamJsonConverter接口即可，插件会自动完成注册 (配合最新的cc-settings.gradle文件使用)
         自定义Bean的类型无需实现Serializable/Parcelable接口
         需要跨app传递的bean类型需要下沉到公共库，通信双方都依赖此库以实现类型发送和接受
         参考：LoginActivity
