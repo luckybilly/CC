@@ -74,7 +74,7 @@
         10. 支持手动取消
         11. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
         12. 支持动态注册/反注册组件(IDynamicComponent)
-        13. 支持组件间传递Fragment、自定义View等（组件在同一个app内时支持、跨app传递非基础类型的对象暂不支持）
+        13. 支持组件间传递Fragment、自定义View等（在同一个进程内传递）
             13.1 不仅仅是获取Fragment、自定义View的对象，并支持后续的通信。
         14. 尽可能的解决了使用姿势不正确导致的crash，降低产品线上crash率： 
             14.1 组件调用处、回调处、组件实现处的crash全部在框架内部catch住
@@ -205,7 +205,7 @@ dependencies {
 
 注意：
 
-CC会优先调用app内部的组件，只有在内部找不到对应组件且未设置`CC.enableRemoteCC(false)`时才会尝试进行跨app组件调用
+CC会优先调用app内部的组件，只有在内部找不到对应组件且设置`CC.enableRemoteCC(true)`时才会尝试进行跨app组件调用
 
 所以，单组件以app运行调试时，如果主app要主动与此组件进行通信，请确保主app中没有包含此组件(Tips:最简单的方式是重新Run一次主app module)
 
