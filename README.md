@@ -253,6 +253,8 @@ CC.enableVerboseLog(true);  //组件调用的详细过程日志，用于跟踪�
 
 ## QQ群
 
+注：PPT演讲稿《渐进式Android组件化实施方案》可在QQ群文件中下载，欢迎加群讨论
+
 QQ群号：686844583  
 
 <a target="_blank" href="http://shang.qq.com/wpa/qunwpa?idkey=5fdd1171114b5a1eb80ea0be00b392c2e3e8ab6f278f182a07e959e80d4c9409"><img border="0" src="http://pub.idqqimg.com/wpa/images/group.png" alt="CC交流群" title="CC交流群"></a>
