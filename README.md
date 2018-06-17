@@ -22,39 +22,25 @@
 
 ![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
 
-## 快速理解CC
-
-定义组件：将自身的业务(页面跳转及服务调用等)封装起来提供给外部调用，并返回执行的结果
-
-调用组件：根据组件名称、业务名称及其它参数调用指定组件的指定业务，并获得执行的结果
-
-组件将业务完全隔离在自身内部，仅暴露组件名称(ComponentName)、业务名称(actionName)、参数列表及返回值等信息给外部调用
-
 ## 使用CC的理由
 
+- 支持渐进式组件化改造 [强烈推荐：使用CC进行渐进式组件化改造](https://github.com/luckybilly/CC/wiki/%E4%BD%BF%E7%94%A8CC%E8%BF%9B%E8%A1%8C%E6%B8%90%E8%BF%9B%E5%BC%8F%E7%BB%84%E4%BB%B6%E5%8C%96%E6%94%B9%E9%80%A0)
 
-- 集成简单,仅需5步即可完成集成：
-
-
-        在根目录build.gradle中添加自动注册插件
-        添加apply cc-settings.gradle文件
-        实现IComponent接口创建一个组件
-        使用CC.obtainBuilder("component_name").build().call()调用组件
-        在主app中添加对组件module的依赖,如: addComponent 'demo_component_a'
-- 完全的代码隔离：CC支持跨app调用组件，开发时组件之间无需互相依赖
-
-
-        组件以app方式独立运行时不需要依赖任何其它组件，从源头上隔离代码
-        无需担心与主app的相互调用，从一开始组件化改造就可以单组件运行
-        跟打包在主app中运行是一样的效果，能大大降低组件化改造的难度
-
-- 改造成本低：接入时可基本不改原有代码，原有组件的拆分工作不影响整体组件化改造，[参考文章](https://github.com/luckybilly/CC/wiki/%E8%B0%81%E9%98%BB%E7%A2%8D%E4%BA%86%E4%BD%A0%E5%81%9A%E7%BB%84%E4%BB%B6%E5%8C%96%E5%BC%80%E5%8F%91%EF%BC%9F)
-- 组件层面的AOP支持：可以在组件内部AOP完成登录验证和权限验证等功能，调用方无需关注，[参考文章](https://github.com/luckybilly/CC/wiki/CC%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5(1)%EF%BC%9A%E5%AE%9E%E7%8E%B0%E7%99%BB%E5%BD%95%E6%88%90%E5%8A%9F%E5%86%8D%E8%BF%9B%E5%85%A5%E7%9B%AE%E6%A0%87%E7%95%8C%E9%9D%A2%E5%8A%9F%E8%83%BD)
-- Fragment/View的组件化支持：支持组件调用方式获取及后续的功能调用，业务完全内聚，[参考文章](https://github.com/luckybilly/CC/wiki/CC%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5(2)%EF%BC%9AFragment%E5%92%8CView%E7%9A%84%E7%BB%84%E4%BB%B6%E5%8C%96)
+        
+        从集成CC的那一刻起，你的项目就已经组件化成功了：新业务即可以组件的形式开发
+        未解耦的模块通过创建一个IComponent接口的实现类即可暴露服务给其它组件调用（通过CC可支持跨app的组件调用）
+        有闲暇时再将模块解耦出来，以使其可以单独编译运行
+        解耦只是过程，而不是前提
+        点击上方强烈推荐的文章链接⬆了解详细的渐进式组件化概念
+        
+- 一静一动（开发时运行2个app，功能完整）
+    - 静：主App (通过跨App的方式调用单组件App内的组件)
+    - 动：单组件App (通过跨App的方式调用主App内的所有组件)
+    - 通过这种方式让组件之间完全无需依赖，从源头解决代码隔离的问题
+- 3种AOP策略助你随心所欲进行AOP编程
+    - 静态拦截器（全局拦截器）、动态拦截器、组件内部onCall方法中拦截
 - 对Push及jsBridge友好：直接转发对组件的调用即可，[参考文章](https://github.com/luckybilly/CC/wiki/CC%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5(3):-%E8%AE%A9jsBridge%E6%9B%B4%E4%BC%98%E9%9B%85)
-- 免维护组件列表：使用gradle插件实现组件的自动注册，插拔组件只需修改dependencies依赖即可
 - 极低的学习成本，便于推广使用：只需了解一个接口和一个静态方法即可定义组件，只需了解一个链式调用即可调用组件
-- 统一的定义方式和调用方式：面向协议来实现和调用组件，类似于移动端跟服务端的通信协议
 
 
 了解业界开源的一些组件化方案：[多个维度对比一些有代表性的开源android组件化开发方案](https://github.com/luckybilly/AndroidComponentizeLibs) 
@@ -69,7 +55,7 @@
         5. 支持同步/异步方式调用
         6. 支持同步/异步方式实现组件
         7. 调用方式不受实现方式的限制（例如:可以同步调用另一个组件的异步实现功能。注：不要在主线程同步调用耗时操作）
-        8. 支持添加自定义拦截器（按添加的先后顺序执行）
+        8. 支持添加自定义拦截器【包括：静态拦截器(全局拦截器)和动态拦截器(局部拦截器)】
         9. 支持超时设置
         10. 支持手动取消
         11. 编译时自动注册组件(IComponent)，无需手动维护组件注册表(使用ASM修改字节码的方式实现)
