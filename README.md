@@ -11,17 +11,6 @@
 
 技术原理: [Wiki](https://github.com/luckybilly/CC/wiki)
 
-## demo演示
-
-[demo下载(包含主工程demo和demo_component_a组件)](https://github.com/luckybilly/CC/raw/master/demo-debug.apk)
-
-[demo_component_b组件单独运行的App(Demo_B)下载](https://github.com/luckybilly/CC/raw/master/demo_component_b-debug.apk)
-
-以上**2个app**用来演示组件打包在主app内和**单独以app运行**时的组件调用，**都安装在手机上**之后的运行效果如下图所示
-
-
-![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
-
 ## 使用CC的理由
 
 - 支持渐进式组件化改造 [强烈推荐：使用CC进行渐进式组件化改造](https://github.com/luckybilly/CC/wiki/%E4%BD%BF%E7%94%A8CC%E8%BF%9B%E8%A1%8C%E6%B8%90%E8%BF%9B%E5%BC%8F%E7%BB%84%E4%BB%B6%E5%8C%96%E6%94%B9%E9%80%A0)
@@ -39,11 +28,22 @@
     - 通过这种方式让组件之间完全无需依赖，从源头解决代码隔离的问题
 - 3种AOP策略助你随心所欲进行AOP编程
     - 静态拦截器（全局拦截器）、动态拦截器、组件内部onCall方法中拦截
-- 对Push及jsBridge友好：直接转发对组件的调用即可，[参考文章](https://github.com/luckybilly/CC/wiki/CC%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5(3):-%E8%AE%A9jsBridge%E6%9B%B4%E4%BC%98%E9%9B%85)
+- 对Push及jsBridge友好：直接转发对组件的调用即可，与业务组件完全解耦，[参考文章](https://github.com/luckybilly/CC/wiki/CC%E6%A1%86%E6%9E%B6%E5%AE%9E%E8%B7%B5(3):-%E8%AE%A9jsBridge%E6%9B%B4%E4%BC%98%E9%9B%85)
 - 极低的学习成本，便于推广使用：只需了解一个接口和一个静态方法即可定义组件，只需了解一个链式调用即可调用组件
 
 
 了解业界开源的一些组件化方案：[多个维度对比一些有代表性的开源android组件化开发方案](https://github.com/luckybilly/AndroidComponentizeLibs) 
+
+## demo演示
+
+[demo下载(包含主工程demo和demo_component_a组件)](https://github.com/luckybilly/CC/raw/master/demo-debug.apk)
+
+[demo_component_b组件单独运行的App(Demo_B)下载](https://github.com/luckybilly/CC/raw/master/demo_component_b-debug.apk)
+
+以上**2个app**用来演示组件打包在主app内和**单独以app运行**时的组件调用，**都安装在手机上**之后的运行效果如下图所示
+
+
+![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
 
 ## CC功能列表
 
