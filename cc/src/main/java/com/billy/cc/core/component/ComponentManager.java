@@ -2,6 +2,8 @@ package com.billy.cc.core.component;
 
 import android.text.TextUtils;
 
+import com.billy.cc.core.component.annotation.SubProcess;
+
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.SynchronousQueue;
@@ -18,6 +20,8 @@ import static com.billy.cc.core.component.GlobalCCInterceptorManager.INTERCEPTOR
  */
 class ComponentManager {
     private static final ConcurrentHashMap<String, IComponent> COMPONENTS = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<String, String> COMPONENT_PROCESS_NAMES = new ConcurrentHashMap<>();
+    private static final String SUB_PROCESS_SEPARATOR = ":";
     private static final ThreadFactory THREAD_FACTORY = new ThreadFactory() {
         @Override
         public Thread newThread(Runnable r) {
@@ -30,13 +34,14 @@ class ComponentManager {
             60L, TimeUnit.SECONDS,
             new SynchronousQueue<Runnable>(), THREAD_FACTORY);
 
-    //加载类时自动调用初始化：注册所有组件
-    //通过auto-register插件生成组件注册代码
-    //生成的代码如下:
-//  static {
-//      registerComponent(new ComponentA());
-//      registerComponent(new ComponentAA());
-//  }
+    static {
+        registerComponent(new DynamicComponentOption());
+        //加载类时自动调用初始化：注册所有组件
+        //通过auto-register插件生成组件注册代码
+        //生成的代码如下:
+        //registerComponent(new ComponentA());
+        //registerComponent(new ComponentAA());
+    }
 
     /**
      * 提前初始化所有全局拦截器
@@ -58,7 +63,13 @@ class ComponentManager {
                     CC.logError("component " + component.getClass().getName()
                             + " register with an empty name. abort this component.");
                 } else {
+                    String processName = getComponentProcessName(component.getClass());
+                    COMPONENT_PROCESS_NAMES.put(name, processName);
+                    if (!processName.equals(CCUtil.getCurProcessName())) {
+                        return;
+                    }
                     IComponent oldComponent = COMPONENTS.put(name, component);
+
                     if (oldComponent != null) {
                         CC.logError( "component (" + component.getClass().getName()
                                 + ") with name:" + name
@@ -72,6 +83,26 @@ class ComponentManager {
                 e.printStackTrace();
             }
         }
+    }
+
+    static String getComponentProcessName(Class<? extends IComponent> componentClass) {
+        SubProcess subProcess = componentClass.getAnnotation(SubProcess.class);
+        String packageName = CC.getApplication().getPackageName();
+        //TODO 需要兼容：app的默认进程名称有可能不是包名
+        // 通过在application节点添加android:process="a.b.c"可以指定默认进程名称
+        String defaultProcessName = packageName;
+        String processName;
+        if (subProcess != null) {
+            processName = subProcess.name();
+            if (TextUtils.isEmpty(processName)) {
+                processName = defaultProcessName;
+            } else if (processName.startsWith(SUB_PROCESS_SEPARATOR)) {
+                processName = packageName + processName;
+            }
+        } else {
+            processName = defaultProcessName;
+        }
+        return processName;
     }
 
     static void unregisterComponent(IComponent component) {
@@ -100,10 +131,16 @@ class ComponentManager {
             chain.addInterceptors(INTERCEPTORS);
         }
         chain.addInterceptors(cc.getInterceptors());
-        if (hasComponent(cc.getComponentName())) {
+        String componentName = cc.getComponentName();
+        if (hasComponent(componentName)) {
+            //调用当前进程中的组件
             chain.addInterceptor(LocalCCInterceptor.getInstance());
+        } else if (!TextUtils.isEmpty(getComponentProcessName(componentName))) {
+            //app内部跨进程调用组件
+            chain.addInterceptor(SubProcessCCInterceptor.getInstance());
         } else {
-            chain.addInterceptor(new RemoteCCInterceptor(cc));
+            //跨App调用组件
+            chain.addInterceptor(RemoteCCInterceptor.getInstance());
         }
         chain.addInterceptor(Wait4ResultInterceptor.getInstance());
         ChainProcessor processor = new ChainProcessor(chain);
@@ -138,6 +175,45 @@ class ComponentManager {
     static void threadPool(Runnable runnable) {
         if (runnable != null) {
             CC_THREAD_POOL.execute(runnable);
+        }
+    }
+
+    static String getComponentProcessName(String componentName) {
+        return COMPONENT_PROCESS_NAMES.get(componentName);
+    }
+
+    static final String COMPONENT_DYNAMIC_COMPONENT_OPTION = "internal.cc.dynamicComponentOption";
+    static final String ACTION_REGISTER = "registerDynamicComponent";
+    static final String ACTION_UNREGISTER = "unregisterDynamicComponent";
+    static final String KEY_COMPONENT_NAME = "componentName";
+    static final String KEY_PROCESS_NAME = "processName";
+
+    static class DynamicComponentOption implements IComponent {
+
+        @Override
+        public String getName() {
+            return COMPONENT_DYNAMIC_COMPONENT_OPTION;
+        }
+
+        @Override
+        public boolean onCall(CC cc) {
+            String actionName = cc.getActionName();
+            String componentName = cc.getParamItem(KEY_COMPONENT_NAME, null);
+            String processName = cc.getParamItem(KEY_PROCESS_NAME, null);
+            switch (actionName) {
+                case ACTION_REGISTER:
+                    COMPONENT_PROCESS_NAMES.put(componentName, processName);
+                    CC.sendCCResult(cc.getCallId(), CCResult.success());
+                    break;
+                case ACTION_UNREGISTER:
+                    COMPONENT_PROCESS_NAMES.remove(componentName);
+                    CC.sendCCResult(cc.getCallId(), CCResult.success());
+                    break;
+                default:
+                    CC.sendCCResult(cc.getCallId(), CCResult.error("unsupported action:" + actionName));
+                    break;
+            }
+            return false;
         }
     }
 }

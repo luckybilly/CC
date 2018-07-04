@@ -32,9 +32,10 @@ class ValidateInterceptor implements ICCInterceptor {
             //context为null (没有设置context 且 CC中获取application失败)
             code = CCResult.CODE_ERROR_CONTEXT_NULL;
         } else {
-            boolean hasComponent = ComponentManager.hasComponent(componentName);
-            if (!hasComponent && !CC.CALL_REMOTE_CC_IF_NEED) {
-                //本app内没有改组件，并且设置了不会调用外部app的组件
+            if (!ComponentManager.hasComponent(componentName)
+                    && TextUtils.isEmpty(ComponentManager.getComponentProcessName(componentName))
+                    && !CC.CALL_REMOTE_CC_IF_NEED) {
+                //本app内所有进程均没有指定的组件，并且设置了不会调用外部app的组件
                 code = CCResult.CODE_ERROR_NO_COMPONENT_FOUND;
                 CC.verboseLog(cc.getCallId(),"componentName=" + componentName
                         + " is not exists and CC.enableRemoteCC is " + CC.CALL_REMOTE_CC_IF_NEED);

@@ -19,6 +19,7 @@ import java.util.Map;
  */
 @SuppressLint("PrivateApi")
 class CCUtil {
+    public static final String PROCESS_UNKNOWN = "UNKNOWN";
 
     static Map<String, Object> convertToMap(JSONObject json) {
         Map<String, Object> params = null;
@@ -66,6 +67,7 @@ class CCUtil {
     }
 
     private static Boolean isRunningMainProcess = null;
+    private static String curProcessName = null;
     /**
      * 进程是否以包名在运行（当前进程是否为主进程）
      */
@@ -75,27 +77,59 @@ class CCUtil {
             if (application == null) {
                 return false;
             }
-            boolean main = false;
-            try {
-                ActivityManager manager = (ActivityManager) application.getSystemService(Context.ACTIVITY_SERVICE);
-                if (manager == null) {
-                    return true;
-                }
-                List<RunningAppProcessInfo> processes = manager.getRunningAppProcesses();
-                for (RunningAppProcessInfo appProcess : processes) {
-                    if (appProcess.pid == android.os.Process.myPid()
-                            && application.getPackageName().equals(appProcess.processName)) {
-                        main = true;
-                        break;
-                    }
-                }
-            }catch (Exception ex){
-                ex.printStackTrace();
-
-            }
-            isRunningMainProcess = main;
+            isRunningMainProcess = application.getPackageName().equals(getCurProcessName());
         }
         return isRunningMainProcess;
+    }
+
+    /**
+     * 获取当前进程的名称
+     * @return 进程名
+     */
+    public static String getCurProcessName() {
+        if (curProcessName != null) {
+            return curProcessName;
+        }
+        Application application = CC.getApplication();
+        if (application == null) {
+            return PROCESS_UNKNOWN;
+        }
+        try {
+            ActivityManager manager = (ActivityManager) application.getSystemService(Context.ACTIVITY_SERVICE);
+            if (manager != null) {
+                List<RunningAppProcessInfo> processes = manager.getRunningAppProcesses();
+                for (RunningAppProcessInfo appProcess : processes) {
+                    if (appProcess.pid == android.os.Process.myPid()) {
+                        curProcessName = appProcess.processName;
+                        return curProcessName;
+                    }
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return PROCESS_UNKNOWN;
+    }
+
+    public static String[] getCurProcessPkgList() {
+        Application application = CC.getApplication();
+        if (application == null) {
+            return null;
+        }
+        try {
+            ActivityManager manager = (ActivityManager) application.getSystemService(Context.ACTIVITY_SERVICE);
+            if (manager != null) {
+                List<RunningAppProcessInfo> processes = manager.getRunningAppProcesses();
+                for (RunningAppProcessInfo appProcess : processes) {
+                    if (appProcess.pid == android.os.Process.myPid()) {
+                        return appProcess.pkgList;
+                    }
+                }
+            }
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+        return null;
     }
 
     /**

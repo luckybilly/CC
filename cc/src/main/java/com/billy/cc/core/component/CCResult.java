@@ -162,7 +162,6 @@ public class CCResult {
      * 快捷构建一个CC调用成功的CCResult
      * success=true, code=0 ({@link #CODE_SUCCESS})
      * 可以通过CCResult.addData(key, value)来继续添加更多的返回信息
-     * @return 构造的CCResult对象
      * @param data 返回的信息
      * @return 构造的CCResult对象
      */
