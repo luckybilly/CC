@@ -379,6 +379,9 @@ public class CC {
         return application;
     }
 
+    void forwardTo(String componentName) {
+        this.componentName = componentName;
+    }
 
     public String getActionName() {
         return actionName;

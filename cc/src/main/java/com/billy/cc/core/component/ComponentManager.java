@@ -49,7 +49,7 @@ class ComponentManager {
     static void init(){
         //调用此方法时，虚拟机会加载ComponentManager类
         //会自动执行static块中的组件自动注册，调用组件类的无参构造方法
-        //如果不提动调用此方法，static块中的代码将在第一次进行组件调用时(cc.callXxx())执行
+        //如果不提前调用此方法，static块中的代码将在第一次进行组件调用时(cc.callXxx())执行
     }
 
     /**
@@ -126,23 +126,13 @@ class ComponentManager {
     static CCResult call(CC cc) {
         String callId = cc.getCallId();
         Chain chain = new Chain(cc);
-        chain.addInterceptor(ValidateInterceptor.getInstance());
         if (!cc.isWithoutGlobalInterceptor()) {
             chain.addInterceptors(INTERCEPTORS);
         }
         chain.addInterceptors(cc.getInterceptors());
-        String componentName = cc.getComponentName();
-        if (hasComponent(componentName)) {
-            //调用当前进程中的组件
-            chain.addInterceptor(LocalCCInterceptor.getInstance());
-        } else if (!TextUtils.isEmpty(getComponentProcessName(componentName))) {
-            //app内部跨进程调用组件
-            chain.addInterceptor(SubProcessCCInterceptor.getInstance());
-        } else {
-            //跨App调用组件
-            chain.addInterceptor(RemoteCCInterceptor.getInstance());
-        }
-        chain.addInterceptor(Wait4ResultInterceptor.getInstance());
+        // 有效性校验放在自定义拦截器之后执行，优先执行自定义拦截器，让其可以拦截到所有组件调用
+        // 执行实际调用的拦截器在校验有效性结束后再添加
+        chain.addInterceptor(ValidateInterceptor.getInstance());
         ChainProcessor processor = new ChainProcessor(chain);
         //异步调用，放到线程池中运行
         if (cc.isAsync()) {

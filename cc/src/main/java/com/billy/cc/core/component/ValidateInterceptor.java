@@ -44,6 +44,19 @@ class ValidateInterceptor implements ICCInterceptor {
         if (code != 0) {
             return CCResult.error(code);
         }
+        //执行完自定义拦截器，并且通过有效性校验后，再确定具体调用组件的方式
+        if (ComponentManager.hasComponent(componentName)) {
+            //调用当前进程中的组件
+            chain.addInterceptor(LocalCCInterceptor.getInstance());
+        } else if (!TextUtils.isEmpty(ComponentManager.getComponentProcessName(componentName))) {
+            //调用app内部子进程中的组件
+            chain.addInterceptor(SubProcessCCInterceptor.getInstance());
+        } else {
+            //调用设备上安装的其它app（组件单独运行的app）中的组件
+            chain.addInterceptor(RemoteCCInterceptor.getInstance());
+        }
+        chain.addInterceptor(Wait4ResultInterceptor.getInstance());
+        // 执行上面添加的拦截器，开始执行组件调用
         return chain.proceed();
     }
 }
