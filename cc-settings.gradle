@@ -45,7 +45,8 @@ if (runAsApp) {
 ext.addComponent = { dependencyName, realDependency = null ->
     def curModuleIsBuildingApk = false //当前task是否为给本module打apk包
     def taskNames = project.gradle.startParameter.taskNames
-    def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)).*"
+//  def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)).*"
+    def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)|((BUILD)?TINKER)).*"
     def taskBuildApkPattern = Pattern.compile(regex)
     for (String task : taskNames) {
         if (taskBuildApkPattern.matcher(task.toUpperCase()).matches()) {
