@@ -108,11 +108,6 @@ User user = ccResult.getDataItem(key); //读取CCResult.data中的item
     可参考[ComponentB](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/ComponentB.java)
     及[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
 
-- 给跨app组件的调用添加自定义权限限制
-    - 新建一个module
-    - 在该module的build.gradle中添加依赖： `compile 'com.billy.android:cc:x.x.x'`
-    - 在该module的src/main/AndroidManifest.xml中设置权限及权限的级别，参考[component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
-    - 其它每个module都额外依赖此module，或自定义一个全局的cc-settings.gradle，参考[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
    
 - 跨组件获取Fragment、View等对象并支持后续与这些对象通信，以Fragment对象为例：
     - 在组件实现方通过`CCResult.addData(key, fragment)`将Fragment对象返回给调用方

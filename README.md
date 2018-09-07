@@ -76,7 +76,6 @@
         - demo_component_b              demo组件B
         - demo_component_kt             demo组件(kotlin)
         - demo_interceptors             demo全局拦截器(如果有多个app并且拦截器不同，可以创建多个module给不同app使用)
-        - component_protect_demo        添加跨app组件调用自定义权限限制的demo，在cc-settings-demo-b.gradle被依赖
         - cc-settings-demo-b.gradle     演示如何自定义配置文件，如：添加actionProcessor自动注册的配置
         - demo-debug.apk                demo安装包(包含demo/demo_component_a/demo_component_kt)
         - demo_component_b-debug.apk    demo组件B单独运行安装包
