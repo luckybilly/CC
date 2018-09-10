@@ -25,7 +25,8 @@ class RegisterInfo {
     ArrayList<Pattern> includePatterns = []
     ArrayList<Pattern> excludePatterns = []
     File fileContainsInitClass //initClassName的class文件或含有initClassName类的jar文件
-    ArrayList<String> classList = new ArrayList<>()
+    Set<String> classList = new HashSet<>()
+    Set<String> processList = new HashSet<>()
 
 
     RegisterInfo(){}

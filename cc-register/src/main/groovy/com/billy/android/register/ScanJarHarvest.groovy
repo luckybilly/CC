@@ -10,5 +10,6 @@ class ScanJarHarvest {
         String className
         String interfaceName
         boolean isInitClass
+        String processName
     }
 }

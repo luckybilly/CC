@@ -1,9 +1,6 @@
 package com.billy.android.register
 
-import org.objectweb.asm.ClassReader
-import org.objectweb.asm.ClassVisitor
-import org.objectweb.asm.ClassWriter
-import org.objectweb.asm.Opcodes
+import org.objectweb.asm.*
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -14,6 +11,7 @@ import java.util.regex.Pattern
  * @since 17/3/20 11:48
  */
 class CodeScanProcessor {
+    static final String SUB_PROCESS_ANNOTATION = "Lcom/billy/cc/core/component/annotation/SubProcess;"
 
     ArrayList<RegisterInfo> infoList
     Map<String, ScanJarHarvest> cacheMap
@@ -159,6 +157,8 @@ class CodeScanProcessor {
     class ScanClassVisitor extends ClassVisitor {
         private String filePath
         private def found = false
+        private ScanJarHarvest.Harvest ccMainHarvest
+        private RegisterInfo ccMainRegisterInfo
 
         ScanClassVisitor(int api, ClassVisitor cv, String filePath) {
             super(api, cv)
@@ -173,6 +173,27 @@ class CodeScanProcessor {
             return found
         }
 
+        @Override
+        AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+            def annotationVisitor = super.visitAnnotation(desc, visible)
+            if ((ccMainHarvest != null || ccMainRegisterInfo != null)
+                    && SUB_PROCESS_ANNOTATION == desc) {
+                return new AnnotationVisitor(api, annotationVisitor) {
+                    @Override
+                    void visit(String name, Object value) {
+                        if (value) {
+                            if (ccMainRegisterInfo)
+                                ccMainRegisterInfo.processList.add(value)
+                            if (ccMainHarvest)
+                                ccMainHarvest.processName = value
+                        }
+                        super.visit(name, value)
+                    }
+                }
+            }
+            return annotationVisitor
+        }
+
         void visit(int version, int access, String name, String signature,
                    String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces)
@@ -185,27 +206,33 @@ class CodeScanProcessor {
             }
             infoList.each { ext ->
                 if (shouldProcessThisClassForRegister(ext, name)) {
+                    def interfaceName = ext.interfaceName
                     if (superName != 'java/lang/Object' && !ext.superClassNames.isEmpty()) {
                         for (int i = 0; i < ext.superClassNames.size(); i++) {
                             if (ext.superClassNames.get(i) == superName) {
-                                //  println("superClassNames--------"+name)
-                                ext.classList.add(name) //需要把对象注入到管理类 就是fileContainsInitClass
-                                found = true
-                                addToCacheMap(superName, name, filePath)
+                                gotOne(interfaceName, name, ext)
                                 return
                             }
                         }
                     }
-                    if (ext.interfaceName && interfaces != null) {
+                    if (interfaceName && interfaces != null) {
                         interfaces.each { itName ->
-                            if (itName == ext.interfaceName) {
-                                ext.classList.add(name)//需要把对象注入到管理类  就是fileContainsInitClass
-                                addToCacheMap(itName, name, filePath)
-                                found = true
+                            if (itName == interfaceName) {
+                                gotOne(interfaceName, name, ext)
                             }
                         }
                     }
                 }
+            }
+        }
+
+        void gotOne(String interfaceName, String className, RegisterInfo ext) {
+            ext.classList.add(className) //需要把对象注入到管理类 就是fileContainsInitClass
+            found = true
+            def h = addToCacheMap(interfaceName, className, filePath)
+            if (interfaceName == RegisterTransform.MAIN_CC_INTERFACE) {
+                ccMainHarvest = h
+                ccMainRegisterInfo = ext
             }
         }
     }
@@ -215,20 +242,22 @@ class CodeScanProcessor {
      * @param name
      * @param srcFilePath
      */
-    private void addToCacheMap(String interfaceName, String name, String srcFilePath) {
-        if (!srcFilePath.endsWith(".jar") || cacheMap == null) return
+    private ScanJarHarvest.Harvest addToCacheMap(String interfaceName, String name, String srcFilePath) {
+        if (!srcFilePath.endsWith(".jar") || cacheMap == null) return null
         def jarHarvest = cacheMap.get(srcFilePath)
         if (!jarHarvest) {
             jarHarvest = new ScanJarHarvest()
             cacheMap.put(srcFilePath, jarHarvest)
         }
         if (name) {
-            ScanJarHarvest.Harvest classInfo = new ScanJarHarvest.Harvest()
-            classInfo.setIsInitClass(interfaceName == null)
-            classInfo.setInterfaceName(interfaceName)
-            classInfo.setClassName(name)
-            jarHarvest.harvestList.add(classInfo)
+            ScanJarHarvest.Harvest harvest = new ScanJarHarvest.Harvest()
+            harvest.setIsInitClass(interfaceName == null)
+            harvest.setInterfaceName(interfaceName)
+            harvest.setClassName(name)
+            jarHarvest.harvestList.add(harvest)
+            return harvest
         }
+        return null
     }
 
     boolean isCachedJarContainsInitClass(String filePath) {
@@ -248,7 +277,7 @@ class CodeScanProcessor {
             if (scanJarHarvest) {
                 infoList.each { info ->
                     scanJarHarvest.harvestList.each { harvest ->
-                        //       println("----harvest-------"+harvest.className)
+                        //       println("----ccMainHarvest-------"+ccMainHarvest.className)
                         if (harvest.isInitClass) {
                             if (info.initClassName == harvest.className) {
                                 info.fileContainsInitClass = destFile
@@ -256,12 +285,7 @@ class CodeScanProcessor {
                             }
                         } else if (info.interfaceName == harvest.interfaceName) {
                             info.classList.add(harvest.className)
-                        }
-
-                        for (int i = 0; i < info.superClassNames.size(); i++) {
-                            if (info.superClassNames.get(i) == harvest.interfaceName) {
-                                info.classList.add(harvest.className)
-                            }
+                            info.processList.add(harvest.processName)
                         }
                     }
                 }

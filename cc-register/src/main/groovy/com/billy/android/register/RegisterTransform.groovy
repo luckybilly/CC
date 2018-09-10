@@ -2,6 +2,7 @@ package com.billy.android.register
 
 import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.billy.android.register.generator.ProviderGenerator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.apache.commons.codec.digest.DigestUtils
@@ -15,6 +16,9 @@ import org.gradle.api.Project
  */
 class RegisterTransform extends Transform {
     static final String PLUGIN_NAME = RegisterPlugin.PLUGIN_NAME
+    static final String MAIN_CC_INTERFACE = "com/billy/cc/core/component/IComponent"
+    static final String MAIN_CC_SUB_PROCESS_FOLDER = "com/billy/android/cc/providers"
+
 
     Project project
     CcRegisterConfig config;
@@ -85,6 +89,8 @@ class RegisterTransform extends Transform {
 
         CodeScanProcessor scanProcessor = new CodeScanProcessor(config.list, cacheMap)
 
+        def classFolder = null
+
         // 遍历输入文件
         inputs.each { TransformInput input ->
             // 遍历jar
@@ -99,6 +105,7 @@ class RegisterTransform extends Transform {
                 long dirTime = System.currentTimeMillis();
                 // 获得产物的目录
                 File dest = outputProvider.getContentLocation(directoryInput.name, directoryInput.contentTypes, directoryInput.scopes, Format.DIRECTORY)
+                classFolder = dest
                 String root = directoryInput.file.absolutePath
                 if (!root.endsWith(File.separator))
                     root += File.separator
@@ -143,6 +150,12 @@ class RegisterTransform extends Transform {
                     }
                     CodeInsertProcessor.insertInitCodeTo(ext)
                 }
+                if (ext.interfaceName == MAIN_CC_INTERFACE && !ext.processList.isEmpty()) {
+                    //注册子进程通信所需的provider
+                    ext.processList.each { processName ->
+                        addSubProcess(processName, classFolder)
+                    }
+                }
             } else {
                 project.logger.error("The specified register class not found:" + ext.registerClassName)
             }
@@ -152,7 +165,18 @@ class RegisterTransform extends Transform {
         project.logger.error("register cost time: " + (finishTime - time) + " ms")
     }
 
-    void scanJar(JarInput jarInput, TransformOutputProvider outputProvider, CodeScanProcessor scanProcessor) {
+    static void addSubProcess(String processName, File classFolder) {
+        if (!classFolder) return
+        if (processName && processName.startsWith(":"))
+            processName = processName.substring(1)
+        if (!processName) return
+        processName = processName.replaceAll("\\.", "_")
+        String providerName = "${MAIN_CC_SUB_PROCESS_FOLDER}/CC_Provider_${processName}"
+        println("${PLUGIN_NAME} generated a provider: ${classFolder.absolutePath}/${providerName}.class")
+        ProviderGenerator.generateProvider(providerName, classFolder)
+    }
+
+    static void scanJar(JarInput jarInput, TransformOutputProvider outputProvider, CodeScanProcessor scanProcessor) {
 
         // 获得输入文件
         File src = jarInput.file
