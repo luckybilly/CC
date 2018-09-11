@@ -2,6 +2,7 @@ package com.billy.android.register
 
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
+import com.billy.android.register.generator.ManifestGenerator
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 /**
@@ -21,12 +22,13 @@ public class RegisterPlugin implements Plugin<Project> {
         def isApp = project.plugins.hasPlugin(AppPlugin)
         project.extensions.create(EXT_NAME, CcRegisterConfig)
         if (isApp) {
-            println "project(${project.name} apply ${PLUGIN_NAME} plugin"
+            println "project(${project.name}) apply ${PLUGIN_NAME} plugin"
             def android = project.extensions.getByType(AppExtension)
             def transformImpl = new RegisterTransform(project)
             android.registerTransform(transformImpl)
             project.afterEvaluate {
                 init(project, transformImpl)//此处要先于transformImpl.transform方法执行
+                ManifestGenerator.generateManifestFileContent(project)
             }
         }
     }

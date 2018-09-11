@@ -2,13 +2,13 @@ package com.billy.android.register
 
 import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.billy.android.register.generator.ManifestGenerator
 import com.billy.android.register.generator.ProviderGenerator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
-
 /**
  *
  * @author billy.qi
@@ -17,7 +17,6 @@ import org.gradle.api.Project
 class RegisterTransform extends Transform {
     static final String PLUGIN_NAME = RegisterPlugin.PLUGIN_NAME
     static final String MAIN_CC_INTERFACE = "com/billy/cc/core/component/IComponent"
-    static final String MAIN_CC_SUB_PROCESS_FOLDER = "com/billy/android/cc/providers"
 
 
     Project project
@@ -153,7 +152,9 @@ class RegisterTransform extends Transform {
                 if (ext.interfaceName == MAIN_CC_INTERFACE && !ext.processList.isEmpty()) {
                     //注册子进程通信所需的provider
                     ext.processList.each { processName ->
-                        addSubProcess(processName, classFolder)
+                        if (processName && classFolder) {
+                            ProviderGenerator.generateProvider(processName, classFolder)
+                        }
                     }
                 }
             } else {
@@ -163,17 +164,6 @@ class RegisterTransform extends Transform {
         def finishTime = System.currentTimeMillis()
         project.logger.error("register insert code cost time: " + (finishTime - scanFinishTime) + " ms")
         project.logger.error("register cost time: " + (finishTime - time) + " ms")
-    }
-
-    static void addSubProcess(String processName, File classFolder) {
-        if (!classFolder) return
-        if (processName && processName.startsWith(":"))
-            processName = processName.substring(1)
-        if (!processName) return
-        processName = processName.replaceAll("\\.", "_")
-        String providerName = "${MAIN_CC_SUB_PROCESS_FOLDER}/CC_Provider_${processName}"
-        println("${PLUGIN_NAME} generated a provider: ${classFolder.absolutePath}/${providerName}.class")
-        ProviderGenerator.generateProvider(providerName, classFolder)
     }
 
     static void scanJar(JarInput jarInput, TransformOutputProvider outputProvider, CodeScanProcessor scanProcessor) {

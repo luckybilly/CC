@@ -18,11 +18,5 @@
         <activity android:name="com.billy.cc.demo.component.b.LoginActivity"
             android:process=":processB"
             />
-        <provider
-            android:authorities="${applicationId}:processB.com.billy.cc.core.remote"
-            android:name=".BProvider"
-            android:process=":processB"
-            android:exported="true"
-            />
     </application>
 </manifest>
