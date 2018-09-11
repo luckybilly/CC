@@ -8,6 +8,7 @@ import android.os.IBinder;
 import com.billy.cc.core.component.RemoteCCService;
 
 /**
+ * 用于跨进程通信的游标，通过Extras跨进程传递bundle，在bundle中传递IBinder
  * @author billy.qi
  * @since 18/6/24 11:40
  */
@@ -25,7 +26,7 @@ public class RemoteCursor extends MatrixCursor {
         super(columnNames);
         binderExtras.putParcelable(KEY_BINDER_WRAPPER, new BinderWrapper(binder));
     }
-    /** 获取CCCursor的单例对象 */
+    /** 获取CCCursor在当前进程中的单例对象 */
     public static RemoteCursor getInstance() {
         return RemoteCursor.CCCursorHolder.INSTANCE;
     }

@@ -3,7 +3,7 @@ package com.billy.cc.core.component;
 import android.text.TextUtils;
 
 /**
- * 转发组件调用 <br/>
+ * 转发组件调用 <br>
  * 注：如果需要做成全局拦截器，需要额外实现 {@link IGlobalCCInterceptor}接口
  * @author billy.qi
  * @since 18/9/2 13:40

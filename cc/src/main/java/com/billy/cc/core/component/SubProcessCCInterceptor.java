@@ -1,8 +1,10 @@
 package com.billy.cc.core.component;
 
 import android.os.DeadObjectException;
+import android.os.RemoteException;
 
 import com.billy.cc.core.component.remote.IRemoteCCService;
+import com.billy.cc.core.component.remote.IRemoteCallback;
 import com.billy.cc.core.component.remote.RemoteCC;
 import com.billy.cc.core.component.remote.RemoteCCResult;
 
@@ -99,8 +101,12 @@ class SubProcessCCInterceptor implements ICCInterceptor {
                     setResult(CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
                     return;
                 }
-                RemoteCCResult crossCCResult = service.call(processCrossCC);
-                setResult(crossCCResult.toCCResult());
+                service.call(processCrossCC, new IRemoteCallback.Stub() {
+                    @Override
+                    public void callback(RemoteCCResult remoteCCResult) throws RemoteException {
+                        setResult(remoteCCResult.toCCResult());
+                    }
+                });
             } catch (DeadObjectException e) {
                 connectionCache.remove(processName);
                 call(processCrossCC);

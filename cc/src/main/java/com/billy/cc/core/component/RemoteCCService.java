@@ -5,6 +5,7 @@ import android.net.Uri;
 import android.os.RemoteException;
 
 import com.billy.cc.core.component.remote.IRemoteCCService;
+import com.billy.cc.core.component.remote.IRemoteCallback;
 import com.billy.cc.core.component.remote.RemoteCC;
 import com.billy.cc.core.component.remote.RemoteCCResult;
 import com.billy.cc.core.component.remote.RemoteCursor;
@@ -13,6 +14,7 @@ import com.billy.cc.core.component.remote.RemoteProvider;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
+ * 跨进程调用组件的Binder
  * @author billy.qi
  * @since 18/6/24 11:31
  */
@@ -30,21 +32,38 @@ public class RemoteCCService extends IRemoteCCService.Stub {
     }
     //-------------------------单例模式 end --------------
 
+    static class RemoteComponentCallback implements IComponentCallback {
+
+        private IRemoteCallback callback;
+
+        public RemoteComponentCallback(IRemoteCallback callback) {
+            this.callback = callback;
+        }
+
+        @Override
+        public void onResult(CC cc, CCResult result) {
+            try {
+                callback.callback(new RemoteCCResult(result));
+            } catch (RemoteException e) {
+                CC.verboseLog(cc.getCallId(), "remote callback failed!");
+                e.printStackTrace();
+            }
+        }
+    }
+
     @Override
-    public RemoteCCResult call(RemoteCC remoteCC) throws RemoteException {
+    public void call(RemoteCC remoteCC, IRemoteCallback callback) throws RemoteException {
         CC cc = CC.obtainBuilder(remoteCC.getComponentName())
                 .setActionName(remoteCC.getActionName())
                 .setParams(remoteCC.getParams())
                 .setCallId(remoteCC.getCallId())
                 .withoutGlobalInterceptor()
-                .setNoTimeout()
                 .build();
         if (remoteCC.isResultRequired()) {
-            CCResult result = cc.call();
-            return new RemoteCCResult(result);
+            cc.callAsync(new RemoteComponentCallback(callback));
         } else {
             cc.callAsync();
-            return new RemoteCCResult(CCResult.success());
+            callback.callback(new RemoteCCResult(CCResult.success()));
         }
     }
 
