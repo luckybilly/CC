@@ -10,13 +10,13 @@ import java.util.regex.Pattern
  * @author billy.qi
  * @since 17/3/20 11:48
  */
-class CodeScanProcessor {
+class CodeScanner {
 
     ArrayList<RegisterInfo> infoList
     Map<String, ScanJarHarvest> cacheMap
     Set<String> cachedJarContainsInitClass = new HashSet<>()
 
-    CodeScanProcessor(ArrayList<RegisterInfo> infoList, Map<String, ScanJarHarvest> cacheMap) {
+    CodeScanner(ArrayList<RegisterInfo> infoList, Map<String, ScanJarHarvest> cacheMap) {
         this.infoList = infoList
         this.cacheMap = cacheMap
     }

@@ -20,14 +20,14 @@ public class RegisterPlugin implements Plugin<Project> {
          * 注册transform接口
          */
         def isApp = project.plugins.hasPlugin(AppPlugin)
-        project.extensions.create(EXT_NAME, CcRegisterConfig)
+        project.extensions.create(EXT_NAME, RegisterExtension)
         if (isApp) {
             println "project(${project.name}) apply ${PLUGIN_NAME} plugin"
             def android = project.extensions.getByType(AppExtension)
             def transformImpl = new RegisterTransform(project)
             android.registerTransform(transformImpl)
             project.afterEvaluate {
-                CcRegisterConfig config = init(project, transformImpl)//此处要先于transformImpl.transform方法执行
+                RegisterExtension config = init(project, transformImpl)//此处要先于transformImpl.transform方法执行
                 if (config.multiProcessEnabled) {
                     ManifestGenerator.generateManifestFileContent(project, config.excludeProcessNames)
                 }
@@ -35,8 +35,8 @@ public class RegisterPlugin implements Plugin<Project> {
         }
     }
 
-    static CcRegisterConfig init(Project project, RegisterTransform transformImpl) {
-        CcRegisterConfig config = project.extensions.findByName(EXT_NAME) as CcRegisterConfig
+    static RegisterExtension init(Project project, RegisterTransform transformImpl) {
+        RegisterExtension config = project.extensions.findByName(EXT_NAME) as RegisterExtension
         config.project = project
         config.convertConfig()
         addDefaultRegistry(config.list)

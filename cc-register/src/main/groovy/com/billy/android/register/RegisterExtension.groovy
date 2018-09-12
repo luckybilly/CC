@@ -7,7 +7,7 @@ import org.gradle.api.Project
  * @author billy.qi
  * @since 17/3/28 11:48
  */
-class CcRegisterConfig {
+class RegisterExtension {
 
     static final String PLUGIN_NAME = RegisterPlugin.PLUGIN_NAME
 
@@ -20,7 +20,7 @@ class CcRegisterConfig {
     def multiProcessEnabled = false
     ArrayList<String> excludeProcessNames = []
 
-    CcRegisterConfig() {}
+    RegisterExtension() {}
 
     void convertConfig() {
         registerInfo.each { map ->
@@ -53,13 +53,13 @@ class CcRegisterConfig {
         if (cacheEnabled) {
             checkRegisterInfo()
         } else {
-            deleteFile(CcRegisterHelper.getRegisterInfoCacheFile(project))
-            deleteFile(CcRegisterHelper.getRegisterCacheFile(project))
+            deleteFile(RegisterCache.getRegisterInfoCacheFile(project))
+            deleteFile(RegisterCache.getRegisterCacheFile(project))
         }
     }
 
     private void checkRegisterInfo() {
-        def registerInfo = CcRegisterHelper.getRegisterInfoCacheFile(project)
+        def registerInfo = RegisterCache.getRegisterInfoCacheFile(project)
         def listInfo = list.toString()
         def sameInfo = false
 
@@ -75,7 +75,7 @@ class CcRegisterConfig {
             project.logger.error("${PLUGIN_NAME} read registerInfo error--------")
         }
         if (!sameInfo) {
-            deleteFile(CcRegisterHelper.getRegisterCacheFile(project))
+            deleteFile(RegisterCache.getRegisterCacheFile(project))
         }
         if (registerInfo.canWrite()) {
             registerInfo.write(listInfo)

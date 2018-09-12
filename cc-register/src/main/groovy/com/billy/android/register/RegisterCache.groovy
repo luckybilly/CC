@@ -11,7 +11,7 @@ import java.lang.reflect.Type
  * @author zhangkb
  * @since 2018/04/13
  */
-class CcRegisterHelper {
+class RegisterCache {
     final static def CACHE_INFO_DIR = "cc-register"
 
     /**

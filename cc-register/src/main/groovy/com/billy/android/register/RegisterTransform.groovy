@@ -4,13 +4,14 @@ import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformManager
 import com.billy.android.register.generator.ManifestGenerator
 import com.billy.android.register.generator.ProviderGenerator
+import com.billy.android.register.generator.RegistryCodeGenerator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.apache.commons.codec.digest.DigestUtils
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 /**
- *
+ * 自动注册的核心类
  * @author billy.qi
  * @since 17/3/21 11:48
  */
@@ -19,7 +20,7 @@ class RegisterTransform extends Transform {
 
 
     Project project
-    CcRegisterConfig config;
+    RegisterExtension config;
 
     RegisterTransform(Project project) {
         this.project = project
@@ -78,14 +79,14 @@ class RegisterTransform extends Transform {
 
         if (cacheEnabled) { //开启了缓存
             gson = new Gson()
-            cacheFile = CcRegisterHelper.getRegisterCacheFile(project)
+            cacheFile = RegisterCache.getRegisterCacheFile(project)
             if (clearCache && cacheFile.exists())
                 cacheFile.delete()
-            cacheMap = CcRegisterHelper.readToMap(cacheFile, new TypeToken<HashMap<String, ScanJarHarvest>>() {
+            cacheMap = RegisterCache.readToMap(cacheFile, new TypeToken<HashMap<String, ScanJarHarvest>>() {
             }.getType())
         }
 
-        CodeScanProcessor scanProcessor = new CodeScanProcessor(config.list, cacheMap)
+        CodeScanner scanProcessor = new CodeScanner(config.list, cacheMap)
 
         def classFolder = null
 
@@ -130,7 +131,7 @@ class RegisterTransform extends Transform {
 
         if (cacheMap != null && cacheFile && gson) {
             def json = gson.toJson(cacheMap)
-            CcRegisterHelper.cacheRegisterHarvest(cacheFile, json)
+            RegisterCache.cacheRegisterHarvest(cacheFile, json)
         }
 
         def scanFinishTime = System.currentTimeMillis()
@@ -146,7 +147,7 @@ class RegisterTransform extends Transform {
                     ext.classList.each {
                         println(it)
                     }
-                    CodeInsertProcessor.insertInitCodeTo(ext)
+                    RegistryCodeGenerator.insertInitCodeTo(ext)
                 }
             } else {
                 project.logger.error("The specified register class not found:" + ext.registerClassName)
@@ -165,7 +166,7 @@ class RegisterTransform extends Transform {
         project.logger.error("${PLUGIN_NAME} cost time: " + (finishTime - time) + " ms")
     }
 
-    static void scanJar(JarInput jarInput, TransformOutputProvider outputProvider, CodeScanProcessor scanProcessor) {
+    static void scanJar(JarInput jarInput, TransformOutputProvider outputProvider, CodeScanner scanProcessor) {
 
         // 获得输入文件
         File src = jarInput.file

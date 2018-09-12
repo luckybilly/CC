@@ -1,5 +1,6 @@
-package com.billy.android.register
+package com.billy.android.register.generator
 
+import com.billy.android.register.RegisterInfo
 import org.apache.commons.io.IOUtils
 import org.objectweb.asm.*
 
@@ -12,16 +13,16 @@ import java.util.zip.ZipEntry
  * @author billy.qi
  * @since 17/3/20 11:48
  */
-class CodeInsertProcessor {
+class RegistryCodeGenerator {
     RegisterInfo extension
 
-    private CodeInsertProcessor(RegisterInfo extension) {
+    private RegistryCodeGenerator(RegisterInfo extension) {
         this.extension = extension
     }
 
     static void insertInitCodeTo(RegisterInfo extension) {
         if (extension != null && !extension.classList.isEmpty()) {
-            CodeInsertProcessor processor = new CodeInsertProcessor(extension)
+            RegistryCodeGenerator processor = new RegistryCodeGenerator(extension)
             File file = extension.fileContainsInitClass
             if (file.getName().endsWith('.jar'))
                 processor.generateCodeIntoJarFile(file)
