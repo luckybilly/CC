@@ -16,7 +16,6 @@ import org.gradle.api.Project
  */
 class RegisterTransform extends Transform {
     static final String PLUGIN_NAME = RegisterPlugin.PLUGIN_NAME
-    static final String MAIN_CC_INTERFACE = "com/billy/cc/core/component/IComponent"
 
 
     Project project
@@ -135,7 +134,7 @@ class RegisterTransform extends Transform {
         }
 
         def scanFinishTime = System.currentTimeMillis()
-        project.logger.error("register scan all class cost time: " + (scanFinishTime - time) + " ms")
+        project.logger.error("${PLUGIN_NAME} scan all class cost time: " + (scanFinishTime - time) + " ms")
 
         config.list.each { ext ->
             if (ext.fileContainsInitClass) {
@@ -149,21 +148,21 @@ class RegisterTransform extends Transform {
                     }
                     CodeInsertProcessor.insertInitCodeTo(ext)
                 }
-                if (ext.interfaceName == MAIN_CC_INTERFACE && !ext.processList.isEmpty()) {
-                    //注册子进程通信所需的provider
-                    ext.processList.each { processName ->
-                        if (processName && classFolder) {
-                            ProviderGenerator.generateProvider(processName, classFolder)
-                        }
-                    }
-                }
             } else {
                 project.logger.error("The specified register class not found:" + ext.registerClassName)
             }
         }
+        project.logger.error("${PLUGIN_NAME} insert code cost time: " + (System.currentTimeMillis() - scanFinishTime) + " ms")
+        if (config.multiProcessEnabled && classFolder) {
+            def processNames = ManifestGenerator.getCachedProcessNames(project.name, context.variantName)
+            processNames.each {processName ->
+                if (processName) {
+                    ProviderGenerator.generateProvider(processName, classFolder)
+                }
+            }
+        }
         def finishTime = System.currentTimeMillis()
-        project.logger.error("register insert code cost time: " + (finishTime - scanFinishTime) + " ms")
-        project.logger.error("register cost time: " + (finishTime - time) + " ms")
+        project.logger.error("${PLUGIN_NAME} cost time: " + (finishTime - time) + " ms")
     }
 
     static void scanJar(JarInput jarInput, TransformOutputProvider outputProvider, CodeScanProcessor scanProcessor) {

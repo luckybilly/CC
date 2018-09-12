@@ -17,6 +17,8 @@ class CcRegisterConfig {
 
     Project project
     def cacheEnabled = true
+    def multiProcessEnabled = false
+    ArrayList<String> excludeProcessNames = []
 
     CcRegisterConfig() {}
 

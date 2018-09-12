@@ -27,17 +27,20 @@ public class RegisterPlugin implements Plugin<Project> {
             def transformImpl = new RegisterTransform(project)
             android.registerTransform(transformImpl)
             project.afterEvaluate {
-                init(project, transformImpl)//此处要先于transformImpl.transform方法执行
-                ManifestGenerator.generateManifestFileContent(project)
+                CcRegisterConfig config = init(project, transformImpl)//此处要先于transformImpl.transform方法执行
+                if (config.multiProcessEnabled) {
+                    ManifestGenerator.generateManifestFileContent(project, config.excludeProcessNames)
+                }
             }
         }
     }
 
-    static void init(Project project, RegisterTransform transformImpl) {
+    static CcRegisterConfig init(Project project, RegisterTransform transformImpl) {
         CcRegisterConfig config = project.extensions.findByName(EXT_NAME) as CcRegisterConfig
         config.project = project
         config.convertConfig()
         transformImpl.config = config
+        return config
     }
 
 }

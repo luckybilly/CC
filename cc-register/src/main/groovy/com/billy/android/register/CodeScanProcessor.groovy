@@ -11,7 +11,6 @@ import java.util.regex.Pattern
  * @since 17/3/20 11:48
  */
 class CodeScanProcessor {
-    static final String SUB_PROCESS_ANNOTATION = "Lcom/billy/cc/core/component/annotation/SubProcess;"
 
     ArrayList<RegisterInfo> infoList
     Map<String, ScanJarHarvest> cacheMap
@@ -157,8 +156,6 @@ class CodeScanProcessor {
     class ScanClassVisitor extends ClassVisitor {
         private String filePath
         private def found = false
-        private ScanJarHarvest.Harvest ccMainHarvest
-        private RegisterInfo ccMainRegisterInfo
 
         ScanClassVisitor(int api, ClassVisitor cv, String filePath) {
             super(api, cv)
@@ -171,27 +168,6 @@ class CodeScanProcessor {
 
         boolean isFound() {
             return found
-        }
-
-        @Override
-        AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-            def annotationVisitor = super.visitAnnotation(desc, visible)
-            if ((ccMainHarvest != null || ccMainRegisterInfo != null)
-                    && SUB_PROCESS_ANNOTATION == desc) {
-                return new AnnotationVisitor(api, annotationVisitor) {
-                    @Override
-                    void visit(String name, Object value) {
-                        if (value) {
-                            if (ccMainRegisterInfo)
-                                ccMainRegisterInfo.processList.add(value)
-                            if (ccMainHarvest)
-                                ccMainHarvest.processName = value
-                        }
-                        super.visit(name, value)
-                    }
-                }
-            }
-            return annotationVisitor
         }
 
         void visit(int version, int access, String name, String signature,
@@ -229,11 +205,7 @@ class CodeScanProcessor {
         void gotOne(String interfaceName, String className, RegisterInfo ext) {
             ext.classList.add(className) //需要把对象注入到管理类 就是fileContainsInitClass
             found = true
-            def h = addToCacheMap(interfaceName, className, filePath)
-            if (interfaceName == RegisterTransform.MAIN_CC_INTERFACE) {
-                ccMainHarvest = h
-                ccMainRegisterInfo = ext
-            }
+            addToCacheMap(interfaceName, className, filePath)
         }
     }
     /**
@@ -242,8 +214,8 @@ class CodeScanProcessor {
      * @param name
      * @param srcFilePath
      */
-    private ScanJarHarvest.Harvest addToCacheMap(String interfaceName, String name, String srcFilePath) {
-        if (!srcFilePath.endsWith(".jar") || cacheMap == null) return null
+    private void addToCacheMap(String interfaceName, String name, String srcFilePath) {
+        if (!srcFilePath.endsWith(".jar") || cacheMap == null) return
         def jarHarvest = cacheMap.get(srcFilePath)
         if (!jarHarvest) {
             jarHarvest = new ScanJarHarvest()
@@ -255,9 +227,7 @@ class CodeScanProcessor {
             harvest.setInterfaceName(interfaceName)
             harvest.setClassName(name)
             jarHarvest.harvestList.add(harvest)
-            return harvest
         }
-        return null
     }
 
     boolean isCachedJarContainsInitClass(String filePath) {
@@ -285,7 +255,6 @@ class CodeScanProcessor {
                             }
                         } else if (info.interfaceName == harvest.interfaceName) {
                             info.classList.add(harvest.className)
-                            info.processList.add(harvest.processName)
                         }
                     }
                 }

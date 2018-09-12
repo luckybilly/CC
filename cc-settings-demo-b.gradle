@@ -44,4 +44,6 @@ project.ext.registerInfoList.add([
     , 'codeInsertToMethodName'  : 'initProcessors'
     , 'registerMethodName'      : 'add'
 ])
+
+ccregister.multiProcessEnabled = true
 //也可以按照上述格式继续添加你自己的自动注册需求，俗称：搭顺风车
