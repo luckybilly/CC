@@ -37,7 +37,7 @@ dependencies {
     register(new CategoryB()); //scanSuperClass的子类
   }
  */
-project.ext.registerInfoList.add([
+ccregister.registerInfo.add([
     //在自动注册组件的基础上增加：自动注册组件B的processor
     'scanInterface'             : 'com.billy.cc.demo.component.b.processor.IActionProcessor'
     , 'codeInsertToClassName'   : 'com.billy.cc.demo.component.b.ComponentB'

@@ -24,7 +24,7 @@ ext {
     libraryDescription = 'android component caller'
 
     siteUrl = 'https://github.com/luckybilly/CC'
-    gitUrl = 'git@github.com:luckybilly/CC.git'
+    gitUrl = 'https://github.com/luckybilly/CC.git'
 
     libraryVersion = '0.0.5'
 

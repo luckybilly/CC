@@ -97,7 +97,7 @@ class RegisterInfo {
         initPattern(exclude, excludePatterns)
     }
 
-    private static String convertDotToSlash(String str) {
+    static String convertDotToSlash(String str) {
         return str ? str.replaceAll('\\.', '/').intern() : str
     }
 

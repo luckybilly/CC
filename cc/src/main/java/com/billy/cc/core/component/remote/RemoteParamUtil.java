@@ -354,4 +354,8 @@ public class RemoteParamUtil {
         };
     }
 
+    static {
+        // 通过插件自动注册自定义的跨进程json转换器
+        // initRemoteCCParamJsonConverter(new GsonParamConverter());
+    }
 }

@@ -39,8 +39,43 @@ public class RegisterPlugin implements Plugin<Project> {
         CcRegisterConfig config = project.extensions.findByName(EXT_NAME) as CcRegisterConfig
         config.project = project
         config.convertConfig()
+        addDefaultRegistry(config.list)
         transformImpl.config = config
         return config
+    }
+
+    static void addDefaultRegistry(ArrayList<RegisterInfo> list) {
+        def exclude = ['com/billy/cc/core/component/.*']
+        addDefaultRegistryFor(list,
+                'com.billy.cc.core.component.IComponent',
+                'com.billy.cc.core.component.ComponentManager',
+                'registerComponent',
+                exclude)
+        addDefaultRegistryFor(list,
+                'com.billy.cc.core.component.IGlobalCCInterceptor',
+                'com.billy.cc.core.component.GlobalCCInterceptorManager',
+                'registerGlobalInterceptor',
+                exclude)
+        addDefaultRegistryFor(list,
+                'com.billy.cc.core.component.IParamJsonConverter',
+                'com.billy.cc.core.component.remote.RemoteParamUtil',
+                'initRemoteCCParamJsonConverter',
+                exclude)
+    }
+
+    static void addDefaultRegistryFor(ArrayList<RegisterInfo> list, String interfaceName,
+                                      String codeInsertToClassName, String registerMethodName,
+                                      List<String> exclude) {
+        if (!list.find { it.interfaceName == RegisterInfo.convertDotToSlash(interfaceName) }) {
+            RegisterInfo info = new RegisterInfo()
+            info.interfaceName = interfaceName
+            info.superClassNames = []
+            info.initClassName = codeInsertToClassName //代码注入的类
+            info.registerMethodName = registerMethodName //生成的代码所调用的方法
+            info.exclude = exclude
+            info.init()
+            list.add(info)
+        }
     }
 
 }

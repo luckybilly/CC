@@ -159,31 +159,6 @@ project.dependencies.add(dependencyMode, project(":cc"))
   }
  */
 project.apply plugin: 'cc-register'
-project.ext.registerInfoList = [
-    [ //自动注册组件
-        'scanInterface'             : 'com.billy.cc.core.component.IComponent'
-        , 'codeInsertToClassName'   : 'com.billy.cc.core.component.ComponentManager'
-        , 'registerMethodName'      : 'registerComponent'
-        , 'exclude'                 : [//排除的类，支持正则表达式（包分隔符需要用/表示，不能用.）
-            'com.billy.cc.core.component.'.replaceAll("\\.", "/") + ".*"
-        ]
-    ],[//自动注册全局拦截器
-        'scanInterface'             : 'com.billy.cc.core.component.IGlobalCCInterceptor'
-        , 'codeInsertToClassName'   : 'com.billy.cc.core.component.GlobalCCInterceptorManager'
-        , 'registerMethodName'      : 'registerGlobalInterceptor'
-        , 'exclude'                 : [//排除的类，支持正则表达式（包分隔符需要用/表示，不能用.）
-            'com.billy.cc.core.component.'.replaceAll("\\.", "/") + ".*"
-        ]
-    ],[//自动注册跨进程通信时自定义类型的json转换器，可以用Gson、FastJson等工具来实现
-       // 参考： demo_base/src/main/java/com.billy.cc.demo.base.GsonParamConverter
-        'scanInterface'             : 'com.billy.cc.core.component.IParamJsonConverter'
-        , 'codeInsertToClassName'   : 'com.billy.cc.core.component.remote.RemoteParamUtil'
-        , 'registerMethodName'      : 'initRemoteCCParamJsonConverter'
-        , 'exclude'                 : [//排除的类，支持正则表达式（包分隔符需要用/表示，不能用.）
-            'com.billy.cc.core.component.'.replaceAll("\\.", "/") + ".*"
-        ]
-    ]
-]
 ccregister {
-    registerInfo = registerInfoList
+    registerInfo = []
 }
