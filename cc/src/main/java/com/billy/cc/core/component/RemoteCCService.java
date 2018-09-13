@@ -2,6 +2,8 @@ package com.billy.cc.core.component;
 
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.RemoteException;
 
 import com.billy.cc.core.component.remote.IRemoteCCService;
@@ -20,50 +22,57 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class RemoteCCService extends IRemoteCCService.Stub {
 
+    private Handler mainThreadHandler;
+
     //-------------------------单例模式 start --------------
     /** 单例模式Holder */
     private static class RemoteCCServiceHolder {
         private static final RemoteCCService INSTANCE = new RemoteCCService();
     }
-    private RemoteCCService(){}
+    private RemoteCCService(){
+        mainThreadHandler = new Handler(Looper.getMainLooper());
+    }
     /** 获取RemoteCCService的单例对象 */
     public static RemoteCCService getInstance() {
         return RemoteCCService.RemoteCCServiceHolder.INSTANCE;
     }
     //-------------------------单例模式 end --------------
 
-    static class RemoteComponentCallback implements IComponentCallback {
-
-        private IRemoteCallback callback;
-
-        public RemoteComponentCallback(IRemoteCallback callback) {
-            this.callback = callback;
-        }
-
-        @Override
-        public void onResult(CC cc, CCResult result) {
-            try {
-                callback.callback(new RemoteCCResult(result));
-            } catch (RemoteException e) {
-                CC.verboseLog(cc.getCallId(), "remote callback failed!");
-                e.printStackTrace();
-            }
-        }
-    }
-
     @Override
-    public void call(RemoteCC remoteCC, IRemoteCallback callback) throws RemoteException {
-        CC cc = CC.obtainBuilder(remoteCC.getComponentName())
+    public void call(final RemoteCC remoteCC, final IRemoteCallback callback) throws RemoteException {
+        final CC cc = CC.obtainBuilder(remoteCC.getComponentName())
                 .setActionName(remoteCC.getActionName())
                 .setParams(remoteCC.getParams())
                 .setCallId(remoteCC.getCallId())
                 .withoutGlobalInterceptor()
                 .build();
-        if (remoteCC.isResultRequired()) {
-            cc.callAsync(new RemoteComponentCallback(callback));
+        if (remoteCC.isMainThreadSyncCall()) {
+            mainThreadHandler.post(new Runnable() {
+                @Override
+                public void run() {
+                    CCResult ccResult = cc.call();
+                    doCallback(callback, cc, ccResult);
+                }
+            });
+        } else if (remoteCC.isResultRequired()) {
+            cc.callAsync(new IComponentCallback() {
+                @Override
+                public void onResult(CC cc, CCResult result) {
+                    doCallback(callback, cc, result);
+                }
+            });
         } else {
             cc.callAsync();
-            callback.callback(new RemoteCCResult(CCResult.success()));
+            doCallback(callback, cc, CCResult.success());
+        }
+    }
+
+    private static void doCallback(IRemoteCallback callback, CC cc, CCResult ccResult) {
+        try {
+            callback.callback(new RemoteCCResult(ccResult));
+        } catch (RemoteException e) {
+            e.printStackTrace();
+            CC.verboseLog(cc.getCallId(), "remote doCallback failed!");
         }
     }
 

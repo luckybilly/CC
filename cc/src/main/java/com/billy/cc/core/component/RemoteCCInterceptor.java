@@ -27,13 +27,13 @@ class RemoteCCInterceptor extends SubProcessCCInterceptor {
 
     //-------------------------单例模式 start --------------
     /** 单例模式Holder */
-    private static class ProcessCrossCCInterceptorHolder {
+    private static class RemoteCCInterceptorHolder {
         private static final RemoteCCInterceptor INSTANCE = new RemoteCCInterceptor();
     }
     private RemoteCCInterceptor(){}
-    /** 获取ProcessCrossCCInterceptor的单例对象 */
+    /** 获取{@link RemoteCCInterceptor}的单例对象 */
     static RemoteCCInterceptor getInstance() {
-        return ProcessCrossCCInterceptorHolder.INSTANCE;
+        return RemoteCCInterceptorHolder.INSTANCE;
     }
     //-------------------------单例模式 end --------------
 

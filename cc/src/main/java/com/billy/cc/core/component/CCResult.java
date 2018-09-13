@@ -51,12 +51,15 @@ public class CCResult {
      */
     public static final int CODE_ERROR_NO_COMPONENT_FOUND = -5;
     /**
-     * context 为null，通过反射获取application失败
+     * context 为null，自动获取application失败。
+     * 需要在首次调用CC之前手动执行CC的初始化： CC.init(application);
      */
     public static final int CODE_ERROR_CONTEXT_NULL = -6;
     /**
      * 跨app调用组件时，LocalSocket连接出错
+     * @deprecated CC 2.0版对跨进程通信进行了重构，不再使用LocalSocket，也就不会再出现这个code
      */
+    @Deprecated
     public static final int CODE_ERROR_CONNECT_FAILED = -7;
     /**
      * 取消

@@ -1,6 +1,7 @@
 package com.billy.cc.core.component;
 
 import android.os.DeadObjectException;
+import android.os.Looper;
 import android.os.RemoteException;
 
 import com.billy.cc.core.component.remote.IRemoteCCService;
@@ -44,7 +45,9 @@ class SubProcessCCInterceptor implements ICCInterceptor {
             return CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND);
         }
         CC cc = chain.getCC();
-        ProcessCrossTask task = new ProcessCrossTask(cc, processName, connectionCache);
+        //主线程同步调用时，跨进程也要在主线程同步调用
+        boolean isMainThreadSyncCall = !cc.isAsync() && Looper.getMainLooper() == Looper.myLooper();
+        ProcessCrossTask task = new ProcessCrossTask(cc, processName, connectionCache, isMainThreadSyncCall);
         ComponentManager.threadPool(task);
         if (!cc.isFinished() && cc.resultRequired()) {
             //执行 Wait4ResultInterceptor
@@ -70,17 +73,19 @@ class SubProcessCCInterceptor implements ICCInterceptor {
         private final CC cc;
         private final String processName;
         private final ConcurrentHashMap<String, IRemoteCCService> connectionCache;
+        private final boolean isMainThreadSyncCall;
         private IRemoteCCService service;
 
-        ProcessCrossTask(CC cc, String processName, ConcurrentHashMap<String, IRemoteCCService> connectionCache) {
+        ProcessCrossTask(CC cc, String processName, ConcurrentHashMap<String, IRemoteCCService> connectionCache, boolean isMainThreadSyncCall) {
             this.cc = cc;
             this.processName = processName;
             this.connectionCache = connectionCache;
+            this.isMainThreadSyncCall = isMainThreadSyncCall;
         }
 
         @Override
         public void run() {
-            RemoteCC processCrossCC = new RemoteCC(cc);
+            RemoteCC processCrossCC = new RemoteCC(cc, isMainThreadSyncCall);
             call(processCrossCC);
         }
 

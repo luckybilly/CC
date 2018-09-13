@@ -20,13 +20,15 @@ public class RemoteCC implements Parcelable {
     private String actionName;
     private String callId;
     private boolean resultRequired;
+    private boolean isMainThreadSyncCall;
 
-    public RemoteCC(CC cc) {
+    public RemoteCC(CC cc, boolean isMainThreadSyncCall) {
         this.componentName = cc.getComponentName();
         this.actionName = cc.getActionName();
         this.callId = cc.getCallId();
         this.params = RemoteParamUtil.toRemoteMap(cc.getParams());
         this.resultRequired = cc.resultRequired();
+        this.isMainThreadSyncCall = isMainThreadSyncCall;
     }
 
     public Map<String, Object> getParams() {
@@ -38,6 +40,7 @@ public class RemoteCC implements Parcelable {
         actionName = in.readString();
         callId = in.readString();
         resultRequired = in.readByte() != 0;
+        isMainThreadSyncCall = in.readByte() != 0;
         params = in.readHashMap(getClass().getClassLoader());
     }
 
@@ -47,6 +50,7 @@ public class RemoteCC implements Parcelable {
         dest.writeString(actionName);
         dest.writeString(callId);
         dest.writeByte((byte) (resultRequired ? 1 : 0));
+        dest.writeByte((byte) (isMainThreadSyncCall ? 1 : 0));
         dest.writeMap(params);
     }
 
@@ -97,5 +101,13 @@ public class RemoteCC implements Parcelable {
 
     public void setResultRequired(boolean resultRequired) {
         this.resultRequired = resultRequired;
+    }
+
+    public boolean isMainThreadSyncCall() {
+        return isMainThreadSyncCall;
+    }
+
+    public void setMainThreadSyncCall(boolean mainThreadSyncCall) {
+        isMainThreadSyncCall = mainThreadSyncCall;
     }
 }
