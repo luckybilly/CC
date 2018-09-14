@@ -94,10 +94,14 @@ public class RemoteParamUtil {
                 || v instanceof Size                    || v instanceof SizeF ) {
             return v;
         } else if (v instanceof SparseArray) {
+            SparseArray sa = (SparseArray) v;
             SparseArray sp = new SparseArray();
-            for(int i = 0; i < sp.size(); i++) {
-                sp.put(sp.keyAt(i), convertParam(sp.valueAt(i)));
+            for(int i = 0; i < sa.size(); i++) {
+                sp.put(sa.keyAt(i), convertParam(sa.valueAt(i)));
             }
+            //parcel.writeMap方法支持内部key-value为SparseArray类型
+            // 此处无需额外封装，返回SparseArray即可
+            // 但需要对SparseArray内的item进行封装
             return sp;
         } else if (v instanceof Map) {
             return new MapParam(v);
