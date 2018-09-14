@@ -1,164 +1,20 @@
-import java.util.regex.Pattern
-
-//先加载local.properties文件
-Properties localProperties = new Properties()
-try {
-    def localFile = project.rootProject.file('local.properties')
-    if (localFile != null && localFile.exists()) {
-        localProperties.load(localFile.newDataInputStream())
-    }
-} catch (Exception ignored) {
-    println("local.properties not found")
-}
-//读取build.gradle中的设置
-// 2018-04-06修改：
-//  为了更利于理解，将ext.runAsApp 改名为 ext.mainApp
-//  ext.mainApp的将仅代表是否作为主app，为true时以application方式编译，为false或未配置时以local.properties中的配置为准
-//  兼容以前的runAsApp设置，ext.runAsApp的功能保持不变，runAsApp优先级高于local.properties
-def runAsApp = ext.has('runAsApp')
-if (runAsApp) {
-    runAsApp = ext.runAsApp
-} else if(ext.has('mainApp') && ext.mainApp) { //ext.mainApp为true时，代表以app方式运行
-    runAsApp = true
-} else {
-    //build.gradle中没有配置runAsApp，且ext.mainApp=false或未配置
-    //再从local.properties中读取配置，例如： demo_component_a=true
-    //注：如果采用local.properties读取配置，每次修改需要重新同步(Sync Project)一下
-    runAsApp = 'true' == localProperties.getProperty(project.name)
-}
-//设置到ext中，供module的build.gradle使用（例如用于设置sourceSets配置）
-ext.runAsApp = runAsApp
-if (runAsApp) {
-    apply plugin: 'com.android.application'
-} else {
-    apply plugin: 'com.android.library'
-}
-
-//对组件库的依赖格式： addComponent dependencyName [, realDependency]
-// 使用示例见demo/build.gradle
-//  dependencyName: 组件库的名称，推荐直接使用使用module的名称
-//  realDependency(可选): 组件库对应的实际依赖，可以是module依赖，也可以是maven依赖
-//    如果未配置realDependency，将自动依赖 project(":$dependencyName")
-//    realDependency可以为如下2种中的一种:
-//      module依赖 : project(':demo_component_b') //如果module名称跟dependencyName相同，可省略(推荐)
-//      maven依赖  : 'com.billy.demo:demoB:1.1.0' //如果使用了maven私服，请使用此方式
-ext.addComponent = { dependencyName, realDependency = null ->
-    def curModuleIsBuildingApk = false //当前task是否为给本module打apk包
-    def taskNames = project.gradle.startParameter.taskNames
-//  def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)).*"
-    def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)|((BUILD)?TINKER)).*"
-    def taskBuildApkPattern = Pattern.compile(regex)
-    for (String task : taskNames) {
-        if (taskBuildApkPattern.matcher(task.toUpperCase()).matches()) {
-            curModuleIsBuildingApk = true
-            break
-        }
-    }
-    //不是在为本app module打apk包，不添加对组件的依赖
-    if (!curModuleIsBuildingApk)
-        return
-    def componentProject = rootProject.subprojects.find { it.name == dependencyName }
-    def app  //dependencyName指定的module是否为配置为以application方式编译
-    if (componentProject && componentProject.ext.has('runAsApp')) {
-        //兼容以前的ext.runAsApp=true的配置方式，runAsApp的优先级高
-        app = componentProject.ext.runAsApp
-    } else if (componentProject && componentProject.ext.has('mainApp') && componentProject.ext.mainApp) {
-        //仅ext.mainApp为true时，确定为application方式编译，若为false，则读取local.properties中的配置
-        app = true
-    } else {
-        //local.properties中配置为true代表该module以application方式编译
-        app = 'true' == localProperties.getProperty(dependencyName)
-    }
-    if (!app) {
-        def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
-        if (realDependency) {
-            //通过参数传递的依赖方式，如：
-            // project(':moduleName')
-            // 或
-            // 'com.billy.demo:demoA:1.1.0'
-            project.dependencies.add(dependencyMode, realDependency)
-            println "CC >>>> add $realDependency to ${project.name}'s dependencies"
-        } else if (componentProject) {
-            //第二个参数未传，默认为按照module来进行依赖
-            project.dependencies.add(dependencyMode, project(":$dependencyName"))
-            println "CC >>>> add project(\":$dependencyName\") to ${project.name}'s dependencies"
-        } else {
-            throw new RuntimeException(
-                    "CC >>>> add dependency by [ addComponent '$dependencyName' ] occurred an error:" +
-                    "\n'$dependencyName' is not a module in current project" +
-                    " and the 2nd param is not specified for realDependency" +
-                    "\nPlease make sure the module name is '$dependencyName'" +
-                    "\nelse" +
-                    "\nyou can specify the real dependency via add the 2nd param, for example: " +
-                    "addComponent '$dependencyName', 'com.billy.demo:demoB:1.1.0'")
-        }
-    }
-}
 repositories {
     maven { url rootProject.file("repo-local") }
     jcenter()
 }
 
-//默认配置了AndroidManifest.xml在library模式和application模式下的文件路径
-android {
-    sourceSets {
-        main {
-            //默认的作为application运行时Manifest文件路径
-            def debugManifest = 'src/main/debug/AndroidManifest.xml'
-            if (runAsApp && project.file(debugManifest).exists()) {
-                manifest.srcFile debugManifest
-            } else {
-                manifest.srcFile 'src/main/AndroidManifest.xml'
-                //集成开发模式下自动排除debug文件夹中的所有Java文件
-                // 可以将debug代码放在这个包内，例如：Application子类
-                java {
-                    exclude 'debug/**'
-                }
-            }
-            // 注：2018-03-12推荐：将组件单独以app运行时的测试代码及资源放到src/main/debug/目录下
-            if (runAsApp) {
-                //debug模式下，如果存在src/main/debug/assets，则自动将其添加到assets源码目录
-                if (project.file('src/main/debug/assets').exists()) {
-                    assets.srcDirs = ['src/main/assets', 'src/main/debug/assets']
-                }
-                //debug模式下，如果存在src/main/debug/java，则自动将其添加到java源码目录
-                if (project.file('src/main/debug/java').exists()) {
-                    java.srcDirs = ['src/main/java', 'src/main/debug/java']
-                }
-                //debug模式下，如果存在src/main/debug/res，则自动将其添加到资源目录
-                if (project.file('src/main/debug/res').exists()) {
-                    res.srcDirs = ['src/main/res', 'src/main/debug/res']
-                }
-            }
-        }
-    }
+//cc-register extension:
+// 功能介绍：
+//  完成组件、拦截器及跨进程json解释器等CC库自身需要的自动注册功能
+//  支持新增自定义的其它自动注册功能，参考AutoRegister，用法参考cc-settings-demo-b.gradle
+project.apply plugin: 'cc-register'
+//2018-09-13注释：
+// 兼容老版本升级用户，保留registerInfoList变量
+// 从2.0版本开始
+project.ext.registerInfoList = []
+ccregister {
+    registerInfo = registerInfoList
 }
 def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
 project.dependencies.add(dependencyMode, project(":cc"))
 //project.dependencies.add(dependencyMode, "com.billy.android:cc:1.1.0")
-
-
-
-//cc-register extension:
-// 源码地址：https://github.com/luckybilly/AutoRegister
-// 功能介绍：
-//  在编译期扫描将打到apk包中的所有类
-//  将 scanInterface的实现类 或 scanSuperClasses的子类
-//  并在 codeInsertToClassName 类的 codeInsertToMethodName 方法中生成如下代码：
-//  codeInsertToClassName.registerMethodName(scanInterface)
-// 要点：
-//  1. codeInsertToMethodName 若未指定，则默认为static块
-//  2. codeInsertToMethodName 与 registerMethodName 需要同为static或非static
-// 自动生成的代码示例：
-/*
-  在com.billy.app_lib_interface.CategoryManager.class文件中
-  static
-  {
-    register(new CategoryA()); //scanInterface的实现类
-    register(new CategoryB()); //scanSuperClass的子类
-  }
- */
-project.apply plugin: 'cc-register'
-ccregister {
-    registerInfo = []
-}

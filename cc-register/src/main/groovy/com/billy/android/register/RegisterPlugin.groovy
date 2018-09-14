@@ -2,9 +2,12 @@ package com.billy.android.register
 
 import com.android.build.gradle.AppExtension
 import com.android.build.gradle.AppPlugin
-import com.billy.android.register.generator.ManifestGenerator
+import com.billy.android.register.cc.DefaultRegistryHelper
+import com.billy.android.register.cc.ProjectModuleManager
+import com.billy.android.register.cc.generator.ManifestGenerator
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+
 /**
  * 自动注册插件入口
  * @author billy.qi
@@ -16,13 +19,11 @@ public class RegisterPlugin implements Plugin<Project> {
 
     @Override
     public void apply(Project project) {
-        /**
-         * 注册transform接口
-         */
-        def isApp = project.plugins.hasPlugin(AppPlugin)
+        println "project(${project.name}) apply ${PLUGIN_NAME} plugin"
         project.extensions.create(EXT_NAME, RegisterExtension)
+        def isApp = ProjectModuleManager.manageModule(project)
         if (isApp) {
-            println "project(${project.name}) apply ${PLUGIN_NAME} plugin"
+            println "project(${project.name}) register ${PLUGIN_NAME} transform"
             def android = project.extensions.getByType(AppExtension)
             def transformImpl = new RegisterTransform(project)
             android.registerTransform(transformImpl)
@@ -39,43 +40,9 @@ public class RegisterPlugin implements Plugin<Project> {
         RegisterExtension config = project.extensions.findByName(EXT_NAME) as RegisterExtension
         config.project = project
         config.convertConfig()
-        addDefaultRegistry(config.list)
+        DefaultRegistryHelper.addDefaultRegistry(config.list)
         transformImpl.config = config
         return config
-    }
-
-    static void addDefaultRegistry(ArrayList<RegisterInfo> list) {
-        def exclude = ['com/billy/cc/core/component/.*']
-        addDefaultRegistryFor(list,
-                'com.billy.cc.core.component.IComponent',
-                'com.billy.cc.core.component.ComponentManager',
-                'registerComponent',
-                exclude)
-        addDefaultRegistryFor(list,
-                'com.billy.cc.core.component.IGlobalCCInterceptor',
-                'com.billy.cc.core.component.GlobalCCInterceptorManager',
-                'registerGlobalInterceptor',
-                exclude)
-        addDefaultRegistryFor(list,
-                'com.billy.cc.core.component.IParamJsonConverter',
-                'com.billy.cc.core.component.remote.RemoteParamUtil',
-                'initRemoteCCParamJsonConverter',
-                exclude)
-    }
-
-    static void addDefaultRegistryFor(ArrayList<RegisterInfo> list, String interfaceName,
-                                      String codeInsertToClassName, String registerMethodName,
-                                      List<String> exclude) {
-        if (!list.find { it.interfaceName == RegisterInfo.convertDotToSlash(interfaceName) }) {
-            RegisterInfo info = new RegisterInfo()
-            info.interfaceName = interfaceName
-            info.superClassNames = []
-            info.initClassName = codeInsertToClassName //代码注入的类
-            info.registerMethodName = registerMethodName //生成的代码所调用的方法
-            info.exclude = exclude
-            info.init()
-            list.add(info)
-        }
     }
 
 }

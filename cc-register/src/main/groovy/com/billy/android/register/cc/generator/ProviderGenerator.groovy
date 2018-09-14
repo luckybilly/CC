@@ -1,4 +1,4 @@
-package com.billy.android.register.generator
+package com.billy.android.register.cc.generator
 
 import com.billy.android.register.RegisterTransform
 import org.objectweb.asm.*

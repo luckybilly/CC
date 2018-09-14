@@ -1,4 +1,4 @@
-package com.billy.android.register.generator
+package com.billy.android.register.cc.generator
 
 import com.android.build.gradle.AppExtension
 import com.billy.android.register.RegisterPlugin

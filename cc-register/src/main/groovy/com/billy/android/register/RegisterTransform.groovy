@@ -2,9 +2,9 @@ package com.billy.android.register
 
 import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformManager
-import com.billy.android.register.generator.ManifestGenerator
-import com.billy.android.register.generator.ProviderGenerator
-import com.billy.android.register.generator.RegistryCodeGenerator
+import com.billy.android.register.cc.generator.ManifestGenerator
+import com.billy.android.register.cc.generator.ProviderGenerator
+import com.billy.android.register.cc.generator.RegistryCodeGenerator
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import org.apache.commons.codec.digest.DigestUtils

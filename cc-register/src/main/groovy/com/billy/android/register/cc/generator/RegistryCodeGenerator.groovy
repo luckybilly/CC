@@ -1,4 +1,4 @@
-package com.billy.android.register.generator
+package com.billy.android.register.cc.generator
 
 import com.billy.android.register.RegisterInfo
 import org.apache.commons.io.IOUtils
