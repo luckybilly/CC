@@ -4,8 +4,13 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.billy.cc.core.component.CC;
+import com.billy.cc.core.component.CCUtil;
+
+import org.json.JSONObject;
 
 import java.util.Map;
+
+import static com.billy.cc.core.component.CCUtil.put;
 
 /**
  * 跨进程传递的CC对象
@@ -52,6 +57,18 @@ public class RemoteCC implements Parcelable {
         dest.writeByte((byte) (resultRequired ? 1 : 0));
         dest.writeByte((byte) (isMainThreadSyncCall ? 1 : 0));
         dest.writeMap(params);
+    }
+
+    @Override
+    public String toString() {
+        JSONObject json = new JSONObject();
+        put(json, "componentName", componentName);
+        put(json, "actionName", actionName);
+        put(json, "callId", callId);
+        put(json, "resultRequired", resultRequired);
+        put(json, "isMainThreadSyncCall", isMainThreadSyncCall);
+        put(json, "params", CCUtil.convertToJson(params));
+        return json.toString();
     }
 
     @Override

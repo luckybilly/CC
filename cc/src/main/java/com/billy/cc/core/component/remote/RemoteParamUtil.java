@@ -5,11 +5,15 @@ import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
+import android.support.annotation.NonNull;
 import android.util.Size;
 import android.util.SizeF;
 import android.util.SparseArray;
 
 import com.billy.cc.core.component.IParamJsonConverter;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.Serializable;
 import java.lang.reflect.Array;
@@ -17,6 +21,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.billy.cc.core.component.CCUtil.put;
 
 /**
  * 用于跨进程的参数转换
@@ -134,6 +140,18 @@ public class RemoteParamUtil {
         }
 
         @Override
+        public String toString() {
+            return toJson().toString();
+        }
+
+        @NonNull
+        protected JSONObject toJson() {
+            JSONObject json = new JSONObject();
+            put(json, "class", clazz);
+            return json;
+        }
+
+        @Override
         public void writeToParcel(Parcel dest, int flags) {
             dest.writeInt(hashCode);
             dest.writeSerializable(clazz);
@@ -169,6 +187,14 @@ public class RemoteParamUtil {
             if (paramJsonConverter != null) {
                 json = paramJsonConverter.object2Json(obj);
             }
+        }
+
+        @NonNull
+        @Override
+        protected JSONObject toJson() {
+            JSONObject jsonObject = super.toJson();
+            put(jsonObject, "value", json);
+            return jsonObject;
         }
 
         @Override
@@ -217,6 +243,19 @@ public class RemoteParamUtil {
             for (int i = 0; i < length; i++) {
                 params.add(convertParam(Array.get(obj, i)));
             }
+        }
+
+        @NonNull
+        @Override
+        protected JSONObject toJson() {
+            JSONObject jsonObject = super.toJson();
+            put(jsonObject, "length", length);
+            JSONArray array = new JSONArray();
+            for (int i = 0; i < params.size(); i++) {
+                array.put(params.get(i));
+            }
+            put(jsonObject, "value", array);
+            return jsonObject;
         }
 
         @Override
@@ -268,6 +307,19 @@ public class RemoteParamUtil {
             }
         }
 
+        @NonNull
+        @Override
+        protected JSONObject toJson() {
+            JSONObject jsonObject = super.toJson();
+            put(jsonObject, "length", params.size());
+            JSONArray array = new JSONArray();
+            for (int i = 0; i < params.size(); i++) {
+                array.put(params.get(i));
+            }
+            put(jsonObject, "value", array);
+            return jsonObject;
+        }
+
         @Override
         public Object restore() {
             try {
@@ -315,6 +367,22 @@ public class RemoteParamUtil {
             for (Object o : map.keySet()) {
                 params.put(convertParam(o), convertParam(map.get(o)));
             }
+        }
+
+        @NonNull
+        @Override
+        protected JSONObject toJson() {
+            JSONObject jsonObject = super.toJson();
+            JSONObject value = new JSONObject();
+            for (Map.Entry<Object, Object> entry : params.entrySet()) {
+                Object key = entry.getKey();
+                if (key == null) {
+                    key = JSONObject.NULL;
+                }
+                put(value, key.toString(), entry.getValue());
+            }
+            put(jsonObject, "value", value);
+            return jsonObject;
         }
 
         @Override

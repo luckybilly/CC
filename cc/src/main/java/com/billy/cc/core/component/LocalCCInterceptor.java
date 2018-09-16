@@ -38,7 +38,7 @@ class LocalCCInterceptor implements ICCInterceptor {
         try {
             String callId = cc.getCallId();
             if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "start component:%s, cc:", component.getClass().getName(), cc.toString());
+                CC.verboseLog(callId, "start component:%s, cc: %s", component.getClass().getName(), cc.toString());
             }
             boolean callbackDelay = component.onCall(cc);
             if (CC.VERBOSE_LOG) {

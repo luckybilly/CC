@@ -4,6 +4,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.os.RemoteException;
 
 import com.billy.cc.core.component.remote.IRemoteCCService;
@@ -40,7 +41,20 @@ public class RemoteCCService extends IRemoteCCService.Stub {
 
     @Override
     public void call(final RemoteCC remoteCC, final IRemoteCallback callback) throws RemoteException {
-        final CC cc = CC.obtainBuilder(remoteCC.getComponentName())
+        if (isInvalidate()) {
+            return;
+        }
+        String componentName = remoteCC.getComponentName();
+        final String callId = remoteCC.getCallId();
+        if (CC.VERBOSE_LOG) {
+            CC.verboseLog(callId, "receive call from other process. RemoteCC: %s", remoteCC.toString());
+        }
+        if (!ComponentManager.hasComponent(componentName)) {
+            CC.verboseLog(callId, "There is no component found for name:%s in process:%s", componentName, CCUtil.getCurProcessName());
+            doCallback(callback, callId, CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
+            return;
+        }
+        final CC cc = CC.obtainBuilder(componentName)
                 .setActionName(remoteCC.getActionName())
                 .setParams(remoteCC.getParams())
                 .setCallId(remoteCC.getCallId())
@@ -51,43 +65,61 @@ public class RemoteCCService extends IRemoteCCService.Stub {
                 @Override
                 public void run() {
                     CCResult ccResult = cc.call();
-                    doCallback(callback, cc, ccResult);
+                    doCallback(callback, callId, ccResult);
                 }
             });
         } else if (remoteCC.isResultRequired()) {
             cc.callAsync(new IComponentCallback() {
                 @Override
                 public void onResult(CC cc, CCResult result) {
-                    doCallback(callback, cc, result);
+                    doCallback(callback, callId, result);
                 }
             });
         } else {
             cc.callAsync();
-            doCallback(callback, cc, CCResult.success());
+            doCallback(callback, callId, CCResult.success());
         }
     }
 
-    private static void doCallback(IRemoteCallback callback, CC cc, CCResult ccResult) {
+    private boolean isInvalidate() {
+        //未开启跨app调用时进行跨app调用视为无效调用
+        return !CC.isRemoteCCEnabled() && getCallingUid() != Process.myUid();
+    }
+
+    private static void doCallback(IRemoteCallback callback, String callId, CCResult ccResult) {
         try {
-            callback.callback(new RemoteCCResult(ccResult));
+            RemoteCCResult remoteCCResult = new RemoteCCResult(ccResult);
+            if (CC.VERBOSE_LOG) {
+                CC.verboseLog(callId, "callback to other process. RemoteCCResult: %s", remoteCCResult.toString());
+            }
+            callback.callback(remoteCCResult);
         } catch (RemoteException e) {
             e.printStackTrace();
-            CC.verboseLog(cc.getCallId(), "remote doCallback failed!");
+            CC.verboseLog(callId, "remote doCallback failed!");
         }
     }
 
     @Override
     public void cancel(String callId) throws RemoteException {
+        if (isInvalidate()) {
+            return;
+        }
         CC.cancel(callId);
     }
 
     @Override
     public void timeout(String callId) throws RemoteException {
+        if (isInvalidate()) {
+            return;
+        }
         CC.timeout(callId);
     }
 
     @Override
     public String getComponentProcessName(String componentName) throws RemoteException {
+        if (isInvalidate()) {
+            return null;
+        }
         return ComponentManager.getComponentProcessName(componentName);
     }
 

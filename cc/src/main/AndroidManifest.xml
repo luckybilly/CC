@@ -2,7 +2,6 @@
     package="com.billy.cc.core.component">
 
     <application >
-        <!-- TODO 用插件自动注入，export根据开关动态设置 -->
         <provider
             android:authorities="${applicationId}.com.billy.cc.core.remote"
             android:name=".remote.RemoteProvider"

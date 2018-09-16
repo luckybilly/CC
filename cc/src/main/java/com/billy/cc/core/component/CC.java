@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.billy.cc.core.component.CCUtil.put;
 import static com.billy.cc.core.component.ComponentManager.ACTION_REGISTER;
 import static com.billy.cc.core.component.ComponentManager.ACTION_UNREGISTER;
 import static com.billy.cc.core.component.ComponentManager.COMPONENT_DYNAMIC_COMPONENT_OPTION;
@@ -50,11 +51,7 @@ public class CC {
      * 为了方便开发调试，默认设置为允许响应跨app组件调用
      * 为了安全，app上线时可以将此值设置为false，避免被恶意调用
      */
-    private static boolean RESPONSE_FOR_REMOTE_CC = false;
-    /**
-     * 如果调用到当前app内没有的组件，是否尝试去其它app内调用（默认为false）
-     */
-    static boolean CALL_REMOTE_CC_IF_NEED = false;
+    private static boolean REMOTE_CC_ENABLED = false;
 
     private volatile CCResult result;
 
@@ -359,14 +356,6 @@ public class CC {
         put(json, "interceptors", interceptors);
         put(json, "callback", getCallback());
         return json.toString();
-    }
-
-    private void put(JSONObject json, String key, Object value) {
-        try {
-            json.put(key, value);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public Context getContext() {
@@ -736,15 +725,19 @@ public class CC {
      * @param component 组件对象
      */
     public static void registerComponent(IDynamicComponent component) {
+        if (component == null) {
+            return;
+        }
         ComponentManager.registerComponent(component);
         //TODO 未测试
         //子进程中注册的动态组件要通知主进程
-        if (component != null && !application.getPackageName().equals(CCUtil.getCurProcessName())) {
-            String processName = ComponentManager.getComponentProcessName(component.getClass());
+        //动态组件被注册在当前进程中
+        String curProcessName = CCUtil.getCurProcessName();
+        if (!isMainProcess()) {
             CC.obtainBuilder(COMPONENT_DYNAMIC_COMPONENT_OPTION)
                     .setActionName(ACTION_REGISTER)
                     .addParam(KEY_COMPONENT_NAME, component.getName())
-                    .addParam(KEY_PROCESS_NAME, processName)
+                    .addParam(KEY_PROCESS_NAME, curProcessName)
                     .build().callAsync();
         }
     }
@@ -754,10 +747,13 @@ public class CC {
      * @param component 组件对象
      */
     public static void unregisterComponent(IDynamicComponent component) {
+        if (component == null) {
+            return;
+        }
         ComponentManager.unregisterComponent(component);
         //TODO 未测试
         //子进程中注销的动态组件要通知主进程
-        if (!application.getPackageName().equals(CCUtil.getCurProcessName())) {
+        if (!isMainProcess()) {
             CC.obtainBuilder(COMPONENT_DYNAMIC_COMPONENT_OPTION)
                     .setActionName(ACTION_UNREGISTER)
                     .addParam(KEY_COMPONENT_NAME, component.getName())
@@ -858,15 +854,14 @@ public class CC {
      * @param enable 开关（true：会执行； false：不会）
      */
     public static void enableRemoteCC(boolean enable) {
-        RESPONSE_FOR_REMOTE_CC = enable;
-        CALL_REMOTE_CC_IF_NEED = enable;
+        REMOTE_CC_ENABLED = enable;
         if (enable && application != null && isMainProcess()) {
             RemoteCCInterceptor.getInstance().enableRemoteCC();
         }
     }
 
     public static boolean isRemoteCCEnabled() {
-        return RESPONSE_FOR_REMOTE_CC;
+        return REMOTE_CC_ENABLED;
     }
 
     /**

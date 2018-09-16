@@ -4,8 +4,13 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import com.billy.cc.core.component.CCResult;
+import com.billy.cc.core.component.CCUtil;
+
+import org.json.JSONObject;
 
 import java.util.Map;
+
+import static com.billy.cc.core.component.CCUtil.put;
 
 /**
  * 用于跨进程传递的CCResult
@@ -36,6 +41,16 @@ public class RemoteCCResult implements Parcelable {
         result.setSuccess(isSuccess());
         result.setDataMap(RemoteParamUtil.toLocalMap(params));
         return result;
+    }
+
+    @Override
+    public String toString() {
+        JSONObject json = new JSONObject();
+        put(json, "success", success);
+        put(json, "code", code);
+        put(json, "errorMessage", errorMessage);
+        put(json, "params", CCUtil.convertToJson(params));
+        return json.toString();
     }
 
     public boolean isSuccess() {

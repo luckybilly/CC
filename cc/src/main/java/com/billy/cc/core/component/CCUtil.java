@@ -18,10 +18,10 @@ import java.util.Map;
  * @author billy.qi
  * @since 17/7/9 18:37
  */
-class CCUtil {
+public class CCUtil {
     public static final String PROCESS_UNKNOWN = "UNKNOWN";
 
-    static Map<String, Object> convertToMap(JSONObject json) {
+    public static Map<String, Object> convertToMap(JSONObject json) {
         Map<String, Object> params = null;
         try{
             if (json != null) {
@@ -46,7 +46,7 @@ class CCUtil {
         return params;
     }
 
-    static JSONObject convertToJson(Map<String, Object> map) {
+    public static JSONObject convertToJson(Map<String, Object> map) {
         if (map != null) {
             try{
                 JSONObject json = new JSONObject();
@@ -158,4 +158,11 @@ class CCUtil {
         return null;
     }
 
+    public static void put(JSONObject json, String key, Object value) {
+        try {
+            json.put(key, value);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+    }
 }

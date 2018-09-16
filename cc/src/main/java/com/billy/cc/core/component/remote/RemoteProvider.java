@@ -26,12 +26,13 @@ public class RemoteProvider extends ContentProvider {
 
     @Override
     public boolean onCreate() {
+        CC.log("RemoteProvider onCreated! class:%s", this.getClass().getName());
         return false;
     }
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        if (CC.isRemoteCCEnabled()) {
+        if (CC.isRemoteCCEnabled() || getContext().getPackageName().equals(getCallingPackage())) {
             //获取当前ContentProvider所在进程中的RemoteCursor单例对象
             return RemoteCursor.getInstance();
         }

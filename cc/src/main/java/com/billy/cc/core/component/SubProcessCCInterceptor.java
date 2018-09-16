@@ -65,7 +65,10 @@ class SubProcessCCInterceptor implements ICCInterceptor {
     }
 
     protected IRemoteCCService getMultiProcessService(String processName) {
-        return RemoteCCService.get(processName);
+        CC.log("start to get RemoteService from process %s", processName);
+        IRemoteCCService service = RemoteCCService.get(processName);
+        CC.log("get RemoteService from process %s %s!", processName, (service != null ? "success" : "failed"));
+        return service;
     }
 
     class ProcessCrossTask implements Runnable {
@@ -89,7 +92,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
             call(processCrossCC);
         }
 
-        private void call(RemoteCC processCrossCC) {
+        private void call(RemoteCC remoteCC) {
             try {
                 service = connectionCache.get(processName);
                 if (service == null) {
@@ -100,21 +103,31 @@ class SubProcessCCInterceptor implements ICCInterceptor {
                     }
                 }
                 if (cc.isFinished()) {
+                    CC.verboseLog(cc.getCallId(), "cc is finished before call %s process", processName);
                     return;
                 }
                 if (service == null) {
+                    CC.verboseLog(cc.getCallId(), "RemoteService is not found for process: %s", processName);
                     setResult(CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
                     return;
                 }
-                service.call(processCrossCC, new IRemoteCallback.Stub() {
+                if (CC.VERBOSE_LOG) {
+                    CC.verboseLog(cc.getCallId(), "start to call process:%s, RemoteCC: %s"
+                            , processName, remoteCC.toString());
+                }
+                service.call(remoteCC, new IRemoteCallback.Stub() {
                     @Override
                     public void callback(RemoteCCResult remoteCCResult) throws RemoteException {
+                        if (CC.VERBOSE_LOG) {
+                            CC.verboseLog(cc.getCallId(), "receive RemoteCCResult from process:%s, RemoteCCResult: %s"
+                                    , processName, remoteCCResult);
+                        }
                         setResult(remoteCCResult.toCCResult());
                     }
                 });
             } catch (DeadObjectException e) {
                 connectionCache.remove(processName);
-                call(processCrossCC);
+                call(remoteCC);
             } catch (Exception e) {
                 e.printStackTrace();
                 setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
