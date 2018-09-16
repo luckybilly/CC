@@ -3,18 +3,13 @@ repositories {
     jcenter()
 }
 
+//注： 从CC 1.x升级到CC 2.x的用户，需要在根目录build.gradle中将插件地址按照如下方式更换一下：
+// classpath 'com.billy.android:autoregister:x.x.x' -> classpath 'com.billy.android:cc-register:x.x.x'
 //cc-register extension:
 // 功能介绍：
 //  完成组件、拦截器及跨进程json解释器等CC库自身需要的自动注册功能
-//  支持新增自定义的其它自动注册功能，参考AutoRegister，用法参考cc-settings-demo-b.gradle
+//  支持新增自定义的其它自动注册功能，参考AutoRegister，用法参考cc-settings-demo.gradle
 project.apply plugin: 'cc-register'
-//2018-09-13注释：
-// 兼容老版本升级用户，保留registerInfoList变量
-// 从2.0版本开始
-project.ext.registerInfoList = []
-ccregister {
-    registerInfo = registerInfoList
-}
 def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
 project.dependencies.add(dependencyMode, project(":cc"))
 //project.dependencies.add(dependencyMode, "com.billy.android:cc:1.1.0")
