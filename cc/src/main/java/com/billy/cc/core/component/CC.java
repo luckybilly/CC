@@ -855,7 +855,7 @@ public class CC {
      */
     public static void enableRemoteCC(boolean enable) {
         REMOTE_CC_ENABLED = enable;
-        if (enable && application != null && isMainProcess()) {
+        if (enable && application != null) {
             RemoteCCInterceptor.getInstance().enableRemoteCC();
         }
     }
