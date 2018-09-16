@@ -38,7 +38,8 @@ ext {
     supportVersion = '25.3.1'
 
     deps = [
-        cc       : project(':cc')
+        cc       : 'com.billy.android:cc:2.0.0'
+//        cc       : project(':cc')
     ]
 }
 task clean(type: Delete) {
