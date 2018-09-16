@@ -27,6 +27,8 @@ class ProjectModuleManager {
     static boolean taskIsAssemble
 
     static boolean manageModule(Project project) {
+        taskIsAssemble = false
+        mainModuleName = null
         Properties localProperties = new Properties()
         try {
             def localFile = project.rootProject.file('local.properties')
