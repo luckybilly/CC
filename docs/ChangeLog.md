@@ -1,6 +1,17 @@
 
 # 更新日志
 
+- 2018.09.16 V2.0.0 全新升级
+
+
+        1. 重构跨进程通信机制，新增支持应用内部跨进程组件调用
+        2. 新增通过拦截器（继承BaseForwardInterceptor）转发组件调用，可用于A/B-Test
+        3. 自动注册插件从通用的AutoRegister改为CC定制版的cc-register
+        4. 大幅简化cc-settings.gradle，将大部分功能移至cc-register插件中完成
+        5. 优化组件独立运行的步骤：可直接在Android studio中点击运行按钮（主app需要排除当前独立运行的组件，还是通过local.properties中添加module_name=true来实现）
+        
+详情请看[升级指南](../2.0升级指南.MD)
+
 - 2018.06.04 V1.1.0 重大更新
 
 
