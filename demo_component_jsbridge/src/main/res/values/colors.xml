@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="demo_jsbridge_colorPrimary">#3F51B5</color>
+    <color name="demo_jsbridge_colorPrimaryDark">#303F9F</color>
+    <color name="demo_jsbridge_colorAccent">#FF4081</color>
+</resources>

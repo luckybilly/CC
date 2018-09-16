@@ -1,0 +1,34 @@
+apply from: rootProject.file("cc-settings-demo.gradle")
+
+android {
+    compileSdkVersion rootProject.compileVersion
+    buildToolsVersion rootProject.buildVersion
+
+    defaultConfig {
+        minSdkVersion 9 // support v7 minSdkVersion is 9
+        targetSdkVersion rootProject.compileVersion
+        versionCode 1
+        versionName "1.0"
+
+
+    }
+    resourcePrefix "demo_jsbridge_"
+
+    buildTypes {
+        release {
+            postprocessing {
+                removeUnusedCode false
+                removeUnusedResources false
+                obfuscate false
+                optimizeCode false
+                proguardFile 'proguard-rules.pro'
+            }
+        }
+    }
+
+}
+
+dependencies {
+    implementation "com.android.support:appcompat-v7:${rootProject.supportVersion}"
+    api 'com.github.lzyzsd:jsbridge:1.0.4'
+}

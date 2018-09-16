@@ -34,6 +34,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 , R.id.componentBGetData
                 , R.id.componentBLogin
                 , R.id.componentKt
+                , R.id.test_sub_process
         );
     }
 
@@ -120,6 +121,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .setActionName("showActivity")
                         .build()
                         .callAsyncCallbackOnMainThread(printResultCallback);
+                break;
+            case R.id.test_sub_process:
+                CC.obtainBuilder("webComponent")
+                        .setActionName("openUrl")
+                        .setContext(this)
+                        .addParam("url", "file:///android_asset/demo.html")
+                        .build().call();
                 break;
             default:
                 break;

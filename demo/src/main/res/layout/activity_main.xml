@@ -67,16 +67,22 @@
                 android:text="@string/async_b_login"
                 />
             <Button
-                android:id="@+id/test_lifecycle"
+                android:id="@+id/test_sub_process"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/life_cycle_relationship"
+                android:text="@string/call_sub_process"
                 />
             <Button
                 android:id="@+id/componentKt"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/call_kotlin_component"
+                />
+            <Button
+                android:id="@+id/test_lifecycle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/life_cycle_relationship"
                 />
         </com.google.android.flexbox.FlexboxLayout>
     </ScrollView>

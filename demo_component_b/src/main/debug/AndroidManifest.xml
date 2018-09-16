@@ -15,8 +15,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name="com.billy.cc.demo.component.b.LoginActivity"
-            android:process=":processB"
-            />
+        <activity android:name="com.billy.cc.demo.component.b.LoginActivity" />
     </application>
 </manifest>

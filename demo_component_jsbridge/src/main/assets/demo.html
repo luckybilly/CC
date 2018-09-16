@@ -1,0 +1,86 @@
+<html>
+    <head>
+        <meta content="text/html; charset=utf-8" http-equiv="content-type">
+        <title>js调用java</title>
+    </head>
+    <!--<script type="text/javascript" src="WebViewJavascriptBridge.js" ></script>-->
+
+    <body>
+        <div style="text-align:center;color:blue;">这是一个网页<br>演示子进程中调用其它组件</div>
+        <div>
+            从其它组件获取的当前登录用户信息如下：
+        </div>
+        <div>
+            <span>用户id：</span><span id="userId"></span>
+        </div>
+        <div>
+            <span>用户名：</span><span id="userName"></span>
+        </div>
+        <div style="text-align:center;">
+            <button id="button">登录</button>
+        </div>
+        <div id="errorMsg" style="color:red;"></div>
+    </body>
+
+    <script type="text/javascript" >
+        var login = false
+        function onJsBridgeReady() {
+            showMsg('onJsBridgeReady')
+            if (typeof(callCC) != "undefined") {
+                //在js中统一通过callCC来调用组件，指定组件名称、action名称、参数列表及回调函数
+                callCC("ComponentB", "getLoginUser", {}, function(dataJson) {
+                    showMsg(JSON.stringify(dataJson))
+                    login = true
+                    refreshBtn()
+                    if(dataJson) {
+                        document.getElementById('userId').innerHTML = dataJson.user.id
+                        document.getElementById('userName').innerHTML = dataJson.user.userName
+                    }
+                }, showMsg)
+            }
+        }
+
+
+        function refreshBtn() {
+            document.getElementById('button').innerHTML = login ? '退出登录' : '登录'
+        }
+
+        function buttonOnClick() {
+            if (typeof(callCC) != "undefined") {
+                if (login) {
+                    //在js中统一通过callCC来调用组件，指定组件名称、action名称、参数列表及回调函数
+                    callCC("ComponentB", "logout", {}, function(dataJson) {
+                        login = false
+                        refreshBtn()
+                        document.getElementById('userId').innerHTML = ''
+                        document.getElementById('userName').innerHTML = ''
+                        showMsg('已退出登录')
+                    }, showMsg);
+                } else {
+                    //在js中统一通过callCC来调用组件，指定组件名称、action名称、参数列表及回调函数
+                    callCC("ComponentB", "login", {}, function(dataJson) {
+                        login = true
+                        refreshBtn()
+                        if(dataJson) {
+                            document.getElementById('userId').innerHTML = dataJson.user.id
+                            document.getElementById('userName').innerHTML = dataJson.user.userName
+                        }
+                        showMsg(JSON.stringify(dataJson), 0)
+                        showMsg('登录成功')
+                    }, showMsg);
+                }
+            }
+        }
+
+        function showMsg(msg, code) {
+            document.getElementById('errorMsg').innerHTML = msg + '<br>' + document.getElementById('errorMsg').innerHTML
+        }
+
+        document.addEventListener(
+            'WebViewJavascriptBridgeReady'
+            , onJsBridgeReady,
+            false
+        );
+        document.getElementById("button").addEventListener('click', buttonOnClick, false);
+    </script>
+</html>
