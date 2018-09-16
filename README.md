@@ -6,7 +6,7 @@
 
 模块|CC|AutoRegister
 ---|---|---
-最新版本| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/AutoRegister/images/download.svg)](https://bintray.com/hellobilly/android/AutoRegister/_latestVersion)
+最新版本| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg?version=1.1.0)](https://bintray.com/hellobilly/android/cc/1.1.0)| [![Download](https://api.bintray.com/packages/hellobilly/android/AutoRegister/images/download.svg)](https://bintray.com/hellobilly/android/AutoRegister/_latestVersion)
 
 
 技术原理: [Wiki](https://github.com/luckybilly/CC/wiki)
