@@ -17,7 +17,7 @@
         4. 跨app调用默认状态改为关闭，可手动打开： CC.enableRemoteCC(true)
         5. 修改cc-settings.gradle
             增加IGlobalCCInterceptor和IParamJsonConverter的自动注册配置
-            将autoregister的参数配置改为可添加的方式(原来是覆盖式),参考：cc-settings-demo-b.gradle
+            将autoregister的参数配置改为可添加的方式(原来是覆盖式),参考：cc-settings-demo.gradle
 
 链接：
 
@@ -29,7 +29,7 @@
 
 [LoginActivity](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/LoginActivity.java)
 
-[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
+[cc-settings-demo.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo.gradle)
 
 - 2018.05.17 V1.0.0版 Fix issue [#23](https://github.com/luckybilly/CC/issues/23)
 

@@ -106,7 +106,7 @@ User user = ccResult.getDataItem(key); //读取CCResult.data中的item
 - 自定义的ActionProcessor自动注册到组件
 
     可参考[ComponentB](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/ComponentB.java)
-    及[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
+    及[cc-settings-demo.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo.gradle)
 
    
 - 跨组件获取Fragment、View等对象并支持后续与这些对象通信，以Fragment对象为例：

@@ -4,12 +4,14 @@
 
 [![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
-模块|CC|AutoRegister
+模块|CC|cc-register
 ---|---|---
-最新版本| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/AutoRegister/images/download.svg)](https://bintray.com/hellobilly/android/AutoRegister/_latestVersion)
+最新版本| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/cc-register/images/download.svg)](https://bintray.com/hellobilly/android/cc-register/_latestVersion)
 
 
 技术原理: [Wiki](https://github.com/luckybilly/CC/wiki)
+
+[升级指南：从CC 1.x.x升级到CC 2.x.x](2.0升级指南.MD)
 
 ## 使用CC的理由
 
@@ -76,7 +78,7 @@
         - demo_component_b              demo组件B
         - demo_component_kt             demo组件(kotlin)
         - demo_interceptors             demo全局拦截器(如果有多个app并且拦截器不同，可以创建多个module给不同app使用)
-        - cc-settings-demo-b.gradle     演示如何自定义配置文件，如：添加actionProcessor自动注册的配置
+        - cc-settings-demo.gradle       演示如何自定义配置文件，如：添加actionProcessor自动注册的配置
         - demo-debug.apk                demo安装包(包含demo/demo_component_a/demo_component_kt)
         - demo_component_b-debug.apk    demo组件B单独运行安装包
 

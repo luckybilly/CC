@@ -14,6 +14,14 @@
         3. 请确认actionName是否与组件中定义的一致
         4. 开发阶段，若跨app调用失败(错误码: -5)，可在application.onCreate中显式地调用CC.enableRemoteCC(true);
 
+- 组件作为app独立运行调试，在主app中调用该组件时，该组件中新增/修改的代码未生效
+
+
+        出现这个问题的原因是：
+            主APP打包时已经将该独立运行的组件包含在内了，调用组件时优先调用app内部的组件，从而忽略了独立运行的组件
+        解决方法：
+        1. 在local.properties中新增一行配置 modulename=true //注：modulename为独立运行组件的module名称
+        2. 重新打包运行一次主app module（目的是为了将独立运行的组件module从主app的依赖列表中排除）
 
 - 调用异步实现的组件时，IComponentCallback.onResult方法没有执行
 
@@ -27,7 +35,7 @@
 
     
         1. 请在手机系统的权限管理中对组件所在的app赋予自启动权限
-        2. 请检查被调用的app里是否设置了CC.enableRemoteCC(false)，应该设置为true(默认值也为true)
+        2. 请检查被调用的app里是否设置了CC.enableRemoteCC(false)，应该设置为true(默认值为false)
 
 - 使用ActionProcessor来处理多个action，单独组件作为apk运行时能正常工作，打包到主app中则不能正常工作
 

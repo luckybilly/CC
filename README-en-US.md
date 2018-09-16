@@ -4,9 +4,9 @@
 
 [![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
-Name|CC|AutoRegister
+Name|CC|cc-register
 ---|---|---
-Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/AutoRegister/images/download.svg)](https://bintray.com/hellobilly/android/AutoRegister/_latestVersion)
+Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/cc-register/images/download.svg)](https://bintray.com/hellobilly/android/cc-register/_latestVersion)
 
 ## demo download
 
@@ -77,7 +77,7 @@ it looks like below via running both of above app on your device and launch demo
         - demo                          demo main app module
         - demo_component_a              demo ComponentA 
         - demo_component_b              demo ComponentB
-        - cc-settings-demo-b.gradle     actionProcessor自动注册的配置脚本demo
+        - cc-settings-demo.gradle       actionProcessor自动注册的配置脚本demo
         - demo-debug.apk                demo apk(contains demo and demo_component_a)
         - demo_component_b-debug.apk    apk for demo_component_b only
 
@@ -258,7 +258,7 @@ dynamic components do not automatically register and work through manual registr
 - Auto register Custom ActionProcessor into component
 
     see[ComponentB](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/ComponentB.java)
-    and[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
+    and[cc-settings-demo.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo.gradle)
 
 
 ##### watch the sourcecode of demo, demo_component_a and demo_component_b for more details
