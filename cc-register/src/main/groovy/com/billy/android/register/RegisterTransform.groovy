@@ -20,7 +20,7 @@ class RegisterTransform extends Transform {
 
 
     Project project
-    RegisterExtension config;
+    RegisterExtension extension;
 
     RegisterTransform(Project project) {
         this.project = project
@@ -57,8 +57,8 @@ class RegisterTransform extends Transform {
                    , TransformOutputProvider outputProvider
                    , boolean isIncremental) throws IOException, TransformException, InterruptedException {
         project.logger.warn("start ${PLUGIN_NAME} transform...")
-        config.reset()
-        project.logger.warn(config.toString())
+        extension.reset()
+        project.logger.warn(extension.toString())
         def clearCache = !isIncremental
         // clean build cache
         if (clearCache) {
@@ -69,10 +69,9 @@ class RegisterTransform extends Transform {
         boolean leftSlash = File.separator == '/'
 
 
-        def cacheEnabled = config.cacheEnabled
-        println("${PLUGIN_NAME}-----------isIncremental:${isIncremental}--------config.cacheEnabled:${cacheEnabled}--------------------\n")
+        def cacheEnabled = extension.cacheEnabled
+        println("${PLUGIN_NAME}-----------isIncremental:${isIncremental}--------extension.cacheEnabled:${cacheEnabled}--------------------\n")
 
-        File jarManagerfile = null
         Map<String, ScanJarHarvest> cacheMap = null
         File cacheFile = null
         Gson gson = null
@@ -86,7 +85,7 @@ class RegisterTransform extends Transform {
             }.getType())
         }
 
-        CodeScanner scanProcessor = new CodeScanner(config.list, cacheMap)
+        CodeScanner scanProcessor = new CodeScanner(extension.list, cacheMap)
 
         def classFolder = null
 
@@ -137,7 +136,7 @@ class RegisterTransform extends Transform {
         def scanFinishTime = System.currentTimeMillis()
         project.logger.error("${PLUGIN_NAME} scan all class cost time: " + (scanFinishTime - time) + " ms")
 
-        config.list.each { ext ->
+        extension.list.each { ext ->
             if (ext.fileContainsInitClass) {
                 println('')
                 println("insert register code to file:" + ext.fileContainsInitClass.absolutePath)
@@ -154,7 +153,7 @@ class RegisterTransform extends Transform {
             }
         }
         project.logger.error("${PLUGIN_NAME} insert code cost time: " + (System.currentTimeMillis() - scanFinishTime) + " ms")
-        if (config.multiProcessEnabled && classFolder) {
+        if (extension.multiProcessEnabled && classFolder) {
             def processNames = ManifestGenerator.getCachedProcessNames(project.name, context.variantName)
             processNames.each {processName ->
                 if (processName) {

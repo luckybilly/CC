@@ -93,6 +93,7 @@ class ManifestGenerator {
                 if (processName){
                     def providerName = ProviderGenerator.getSubProcessProviderClassName(processName)
                     providerName = providerName.replaceAll("/", ".")
+                    //兼容以冒号开头的子进程和直接命名的子进程
                     def realProcess = processName.startsWith(":") ? (pkgName + processName) : processName
                     provider(
                             "android:authorities": "${realProcess}.${AUTHORITY}",

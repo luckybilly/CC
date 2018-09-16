@@ -22,7 +22,7 @@ class RegisterCache {
     static File getRegisterInfoCacheFile(Project project) {
         String baseDir = getCacheFileDir(project)
         if (mkdirs(baseDir)) {
-            return new File(baseDir + "register-info.config")
+            return new File(baseDir + "register-info.extension")
         } else {
             throw new FileNotFoundException("Not found  path:" + baseDir)
         }

@@ -1,13 +1,11 @@
 package com.billy.android.register
 
 import com.android.build.gradle.AppExtension
-import com.android.build.gradle.AppPlugin
 import com.billy.android.register.cc.DefaultRegistryHelper
 import com.billy.android.register.cc.ProjectModuleManager
 import com.billy.android.register.cc.generator.ManifestGenerator
 import org.gradle.api.Plugin
 import org.gradle.api.Project
-
 /**
  * 自动注册插件入口
  * @author billy.qi
@@ -37,12 +35,12 @@ public class RegisterPlugin implements Plugin<Project> {
     }
 
     static RegisterExtension init(Project project, RegisterTransform transformImpl) {
-        RegisterExtension config = project.extensions.findByName(EXT_NAME) as RegisterExtension
-        config.project = project
-        config.convertConfig()
-        DefaultRegistryHelper.addDefaultRegistry(config.list)
-        transformImpl.config = config
-        return config
+        RegisterExtension extension = project.extensions.findByName(EXT_NAME) as RegisterExtension
+        extension.project = project
+        extension.convertConfig()
+        DefaultRegistryHelper.addDefaultRegistry(extension.list)
+        transformImpl.extension = extension
+        return extension
     }
 
 }

@@ -37,13 +37,19 @@ class ProjectModuleManager {
             println("${PLUGIN_NAME}: local.properties not found")
         }
         initByTask(project)
-        boolean runAsApp = isMainApp(project) || (isAssembleFor(project) && !isBuildingAar(localProperties)) || !taskIsAssemble
-        if (runAsApp && isAlwaysLib(project)) {
+
+        def mainApp = isMainApp(project)
+        def assembleFor = isAssembleFor(project)
+        def buildingAar = isBuildingAar(localProperties)
+        def alwaysLib = isAlwaysLib(project)
+
+        boolean runAsApp = mainApp || (assembleFor && !buildingAar) || !taskIsAssemble
+        if (runAsApp && alwaysLib) {
             runAsApp = false
-            println "${PLUGIN_NAME}: project(':${project.name}').ext.alwaysLib = true"
         }
         project.ext.runAsApp = runAsApp
-        println "${PLUGIN_NAME}: project=${project.name}, runAsApp=${runAsApp}"
+        println "${PLUGIN_NAME}: project=${project.name}, runAsApp=${runAsApp} . taskIsAssemble:${taskIsAssemble}. " +
+                "settings(mainApp:${mainApp}, alwaysLib:${alwaysLib}, assembleThisModule:${assembleFor}, buildingAar:${buildingAar})"
         if (runAsApp) {
             project.apply plugin: 'com.android.application'
 

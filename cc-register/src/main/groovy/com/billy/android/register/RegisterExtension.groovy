@@ -45,7 +45,7 @@ class RegisterExtension {
             if (info.validate())
                 list.add(info)
             else {
-                project.logger.error(PLUGIN_NAME + ' config error: scanInterface, codeInsertToClassName and registerMethodName should not be null\n' + info.toString())
+                project.logger.error(PLUGIN_NAME + ' extension error: scanInterface, codeInsertToClassName and registerMethodName should not be null\n' + info.toString())
             }
 
         }
