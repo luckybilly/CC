@@ -19,9 +19,7 @@ import static com.billy.cc.core.component.CCUtil.put;
  */
 public class RemoteCCResult implements Parcelable {
 
-    private static final long serialVersionUID = 1L;
-
-    private Map<String, Object> params;
+    private Map<String, Object> data;
 
     private boolean success;
     private String errorMessage;
@@ -31,7 +29,7 @@ public class RemoteCCResult implements Parcelable {
         setCode(result.getCode());
         setErrorMessage(result.getErrorMessage());
         setSuccess(result.isSuccess());
-        params = RemoteParamUtil.toRemoteMap(result.getDataMap());
+        data = RemoteParamUtil.toRemoteMap(result.getDataMap());
     }
 
     public CCResult toCCResult() {
@@ -39,7 +37,7 @@ public class RemoteCCResult implements Parcelable {
         result.setCode(getCode());
         result.setErrorMessage(getErrorMessage());
         result.setSuccess(isSuccess());
-        result.setDataMap(RemoteParamUtil.toLocalMap(params));
+        result.setDataMap(RemoteParamUtil.toLocalMap(data));
         return result;
     }
 
@@ -49,7 +47,7 @@ public class RemoteCCResult implements Parcelable {
         put(json, "success", success);
         put(json, "code", code);
         put(json, "errorMessage", errorMessage);
-        put(json, "params", CCUtil.convertToJson(params));
+        put(json, "data", CCUtil.convertToJson(data));
         return json.toString();
     }
 
@@ -87,14 +85,14 @@ public class RemoteCCResult implements Parcelable {
         dest.writeByte((byte) (success ? 1 : 0));
         dest.writeString(errorMessage);
         dest.writeInt(code);
-        dest.writeMap(params);
+        dest.writeMap(data);
     }
 
     private RemoteCCResult(Parcel in) {
         success = in.readByte() != 0;
         errorMessage = in.readString();
         code = in.readInt();
-        params = in.readHashMap(getClass().getClassLoader());
+        data = in.readHashMap(getClass().getClassLoader());
     }
 
     public static final Creator<RemoteCCResult> CREATOR = new Creator<RemoteCCResult>() {

@@ -38,6 +38,13 @@ public class RemoteParamUtil {
         paramJsonConverter = converter;
     }
 
+    public static String convertObject2JsonString(Object object) {
+        if (paramJsonConverter != null && object != null) {
+            return paramJsonConverter.object2Json(object);
+        }
+        return object == null ? null : object.toString();
+    }
+
     /**
      * 将参数转换以进行跨进程传递
      * @param data 参数列表
@@ -125,7 +132,7 @@ public class RemoteParamUtil {
         }
     }
 
-    abstract static class BaseParam implements Parcelable {
+    public abstract static class BaseParam implements Parcelable {
         Class<?> clazz;
         int hashCode;
 

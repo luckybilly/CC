@@ -120,7 +120,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
                     public void callback(RemoteCCResult remoteCCResult) throws RemoteException {
                         if (CC.VERBOSE_LOG) {
                             CC.verboseLog(cc.getCallId(), "receive RemoteCCResult from process:%s, RemoteCCResult: %s"
-                                    , processName, remoteCCResult);
+                                    , processName, remoteCCResult.toString());
                         }
                         setResult(remoteCCResult.toCCResult());
                     }
