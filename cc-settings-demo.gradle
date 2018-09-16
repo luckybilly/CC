@@ -11,6 +11,7 @@ apply from: rootProject.file('cc-settings.gradle')
 //apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
 
 dependencies {
+    implementation project(':demo_base')
     //2018-06-03新增：这里是为了示例添加全局拦截器
     if (project.ext.has('runAsApp') && project.ext.runAsApp) {
         //说明：需要兼容的情况有3种(单独组件作为app运行、打包在主app内、组件在多个app上复用但全局拦截器不同)
@@ -44,6 +45,6 @@ ccregister.registerInfo.add([
     , 'codeInsertToMethodName'  : 'initProcessors'
     , 'registerMethodName'      : 'add'
 ])
+//也可以按照上述格式继续添加你自己的自动注册需求，俗称：搭顺风车
 
 ccregister.multiProcessEnabled = true
-//也可以按照上述格式继续添加你自己的自动注册需求，俗称：搭顺风车

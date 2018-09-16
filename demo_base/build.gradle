@@ -1,5 +1,4 @@
-ext.alwaysLib = true //虽然apply了cc-settings.gradle，但一直作为library编译，否则别的组件依赖此module时会报错
-apply from: rootProject.file('cc-settings.gradle')
+apply plugin: 'com.android.library'
 
 android {
     compileSdkVersion rootProject.compileVersion
@@ -23,4 +22,5 @@ android {
 
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.4'
+    api rootProject.ext.deps.cc
 }
