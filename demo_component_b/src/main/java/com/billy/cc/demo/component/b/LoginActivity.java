@@ -57,9 +57,12 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     public void onClick(View v) {
         String username = editText.getText().toString().trim();
         if (TextUtils.isEmpty(username)) {
+            //仅业务提示，登录操作并未结束
             Toast.makeText(this, R.string.demo_b_username_hint, Toast.LENGTH_SHORT).show();
         } else {
             Global.loginUser = new User(1, username);
+            //返回登录结果
+            sendLoginResult();
             finish();
         }
     }
@@ -67,6 +70,17 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //为确保一定会调用CC.sendCCResult，在onDestroy中再次确认是否已返回登录结果
+        sendLoginResult();
+    }
+
+    private boolean resultSent;
+
+    private void sendLoginResult() {
+        if (resultSent) {
+            return;
+        }
+        resultSent = true;
         //判断是否为CC调用打开本页面
         if (callId != null) {
             CCResult result;

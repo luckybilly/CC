@@ -3,6 +3,7 @@ package com.billy.cc.demo.component.b;
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponent;
+import com.billy.cc.core.component.IMainThread;
 import com.billy.cc.demo.component.b.processor.IActionProcessor;
 
 import java.util.HashMap;
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author billy.qi
  * @since 17/11/20 21:00
  */
-public class ComponentB implements IComponent {
+public class ComponentB implements IComponent, IMainThread {
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private final HashMap<String, IActionProcessor> map = new HashMap<>(4);
@@ -70,4 +71,11 @@ public class ComponentB implements IComponent {
         return false;
     }
 
+    @Override
+    public Boolean shouldActionRunOnMainThread(String actionName, CC cc) {
+        if ("login".equals(actionName)) {
+            return true;
+        }
+        return null;
+    }
 }

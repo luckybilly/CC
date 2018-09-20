@@ -127,7 +127,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         .setActionName("openUrl")
                         .setContext(this)
                         .addParam("url", "file:///android_asset/demo.html")
-                        .build().call();
+                        .build()
+                        .callAsyncCallbackOnMainThread(printResultCallback);
                 break;
             default:
                 break;
