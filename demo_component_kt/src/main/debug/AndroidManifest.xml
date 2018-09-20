@@ -2,7 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.billy.cc.demo.component.kt">
 
-    <application>
+    <application
+        android:label="demo_kt"
+        android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
+        >
         <activity android:name=".MainActivity" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
