@@ -68,16 +68,13 @@ public class RemoteCCService extends IRemoteCCService.Stub {
                     doCallback(callback, callId, ccResult);
                 }
             });
-        } else if (remoteCC.isResultRequired()) {
+        } else {
             cc.callAsync(new IComponentCallback() {
                 @Override
                 public void onResult(CC cc, CCResult result) {
                     doCallback(callback, callId, result);
                 }
             });
-        } else {
-            cc.callAsync();
-            doCallback(callback, callId, CCResult.success());
         }
     }
 

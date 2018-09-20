@@ -49,7 +49,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
         boolean isMainThreadSyncCall = !cc.isAsync() && Looper.getMainLooper() == Looper.myLooper();
         ProcessCrossTask task = new ProcessCrossTask(cc, processName, connectionCache, isMainThreadSyncCall);
         ComponentManager.threadPool(task);
-        if (!cc.isFinished() && cc.resultRequired()) {
+        if (!cc.isFinished()) {
             //执行 Wait4ResultInterceptor
             chain.proceed();
             //如果是提前结束的，跨进程通知被调用方
@@ -58,8 +58,6 @@ class SubProcessCCInterceptor implements ICCInterceptor {
             } else if (cc.isTimeout()) {
                 task.timeout();
             }
-        } else {
-            return CCResult.success();
         }
         return cc.getResult();
     }
@@ -135,11 +133,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
         }
 
         void setResult(CCResult result) {
-            if (cc.resultRequired()) {
-                cc.setResult4Waiting(result);
-            } else {
-                cc.setResult(result);
-            }
+            cc.setResult4Waiting(result);
         }
 
         void cancel() {

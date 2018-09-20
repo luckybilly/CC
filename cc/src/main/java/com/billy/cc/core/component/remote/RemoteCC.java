@@ -24,7 +24,6 @@ public class RemoteCC implements Parcelable {
     private String componentName;
     private String actionName;
     private String callId;
-    private boolean resultRequired;
     private boolean isMainThreadSyncCall;
 
     public RemoteCC(CC cc, boolean isMainThreadSyncCall) {
@@ -32,7 +31,6 @@ public class RemoteCC implements Parcelable {
         this.actionName = cc.getActionName();
         this.callId = cc.getCallId();
         this.params = RemoteParamUtil.toRemoteMap(cc.getParams());
-        this.resultRequired = cc.resultRequired();
         this.isMainThreadSyncCall = isMainThreadSyncCall;
     }
 
@@ -44,7 +42,6 @@ public class RemoteCC implements Parcelable {
         componentName = in.readString();
         actionName = in.readString();
         callId = in.readString();
-        resultRequired = in.readByte() != 0;
         isMainThreadSyncCall = in.readByte() != 0;
         params = in.readHashMap(getClass().getClassLoader());
     }
@@ -54,7 +51,6 @@ public class RemoteCC implements Parcelable {
         dest.writeString(componentName);
         dest.writeString(actionName);
         dest.writeString(callId);
-        dest.writeByte((byte) (resultRequired ? 1 : 0));
         dest.writeByte((byte) (isMainThreadSyncCall ? 1 : 0));
         dest.writeMap(params);
     }
@@ -65,7 +61,6 @@ public class RemoteCC implements Parcelable {
         put(json, "componentName", componentName);
         put(json, "actionName", actionName);
         put(json, "callId", callId);
-        put(json, "resultRequired", resultRequired);
         put(json, "isMainThreadSyncCall", isMainThreadSyncCall);
         put(json, "params", CCUtil.convertToJson(params));
         return json.toString();
@@ -110,14 +105,6 @@ public class RemoteCC implements Parcelable {
 
     public void setCallId(String callId) {
         this.callId = callId;
-    }
-
-    public boolean isResultRequired() {
-        return resultRequired;
-    }
-
-    public void setResultRequired(boolean resultRequired) {
-        this.resultRequired = resultRequired;
     }
 
     public boolean isMainThreadSyncCall() {

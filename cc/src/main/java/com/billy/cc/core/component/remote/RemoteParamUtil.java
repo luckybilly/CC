@@ -50,7 +50,7 @@ public class RemoteParamUtil {
      * @param data 参数列表
      * @return 转换之后的参数列表
      */
-    static HashMap<String, Object> toRemoteMap(Map<String, Object> data) {
+    public static HashMap<String, Object> toRemoteMap(Map<String, Object> data) {
         HashMap<String, Object> map = null;
         if (data != null) {
             map = new HashMap<>(data.size());
@@ -66,7 +66,7 @@ public class RemoteParamUtil {
      * @param map 跨进程传过来的参数列表
      * @return 本地可用的参数列表
      */
-    static HashMap<String, Object> toLocalMap(Map<String, Object> map) {
+    public static HashMap<String, Object> toLocalMap(Map<String, Object> map) {
         HashMap<String, Object> data = null;
         if (map != null) {
             data = new HashMap<>(map.size());

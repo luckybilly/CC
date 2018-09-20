@@ -1,5 +1,7 @@
 package com.billy.cc.core.component;
 
+import android.os.Handler;
+import android.os.Looper;
 import android.text.TextUtils;
 
 import com.billy.cc.core.component.annotation.AllProcess;
@@ -40,6 +42,8 @@ class ComponentManager {
     static final ExecutorService CC_THREAD_POOL = new ThreadPoolExecutor(2, Integer.MAX_VALUE,
             60L, TimeUnit.SECONDS,
             new SynchronousQueue<Runnable>(), THREAD_FACTORY);
+
+    static final Handler MAIN_THREAD_HANDLER = new Handler(Looper.getMainLooper());
 
     static {
         registerComponent(new DynamicComponentOption());
@@ -185,6 +189,10 @@ class ComponentManager {
 
     static IComponent getComponentByName(String componentName) {
         return COMPONENTS.get(componentName);
+    }
+
+    static void mainThread(Runnable runnable) {
+        MAIN_THREAD_HANDLER.post(runnable);
     }
 
     static void threadPool(Runnable runnable) {
