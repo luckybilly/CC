@@ -82,10 +82,11 @@ class ProjectModuleManager {
         return runAsApp
     }
 
-    static final String TASK_TYPES = "((ASSEMBLE)|(INSTALL)|((BUILD)?TINKER)|(RESGUARD))"
+    //需要集成打包相关的task
+    static final String TASK_TYPES = ".*((((ASSEMBLE)|(INSTALL)|((BUILD)?TINKER)|(RESGUARD)).*)|(ASR)|(ASD))"
     static void initByTask(Project project) {
         def taskNames = project.gradle.startParameter.taskNames
-        def allModuleBuildApkPattern = Pattern.compile(".*${TASK_TYPES}.*")
+        def allModuleBuildApkPattern = Pattern.compile(TASK_TYPES)
         for (String task : taskNames) {
             if (allModuleBuildApkPattern.matcher(task.toUpperCase()).matches()) {
                 taskIsAssemble = true
@@ -126,7 +127,7 @@ class ProjectModuleManager {
     //      maven依赖  : 'com.billy.demo:demoB:1.1.0' //如果使用了maven私服，请使用此方式
     static void addComponentDependencyMethod(Project project, Properties localProperties) {
         //当前task是否为给本module打apk包
-        def curModuleIsBuildingApk = taskIsAssemble && (isAssembleFor(project) || isMainApp(project))
+        def curModuleIsBuildingApk = taskIsAssemble && (mainModuleName == null && isMainApp(project) || mainModuleName == project.name)
         project.ext.addComponent = { dependencyName, realDependency = null ->
             //不是在为本app module打apk包，不添加对组件的依赖
             if (!curModuleIsBuildingApk)
