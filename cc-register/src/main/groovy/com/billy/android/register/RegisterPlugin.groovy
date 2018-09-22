@@ -4,6 +4,7 @@ import com.android.build.gradle.AppExtension
 import com.billy.android.register.cc.DefaultRegistryHelper
 import com.billy.android.register.cc.ProjectModuleManager
 import com.billy.android.register.cc.generator.ManifestGenerator
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 /**
@@ -30,6 +31,12 @@ public class RegisterPlugin implements Plugin<Project> {
                 if (config.multiProcessEnabled) {
                     ManifestGenerator.generateManifestFileContent(project, config.excludeProcessNames)
                 }
+            }
+        } else {
+            //兼容gradle3.0以上组件独立运行时出现的问题：https://github.com/luckybilly/CC/issues/62
+            def cachedJniFile = project.file("build/intermediates/transforms/mergeJniLibs")
+            if (cachedJniFile && cachedJniFile.exists() && cachedJniFile.isDirectory()) {
+                FileUtils.deleteDirectory(cachedJniFile)
             }
         }
     }
