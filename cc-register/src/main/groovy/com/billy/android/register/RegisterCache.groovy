@@ -20,12 +20,7 @@ class RegisterCache {
      * @return file
      */
     static File getRegisterInfoCacheFile(Project project) {
-        String baseDir = getCacheFileDir(project)
-        if (mkdirs(baseDir)) {
-            return new File(baseDir + "register-info.extension")
-        } else {
-            throw new FileNotFoundException("Not found  path:" + baseDir)
-        }
+        return getCacheFile(project, "register-info.json")
     }
 
     /**
@@ -34,13 +29,39 @@ class RegisterCache {
      * @return File
      */
     static File getRegisterCacheFile(Project project) {
+        return getCacheFile(project, "register-cache.json")
+    }
+
+    static File getBuildTypeCacheFile(Project project) {
+        return getCacheFile(project, "build-type.json")
+    }
+
+    private static File getCacheFile(Project project, String fileName) {
         String baseDir = getCacheFileDir(project)
         if (mkdirs(baseDir)) {
-            return new File(baseDir + "register-cache.json")
+            return new File(baseDir + fileName)
         } else {
             throw new FileNotFoundException("Not found  path:" + baseDir)
         }
     }
+
+    static boolean isSameAsLastBuildType(Project project, boolean isApp) {
+        File cacheFile = getCacheFile(project, "build-type.json")
+        if (cacheFile.exists()) {
+            return (cacheFile.text == 'true') == isApp
+        }
+        return false
+    }
+
+    static void cacheBuildType(Project project, boolean isApp) {
+        File cacheFile = getCacheFile(project, "build-type.json")
+        cacheFile.getParentFile().mkdirs()
+        if (!cacheFile.exists())
+            cacheFile.createNewFile()
+        cacheFile.write(isApp.toString())
+    }
+
+
     /**
      * 将扫描到的结果缓存起来
      * @param cacheFile
