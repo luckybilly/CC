@@ -26,6 +26,12 @@ public class RemoteCC implements Parcelable {
     private String callId;
     private boolean isMainThreadSyncCall;
 
+    private Map<String, Object> localParams;
+
+    public RemoteCC(CC cc) {
+        this(cc, false);
+    }
+
     public RemoteCC(CC cc, boolean isMainThreadSyncCall) {
         this.componentName = cc.getComponentName();
         this.actionName = cc.getActionName();
@@ -35,7 +41,10 @@ public class RemoteCC implements Parcelable {
     }
 
     public Map<String, Object> getParams() {
-        return RemoteParamUtil.toLocalMap(params);
+        if (localParams == null) {
+            localParams = RemoteParamUtil.toLocalMap(params);
+        }
+        return localParams;
     }
 
     protected RemoteCC(Parcel in) {

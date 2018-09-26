@@ -102,7 +102,7 @@ class ComponentManager {
      * @param componentClass 组件类
      * @return 组件所在进程名称
      */
-    static String getComponentProcessName(Class<? extends IComponent> componentClass) {
+    private static String getComponentProcessName(Class<? extends IComponent> componentClass) {
         if (IDynamicComponent.class.isAssignableFrom(componentClass)) {
             //动态组件只注册在当前进程内，其进程名称与当前进程相同
             return CCUtil.getCurProcessName();
@@ -113,7 +113,7 @@ class ComponentManager {
         String defaultProcessName = packageName;
         AllProcess allProcess = componentClass.getAnnotation(AllProcess.class);
         if (allProcess != null) {
-            return defaultProcessName;
+            return CCUtil.getCurProcessName();
         }
         String processName;
         SubProcess subProcess = componentClass.getAnnotation(SubProcess.class);
