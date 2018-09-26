@@ -145,24 +145,27 @@ class RegistryCodeGenerator {
                         //加载this
                         mv.visitVarInsn(Opcodes.ALOAD, 0)
                     }
-                    //用无参构造方法创建一个组件实例
-                    mv.visitTypeInsn(Opcodes.NEW, name)
-                    mv.visitInsn(Opcodes.DUP)
-                    mv.visitMethodInsn(Opcodes.INVOKESPECIAL, name, "<init>", "()V", false)
-                    //调用注册方法将组件实例注册到组件库中
-                    if (_static) {
-                        mv.visitMethodInsn(Opcodes.INVOKESTATIC
-                                , extension.registerClassName
-                                , extension.registerMethodName
-                                , "(L${extension.interfaceName};)V"
-                                , false)
+                    String paramType
+                    if (extension.paramType == RegisterInfo.PARAM_TYPE_CLASS){
+                        mv.visitLdcInsn(Type.getType("L${name};"))
+                        paramType = 'java/lang/Class'
+                    } else if (extension.paramType == RegisterInfo.PARAM_TYPE_CLASS_NAME){
+                        mv.visitLdcInsn(name.replaceAll("/", "."))
+                        paramType = 'java/lang/String'
                     } else {
-                        mv.visitMethodInsn(Opcodes.INVOKESPECIAL
-                                , extension.registerClassName
-                                , extension.registerMethodName
-                                , "(L${extension.interfaceName};)V"
-                                , false)
+                        //用无参构造方法创建一个组件实例
+                        mv.visitTypeInsn(Opcodes.NEW, name)
+                        mv.visitInsn(Opcodes.DUP)
+                        mv.visitMethodInsn(Opcodes.INVOKESPECIAL, name, "<init>", "()V", false)
+                        paramType = extension.interfaceName
                     }
+                    int methodOpcode = _static ? Opcodes.INVOKESTATIC : Opcodes.INVOKESPECIAL
+                    //调用注册方法将组件实例注册到组件库中
+                    mv.visitMethodInsn(methodOpcode
+                            , extension.registerClassName
+                            , extension.registerMethodName
+                            , "(L${paramType};)V"
+                            , false)
                 }
             }
             super.visitInsn(opcode)

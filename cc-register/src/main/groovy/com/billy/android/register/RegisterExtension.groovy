@@ -39,6 +39,7 @@ class RegisterExtension {
             info.initMethodName = map.get('codeInsertToMethodName') //代码注入的方法（默认为static块）
             info.registerMethodName = map.get('registerMethodName') //生成的代码所调用的方法
             info.registerClassName = map.get('registerClassName') //注册方法所在的类
+            info.paramType = map.get('paramType') //注册方法参数类型：'object':参数为对象，'class':参数为Class类型
             info.include = map.get('include')
             info.exclude = map.get('exclude')
             info.init()

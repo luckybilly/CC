@@ -7,6 +7,10 @@ import java.util.regex.Pattern
  * @since 17/3/28 11:48
  */
 class RegisterInfo {
+    public static final String PARAM_TYPE_OBJECT = 'object'
+    public static final String PARAM_TYPE_CLASS = 'class'
+    public static final String PARAM_TYPE_CLASS_NAME = 'string'
+
     static final DEFAULT_EXCLUDE = [
             '.*/R(\\$[^/]*)?'
             , '.*/BuildConfig$'
@@ -18,6 +22,7 @@ class RegisterInfo {
     String initMethodName = ''
     String registerClassName = ''
     String registerMethodName = ''
+    String paramType = ''    //注册方法参数类型：'object':（默认值）参数为对象，'class':参数为Class类型
     ArrayList<String> include = []
     ArrayList<String> exclude = []
 
@@ -53,6 +58,7 @@ class RegisterInfo {
         sb.append('\n\t').append('codeInsertToMethodName').append('\t=\t').append(initMethodName)
         sb.append('\n\t').append('registerMethodName').append('\t\t=\tpublic static void ')
                 .append(registerClassName).append('.').append(registerMethodName)
+        sb.append('\n\t').append('paramType').append('\t\t\t\t=\t\'').append(paramType).append('\'')
         sb.append('\n\t').append('include').append(' = [')
         include.each { i ->
             sb.append('\n\t\t\'').append(i).append('\'')
@@ -88,6 +94,8 @@ class RegisterInfo {
         if (!initMethodName)
             initMethodName = "<clinit>"
         registerClassName = convertDotToSlash(registerClassName)
+        if (!paramType)
+            paramType = PARAM_TYPE_OBJECT
         //添加默认的排除项
         DEFAULT_EXCLUDE.each { e ->
             if (!exclude.contains(e))
