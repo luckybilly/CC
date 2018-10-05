@@ -729,7 +729,6 @@ public class CC {
             return;
         }
         ComponentManager.registerComponent(component);
-        //TODO 未测试
         //子进程中注册的动态组件要通知主进程
         //动态组件被注册在当前进程中
         String curProcessName = CCUtil.getCurProcessName();
@@ -751,7 +750,6 @@ public class CC {
             return;
         }
         ComponentManager.unregisterComponent(component);
-        //TODO 未测试
         //子进程中注销的动态组件要通知主进程
         if (!isMainProcess()) {
             CC.obtainBuilder(COMPONENT_DYNAMIC_COMPONENT_OPTION)
