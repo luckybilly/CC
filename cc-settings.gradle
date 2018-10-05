@@ -1,7 +1,3 @@
-repositories {
-    maven { url rootProject.file("repo-local") }
-    jcenter()
-}
 
 //注： 从CC 1.x升级到CC 2.x的用户，需要在根目录build.gradle中将插件地址按照如下方式更换一下：
 // classpath 'com.billy.android:autoregister:x.x.x' -> classpath 'com.billy.android:cc-register:x.x.x'
@@ -12,4 +8,4 @@ repositories {
 project.apply plugin: 'cc-register'
 def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
 //project.dependencies.add(dependencyMode, project(":cc"))
-project.dependencies.add(dependencyMode, "com.billy.android:cc:2.0.0")
+project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.0")
