@@ -1,6 +1,18 @@
 
 # 更新日志
 
+- 2018.10.05 V2.1.0
+
+
+        1. 在定义组件时可通过实现IMainThread接口指定不同action被调用时component.onCall方法是否在主线程运行
+        2. 使用CCUtil.navigateTo、CCUtil.getNavigateCallId及CCUtil.getNavigateParam等工具方法来简化页面跳转相关的代码
+
+链接：
+
+[IMainThread](../cc/src/main/java/com/billy/cc/core/component/IMainThread.java)
+[CCUtil](../cc/src/main/java/com/billy/cc/core/component/CCUtil.java)
+
+     
 - 2018.09.16 V2.0.0 全新升级
 
 
