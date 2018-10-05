@@ -15,6 +15,7 @@ import org.json.JSONObject;
 import java.util.Map;
 
 /**
+ * 面向组件封装WebView
  * @author billy.qi
  * @since 18/9/15 12:10
  */

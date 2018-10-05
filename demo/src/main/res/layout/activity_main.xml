@@ -5,10 +5,28 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     >
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <Button
+            android:id="@+id/login_user_state_observer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/observe_login_user"
+            android:padding="10dp"
+            />
+        <TextView
+            android:id="@+id/login_user"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            />
+    </LinearLayout>
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="3"
         >
 
         <com.google.android.flexbox.FlexboxLayout
@@ -90,7 +108,7 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
+        android:layout_weight="2"
         android:background="#cccccc"
         android:scrollbars="vertical"
         >

@@ -23,6 +23,8 @@ public class JsBridgeComponent implements IComponent {
         String actionName = cc.getActionName();
         switch (actionName) {
             case "createWebView":
+                //由于JsBridgeComponent添加了@AllProcess注解
+                // 在任意进程可以调用此action来创建一个新的面向组件封装的WebView
                 return createWebView(cc);
             default:
                 CC.sendCCResult(cc.getCallId(), CCResult.error("unsupported action name:" + actionName));

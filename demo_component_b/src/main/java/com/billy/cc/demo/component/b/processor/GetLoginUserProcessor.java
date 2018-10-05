@@ -2,7 +2,7 @@ package com.billy.cc.demo.component.b.processor;
 
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
-import com.billy.cc.demo.component.b.Global;
+import com.billy.cc.demo.component.b.UserStateManager;
 
 
 /**
@@ -18,9 +18,9 @@ public class GetLoginUserProcessor implements IActionProcessor {
 
     @Override
     public boolean onActionCall(CC cc) {
-        if (Global.loginUser != null) {
+        if (UserStateManager.getLoginUser() != null) {
             //already login, return username
-            CCResult result = CCResult.success(Global.KEY_USER, Global.loginUser);
+            CCResult result = CCResult.success(UserStateManager.KEY_USER, UserStateManager.getLoginUser());
             CC.sendCCResult(cc.getCallId(), result);
         } else {
             CC.sendCCResult(cc.getCallId(), CCResult.error("no login user"));

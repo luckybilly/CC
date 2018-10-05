@@ -1,6 +1,5 @@
 package com.billy.cc.demo.component.b;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +15,7 @@ import android.widget.Toast;
 
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
+import com.billy.cc.core.component.CCUtil;
 import com.billy.cc.demo.base.bean.User;
 
 import java.util.ArrayList;
@@ -36,8 +36,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        Intent intent = getIntent();
-        callId = intent.getStringExtra("callId");
+        callId = CCUtil.getNavigateCallId(this);
         LinearLayout layout = new LinearLayout(this);
         layout.setOrientation(LinearLayout.VERTICAL);
         layout.setPadding(20, 20, 20, 20);
@@ -60,7 +59,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             //仅业务提示，登录操作并未结束
             Toast.makeText(this, R.string.demo_b_username_hint, Toast.LENGTH_SHORT).show();
         } else {
-            Global.loginUser = new User(1, username);
+            UserStateManager.setLoginUser(new User(1, username));
             //返回登录结果
             sendLoginResult();
             finish();
@@ -84,7 +83,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         //判断是否为CC调用打开本页面
         if (callId != null) {
             CCResult result;
-            if (Global.loginUser == null) {
+            if (UserStateManager.getLoginUser() == null) {
                 result = CCResult.error("login canceled");
             } else {
                 //演示跨app传递自定义类型及各种集合类型
@@ -103,7 +102,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 map.put("user1", new User(1, "111"));
                 map.put("user2", new User(2, "222"));
 
-                result = CCResult.success(Global.KEY_USER, Global.loginUser) //User
+                result = CCResult.success(UserStateManager.KEY_USER, UserStateManager.getLoginUser()) //User
                         .addData("list", list) // List<User>
                         .addData("nullObject", null) //null
                         .addData("sparseArray", userSparseArray) //SparseArray<User>

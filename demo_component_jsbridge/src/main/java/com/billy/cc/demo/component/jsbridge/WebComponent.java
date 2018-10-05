@@ -1,11 +1,8 @@
 package com.billy.cc.demo.component.jsbridge;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
+import com.billy.cc.core.component.CCUtil;
 import com.billy.cc.core.component.IComponent;
 import com.billy.cc.core.component.annotation.SubProcess;
 
@@ -35,15 +32,7 @@ public class WebComponent implements IComponent {
     }
 
     private boolean openUrl(CC cc) {
-        Context context = cc.getContext();
-        String url = cc.getParamItem("url");
-        Intent intent = new Intent(context, WebActivity.class);
-        intent.putExtra(WebActivity.EXTRA_URL, url);
-        if (!(context instanceof Activity)) {
-            //调用方没有设置context或app间组件跳转，context为application
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        }
-        context.startActivity(intent);
+        CCUtil.navigateTo(cc, WebActivity.class);
         CC.sendCCResult(cc.getCallId(), CCResult.success());
         return false;
     }
