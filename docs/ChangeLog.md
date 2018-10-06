@@ -45,14 +45,14 @@
 链接：
 
 全局拦截器：
-[IGlobalCCInterceptor](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IGlobalCCInterceptor.java)
+[IGlobalCCInterceptor](../cc/src/main/java/com/billy/cc/core/component/IGlobalCCInterceptor.java)
 
 跨app调用时的参数转换工具：
-[IParamJsonConverter](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IParamJsonConverter.java)
+[IParamJsonConverter](../cc/src/main/java/com/billy/cc/core/component/IParamJsonConverter.java)
 
-[LoginActivity](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/LoginActivity.java)
+[LoginActivity](../demo_component_b/src/main/java/com/billy/cc/demo/component/b/LoginActivity.java)
 
-[cc-settings-demo.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo.gradle)
+[cc-settings-demo.gradle](../cc-settings-demo.gradle)
 
 - 2018.05.17 V1.0.0版 Fix issue [#23](https://github.com/luckybilly/CC/issues/23)
 
