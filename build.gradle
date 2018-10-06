@@ -15,7 +15,7 @@ buildscript {
 
         classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
         classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
-        classpath 'com.billy.android:cc-register:1.0.3'
+        classpath 'com.billy.android:cc-register:1.0.5'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -38,8 +38,8 @@ ext {
     supportVersion = '25.3.1'
 
     deps = [
-//        cc       : 'com.billy.android:cc:2.0.0'
-        cc       : project(':cc')
+        cc       : 'com.billy.android:cc:2.1.0'
+//        cc       : project(':cc')
     ]
 }
 task clean(type: Delete) {
