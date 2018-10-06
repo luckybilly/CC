@@ -58,7 +58,7 @@ class RegisterInfo {
         sb.append('\n\t').append('codeInsertToMethodName').append('\t=\t').append(initMethodName)
         sb.append('\n\t').append('registerMethodName').append('\t\t=\tpublic static void ')
                 .append(registerClassName).append('.').append(registerMethodName)
-        sb.append('\n\t').append('paramType').append('\t\t\t\t=\t\'').append(paramType).append('\'')
+        sb.append('\n\t').append('paramType').append('\t\t\t=\t\'').append(paramType).append('\'')
         sb.append('\n\t').append('include').append(' = [')
         include.each { i ->
             sb.append('\n\t\t\'').append(i).append('\'')

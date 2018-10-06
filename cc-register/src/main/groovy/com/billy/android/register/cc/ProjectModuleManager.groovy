@@ -45,9 +45,13 @@ class ProjectModuleManager {
         def buildingAar = isBuildingAar(localProperties)
         def alwaysLib = isAlwaysLib(project)
 
-        boolean runAsApp = mainApp || (assembleFor && !buildingAar) || !taskIsAssemble
-        if (runAsApp && alwaysLib) {
+        boolean runAsApp = false
+        if (mainApp) {
+            runAsApp = true
+        } else if (alwaysLib || buildingAar) {
             runAsApp = false
+        } else if (assembleFor || !taskIsAssemble) {
+            runAsApp = true
         }
         project.ext.runAsApp = runAsApp
         println "${PLUGIN_NAME}: project=${project.name}, runAsApp=${runAsApp} . taskIsAssemble:${taskIsAssemble}. " +
@@ -83,7 +87,7 @@ class ProjectModuleManager {
     }
 
     //需要集成打包相关的task
-    static final String TASK_TYPES = ".*((((ASSEMBLE)|(INSTALL)|((BUILD)?TINKER)|(RESGUARD)).*)|(ASR)|(ASD))"
+    static final String TASK_TYPES = ".*((((ASSEMBLE)|(BUILD)|(INSTALL)|((BUILD)?TINKER)|(RESGUARD)).*)|(ASR)|(ASD))"
     static void initByTask(Project project) {
         def taskNames = project.gradle.startParameter.taskNames
         def allModuleBuildApkPattern = Pattern.compile(TASK_TYPES)
