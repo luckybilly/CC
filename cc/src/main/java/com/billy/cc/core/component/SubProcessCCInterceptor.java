@@ -116,11 +116,16 @@ class SubProcessCCInterceptor implements ICCInterceptor {
                 service.call(remoteCC, new IRemoteCallback.Stub() {
                     @Override
                     public void callback(RemoteCCResult remoteCCResult) throws RemoteException {
-                        if (CC.VERBOSE_LOG) {
-                            CC.verboseLog(cc.getCallId(), "receive RemoteCCResult from process:%s, RemoteCCResult: %s"
-                                    , processName, remoteCCResult.toString());
+                        try {
+                            if (CC.VERBOSE_LOG) {
+                                CC.verboseLog(cc.getCallId(), "receive RemoteCCResult from process:%s, RemoteCCResult: %s"
+                                        , processName, remoteCCResult.toString());
+                            }
+                            setResult(remoteCCResult.toCCResult());
+                        } catch(Exception e) {
+                            e.printStackTrace();
+                            setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
                         }
-                        setResult(remoteCCResult.toCCResult());
                     }
                 });
             } catch (DeadObjectException e) {

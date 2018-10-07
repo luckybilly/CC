@@ -74,7 +74,7 @@ public class CCResult {
      */
     public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
     /**
-     * 跨app组件调用时对象传输出错，可能是自定义类型没有共用
+     * 跨进程组件调用时对象传输出错，可能是自定义类型没有共用
      */
     public static final int CODE_ERROR_REMOTE_CC_DELIVERY_FAILED = -11;
 

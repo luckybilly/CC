@@ -92,8 +92,10 @@ public class RemoteCCService extends IRemoteCCService.Stub {
                     CC.verboseLog(callId, "callback to other process. RemoteCCResult: %s", remoteCCResult.toString());
                 }
             }catch(Exception e){
-                remoteCCResult = new RemoteCCResult(CCResult.error("result can not be transformed for IPC"));
-                CC.verboseLog(callId, "remote CC successed. But result can not be converted for IPC. RemoteCCResult: %s", remoteCCResult.toString());
+                remoteCCResult = new RemoteCCResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
+                if (CC.VERBOSE_LOG) {
+                    CC.verboseLog(callId, "remote CC success. But result can not be converted for IPC. RemoteCCResult: %s", remoteCCResult.toString());
+                }
             }
             callback.callback(remoteCCResult);
         } catch (RemoteException e) {
