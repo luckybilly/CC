@@ -59,7 +59,7 @@
 以上**2个app**用来演示组件打包在主app内和**单独以app运行**时的组件调用，**都安装在手机上**之后的运行效果如下图所示
 
 
-![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC.gif)
+![image](https://raw.githubusercontent.com/luckybilly/CC/master/image/CC2.0.gif)
 
 ## CC功能列表
 
