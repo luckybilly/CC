@@ -4,8 +4,11 @@ import android.content.ContentProvider;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Process;
 
 import com.billy.cc.core.component.CC;
+
+import static android.os.Binder.getCallingUid;
 
 /**
  * 通过ContentProvider实现跨进程通信 <br>
@@ -32,7 +35,7 @@ public class RemoteProvider extends ContentProvider {
 
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        if (CC.isRemoteCCEnabled() || getContext().getPackageName().equals(getCallingPackage())) {
+        if (CC.isRemoteCCEnabled() || getCallingUid() == Process.myUid()) {
             //获取当前ContentProvider所在进程中的RemoteCursor单例对象
             return RemoteCursor.getInstance();
         }
