@@ -88,4 +88,6 @@
     - json传递 & bean冗余：即在每个用到此类型的组件，通过冗余bean的方式来传递
         - 适用于使用频次较低且对性能要求不是十分敏感的场景
         
+    demo_component_b中的模拟登录功能[演示了自定义类型的传递](../demo_component_b/src/main/java/com/billy/cc/demo/component/b/LoginActivity.java#L89:20)
+        
 未完待续...

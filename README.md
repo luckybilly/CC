@@ -1,8 +1,20 @@
-## CC : ComponentCaller (使用简单但功能强大的安卓组件化框架)
+## CC : ComponentCaller
 
-【[English README](README-en-US.md)】
+一句话介绍：一套基于组件总线的、支持渐进式改造的、支持跨进程调用的、完整的安卓组件化框架
 
-[![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
+- 基于组件总线： 
+    - 不同于市面上种类繁多的路由框架，CC采用了基于组件总线的架构，不依赖于路由
+- 支持渐进式改造： 
+    - 可能是目前业界唯一（如果不是，请告诉我）支持渐进式改造的组件化框架
+    - 模块解耦不再是前提，将陡峭的组件化改造实施曲线拉平
+- 支持跨进程调用： 
+    - 支持应用内跨进程调用组件，支持跨app调用组件
+    - 调用方式与同一个进程内的调用方式完全一致
+    - 无需bindService、无需自定义AIDL，无需接口下沉
+- 完整：
+    - CC框架下组件提供的服务可以是几乎所有功能，包括但不限于页面跳转、提供服务、获取数据、数据存储等
+    - CC提供了配套插件cc-register，完成了自定义的组件类、全局拦截器类及json转换工具类的自动注册，
+    - cc-register同时还提供了代码隔离、debug代码分离、组件单独调试等各种组件化开发过程中需要的功能
 
 模块|CC|cc-register
 ---|---|---
@@ -305,4 +317,3 @@ QQ群号：686844583
 
 <img src="image/shoukuan_alipay.png" height="300" /> <img src="image/shoukuan_wechat.png" height="300" />
 
-]
