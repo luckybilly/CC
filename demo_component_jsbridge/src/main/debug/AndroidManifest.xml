@@ -1,0 +1,24 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.billy.cc.demo.component.jsbridge">
+
+    <application
+        android:name="debug.jsbridge.MyApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/demo_jsbridge_ic_launcher"
+        android:label="@string/demo_jsbridge_app_name"
+        android:supportsRtl="true"
+        tools:replace="android:label,android:allowBackup"
+        android:theme="@style/demo_jsbridge_AppTheme"
+        tools:ignore="GoogleAppIndexingWarning">
+        <activity android:name="debug.jsbridge.DebugWebActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN"/>
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".WebActivity"
+            android:process=":web"
+            />
+    </application>
+</manifest>

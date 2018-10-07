@@ -3,6 +3,6 @@
 
     <application>
         <activity android:name="com.billy.cc.demo.component.b.ActivityB" />
-        <activity android:name="com.billy.cc.demo.component.b.LoginActivity" />
+        <activity android:name="com.billy.cc.demo.component.b.LoginActivity"/>
     </application>
 </manifest>

@@ -2,17 +2,21 @@
     package="com.billy.cc.core.component">
 
     <application >
-        <!-- 使用子进程解决：在主线程中同步调用其它app的组件，由于广播接收器也是在主线程运行，导致当前app卡死的问题 -->
-        <receiver android:name="com.billy.cc.core.component.ComponentBroadcastReceiver"
-            android:process=":cc"
+        <provider
+            android:authorities="${applicationId}.com.billy.cc.core.remote"
+            android:name=".remote.RemoteProvider"
+            android:exported="true"
+            />
+        <activity android:name=".remote.RemoteConnectionActivity"
+            android:taskAffinity="com.billy.cc.connection"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true"
+            android:exported="true"
             >
             <intent-filter>
-                <action android:name="cc.action.com.billy.cc.libs.component.REMOTE_CC" />
-                <action android:name="${applicationId}.cc.action.REMOTE_CC.awake" />
+                <action android:name="action.com.billy.cc.connection" />
             </intent-filter>
-        </receiver>
-        <service android:exported="false" android:name="com.billy.cc.core.component.ComponentService" />
-
+        </activity>
     </application>
 
 </manifest>

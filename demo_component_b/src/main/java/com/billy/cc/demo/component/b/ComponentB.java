@@ -3,6 +3,7 @@ package com.billy.cc.demo.component.b;
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponent;
+import com.billy.cc.core.component.IMainThread;
 import com.billy.cc.demo.component.b.processor.IActionProcessor;
 
 import java.util.HashMap;
@@ -17,7 +18,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *  2. 在普通方法中注册： 可以自定义调用时机
  *  本类示例的是第2种方式，在onCall方法中注册，在组件第一次被调用时才注册，类似于懒加载
  *
- *      自定义cc-settings.gradle, 在autoregister.registerInfo中添加配置，例如(cc-settings-demo-b.gradle)：
+ *      自定义cc-settings.gradle, 在autoregister.registerInfo中添加配置，例如(cc-settings-demo.gradle)：
  *
      autoregister {
          registerInfo = [
@@ -37,7 +38,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * @author billy.qi
  * @since 17/11/20 21:00
  */
-public class ComponentB implements IComponent {
+public class ComponentB implements IComponent, IMainThread {
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private final HashMap<String, IActionProcessor> map = new HashMap<>(4);
@@ -70,4 +71,11 @@ public class ComponentB implements IComponent {
         return false;
     }
 
+    @Override
+    public Boolean shouldActionRunOnMainThread(String actionName, CC cc) {
+        if ("login".equals(actionName)) {
+            return true;
+        }
+        return null;
+    }
 }

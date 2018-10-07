@@ -21,12 +21,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
 }
 
 dependencies {
     //发布到bintray时，要写成compile才行
     compile "com.billy.android:pools:0.0.5"
     compileOnly "com.android.support:appcompat-v7:${rootProject.supportVersion}"
+    compileOnly project(':android_internal')
 }
 
 sourceCompatibility = 1.7
@@ -45,7 +51,7 @@ ext {
     siteUrl = 'https://github.com/luckybilly/CC'
     gitUrl = 'git@github.com:luckybilly/CC.git'
 
-    libraryVersion = '1.1.0'
+    libraryVersion = '2.1.1'
 
     developerId = 'billy'
     developerName = 'billy'

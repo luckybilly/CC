@@ -17,4 +17,8 @@
     <string name="life_cycle_relationship">(Activity/Fragment)生命周期关联，登录AOP</string>
     <string name="call_fragment_method">与跨组件的fragment对象通信</string>
     <string name="call_kotlin_component">调用kotlin组件</string>
+    <string name="call_sub_process">调用子进程</string>
+    <string name="show_login_user">当前登录用户: %s</string>
+    <string name="observe_login_user">添加动态组件</string>
+    <string name="unobserve_login_user">注销动态组件</string>
 </resources>

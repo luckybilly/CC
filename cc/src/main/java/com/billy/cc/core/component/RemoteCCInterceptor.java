@@ -1,267 +1,169 @@
 package com.billy.cc.core.component;
 
-import android.content.ComponentName;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.ActivityInfo;
-import android.content.pm.PackageManager;
-import android.net.LocalServerSocket;
-import android.net.LocalSocket;
-import android.net.LocalSocketAddress;
-import android.os.Build;
+import android.content.IntentFilter;
+import android.os.DeadObjectException;
+import android.os.SystemClock;
 import android.text.TextUtils;
 
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import com.billy.cc.core.component.remote.IRemoteCCService;
+import com.billy.cc.core.component.remote.RemoteConnection;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * app之间的组件调用
- * 兼容同步实现的异步调用 & 异步实现的同步调用
+ * 跨App调用组件
+ * 继承自 {@link SubProcessCCInterceptor}, 额外处理了跨App的进程连接
  * @author billy.qi
- * @since 17/6/29 11:45
+ * @since 18/6/24 00:25
  */
-class RemoteCCInterceptor implements ICCInterceptor {
-    /**
-     * 组件app之间建立socket连接的最大等待时间
-     */
-    private static final int CONNECT_DELAY = 900;
-    static final String MSG_CANCEL = "cancel";
-    static final String MSG_TIMEOUT = "timeout";
+class RemoteCCInterceptor extends SubProcessCCInterceptor {
 
-    static final String KEY_CALL_ID = "cc_component_key_call_id";
-    static final String KEY_COMPONENT_NAME = "cc_component_key_component_name";
-    static final String KEY_SOCKET_NAME = "cc_component_key_local_socket_name";
+    private static final ConcurrentHashMap<String, IRemoteCCService> REMOTE_CONNECTIONS = new ConcurrentHashMap<>();
 
-    private CountDownLatch connectLatch = new CountDownLatch(1);
-    /**
-     * 发起组件调用的信息
-     */
-    private final CC cc;
-    /**
-     * 是否正在被其它app的组件进行处理
-     */
-    private volatile boolean ccProcessing = false;
-    private final boolean callbackNecessary;
-    /**
-     * socket通信是否已停止
-     */
-    private boolean stopped;
-    private ObjectOutputStream out;
-    private String socketName;
-    private static String receiverPermission;
-    private static String receiverIntentFilterAction;
-
-    RemoteCCInterceptor(CC cc) {
-        this.cc = cc;
-        //是否需要wait：异步调用且未设置回调，则不需要wait
-        callbackNecessary = !cc.isAsync() || cc.getCallback() != null;
+    //-------------------------单例模式 start --------------
+    /** 单例模式Holder */
+    private static class RemoteCCInterceptorHolder {
+        private static final RemoteCCInterceptor INSTANCE = new RemoteCCInterceptor();
     }
+    private RemoteCCInterceptor(){}
+    /** 获取{@link RemoteCCInterceptor}的单例对象 */
+    static RemoteCCInterceptor getInstance() {
+        return RemoteCCInterceptorHolder.INSTANCE;
+    }
+    //-------------------------单例模式 end --------------
 
     @Override
     public CCResult intercept(Chain chain) {
-        ComponentManager.threadPool(new ConnectTask());
-        if (!cc.isFinished() && callbackNecessary) {
-            chain.proceed();
-            if (cc.isCanceled()) {
-                stopCaller(MSG_CANCEL);
-            } else if (cc.isTimeout()) {
-                stopCaller(MSG_TIMEOUT);
-            }
+        String processName = getProcessName(chain.getCC().getComponentName());
+        if (!TextUtils.isEmpty(processName)) {
+            return multiProcessCall(chain, processName, REMOTE_CONNECTIONS);
         }
-        return cc.getResult();
+        return CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND);
     }
 
-    private void stopCaller(String msg) {
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(cc.getCallId(), "RemoteCC stopped (%s).", msg);
-        }
-        if (!ccProcessing) {
-            stopConnection();
-        } else {
-            sendToRemote(msg);
-        }
-    }
-
-    private void sendToRemote(String str) {
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(cc.getCallId(), "send message to remote app by localSocket:\"" + str + "\"");
-        }
-        if (out != null) {
-            try {
-                out.writeObject(str);
-                out.flush();
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private class ConnectTask implements Runnable {
-
-        @Override
-        public void run() {
-            Context context = cc.getContext();
-            if (context == null) {
-                setResult(CCResult.error(CCResult.CODE_ERROR_CONTEXT_NULL));
-                return;
-            }
-            //retrieve ComponentBroadcastReceiver permission
-            if (TextUtils.isEmpty(receiverIntentFilterAction)) {
-                try{
-                    ComponentName receiver = new ComponentName(context.getPackageName(), ComponentBroadcastReceiver.class.getName());
-                    ActivityInfo receiverInfo = context.getPackageManager().getReceiverInfo(receiver, PackageManager.GET_META_DATA);
-                    receiverPermission = receiverInfo.permission;
-                    receiverIntentFilterAction = "cc.action.com.billy.cc.libs.component.REMOTE_CC";
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
-                    return;
-                }
-            }
-            Intent intent = new Intent(receiverIntentFilterAction);
-            if (CC.DEBUG) {
-                intent.addFlags(Intent.FLAG_DEBUG_LOG_RESOLUTION);
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB_MR1) {
-                intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
-            }
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-                intent.addFlags(Intent.FLAG_RECEIVER_FOREGROUND);
-            }
-            String callId = cc.getCallId();
-            socketName = "lss:" + callId;
-            RemoteCC remoteCC = new RemoteCC(cc);
-            remoteCC.setCallId(callId);
-            intent.putExtra(KEY_COMPONENT_NAME, cc.getComponentName());
-            intent.putExtra(KEY_CALL_ID, callId);
-            intent.putExtra(KEY_SOCKET_NAME, socketName);
-            LocalServerSocket lss = null;
-            //send broadcast for remote cc connection
-            ObjectInputStream in = null;
-            try {
-                lss = new LocalServerSocket(socketName);
-                if (CC.VERBOSE_LOG) {
-                    CC.verboseLog(callId, "sendBroadcast to call component from other App."
-                            + " permission:" + receiverPermission);
-                }
-                context.sendBroadcast(intent, receiverPermission);
-                ComponentManager.threadPool(new CheckConnectTask());
-                LocalSocket socket = lss.accept();
-                ccProcessing = true;
-                if (stopped) {
-                    return;
-                }
-                connectLatch.countDown();
-
-                out = new ObjectOutputStream(socket.getOutputStream());
-                in = new ObjectInputStream(socket.getInputStream());
+    private String getProcessName(String componentName) {
+        String processName = null;
+        try {
+            for (Map.Entry<String, IRemoteCCService> entry : REMOTE_CONNECTIONS.entrySet()) {
                 try {
-                    out.writeObject(remoteCC);
-                    out.flush();
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
-                    return;
-                }
-                if (CC.VERBOSE_LOG) {
-                    CC.verboseLog(callId, "localSocket connect success. " +
-                            "start to wait for remote CCResult.");
-                }
-                //blocking for CCResult
-                Object obj;
-                try {
-                    obj = in.readObject();
-                } catch(Exception e) {
-                    e.printStackTrace();
-                    setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
-                    return;
-                }
-                if (CC.VERBOSE_LOG) {
-                    CC.verboseLog(callId, "localSocket received remote CCResult:" + obj);
-                }
-                RemoteCCResult result = (RemoteCCResult) obj;
-                setResult(result.toCCResult());
-            } catch(Exception e) {
-                e.printStackTrace();
-                setResult(CCResult.error(CCResult.CODE_ERROR_CONNECT_FAILED));
-            } finally {
-                if (connectLatch.getCount() > 0) {
-                    connectLatch.countDown();
-                }
-                if (lss != null) {
-                    try {
-                        lss.close();
-                    } catch (Exception ignored) {
+                    processName = entry.getValue().getComponentProcessName(componentName);
+                } catch(DeadObjectException e) {
+                    String processNameTo = entry.getKey();
+                    RemoteCCService.remove(processNameTo);
+                    IRemoteCCService service = RemoteCCService.get(processNameTo);
+                    if (service == null) {
+                        String packageName = processNameTo.split(":")[0];
+                        boolean wakeup = RemoteConnection.tryWakeup(packageName);
+                        CC.log("wakeup remote app '%s'. success=%b.", packageName, wakeup);
+                        if (wakeup) {
+                            service = getMultiProcessService(processNameTo);
+                        }
+                    }
+                    if (service != null) {
+                        try {
+                            processName = service.getComponentProcessName(componentName);
+                            REMOTE_CONNECTIONS.put(processNameTo, service);
+                        } catch(Exception ex) {
+                            ex.printStackTrace();
+                        }
                     }
                 }
-                if (in != null) {
-                    try {
-                        in.close();
-                    } catch (Exception ignored) {
+                if (!TextUtils.isEmpty(processName)) {
+                    return processName;
+                }
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return processName;
+    }
+
+    void enableRemoteCC() {
+        //监听设备上其它包含CC组件的app
+        listenComponentApps();
+        connect(RemoteConnection.scanComponentApps());
+    }
+
+    private static final String INTENT_FILTER_SCHEME = "package";
+    private void listenComponentApps() {
+        IntentFilter intentFilter = new IntentFilter();
+        intentFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
+        intentFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
+        intentFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
+        intentFilter.addAction(Intent.ACTION_MY_PACKAGE_REPLACED);
+        intentFilter.addAction(Intent.ACTION_PACKAGE_RESTARTED);
+        intentFilter.addDataScheme(INTENT_FILTER_SCHEME);
+        CC.getApplication().registerReceiver(new BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String packageName = intent.getDataString();
+                if (TextUtils.isEmpty(packageName)) {
+                    return;
+                }
+                if (packageName.startsWith(INTENT_FILTER_SCHEME)) {
+                    packageName = packageName.replace(INTENT_FILTER_SCHEME + ":", "");
+                }
+                String action = intent.getAction();
+                CC.log("onReceived.....pkg=" + packageName + ", action=" + action);
+                if (Intent.ACTION_PACKAGE_REMOVED.equals(action)) {
+                    REMOTE_CONNECTIONS.remove(packageName);
+                } else {
+                    CC.log("start to wakeup remote app:%s", packageName);
+                    if (RemoteConnection.tryWakeup(packageName)) {
+                        ComponentManager.threadPool(new ConnectTask(packageName));
                     }
                 }
             }
-        }
+        }, intentFilter);
     }
 
-    void setResult(CCResult result) {
-        if (callbackNecessary) {
-            cc.setResult4Waiting(result);
-        } else {
-            cc.setResult(result);
-        }
-    }
-
-    private class CheckConnectTask implements Runnable {
-        @Override
-        public void run() {
-            try {
-                connectLatch.await(CONNECT_DELAY, TimeUnit.MILLISECONDS);
-            } catch(Exception e) {
-                e.printStackTrace();
-            }
-            if (!ccProcessing && !cc.isFinished()) {
-                setResult(CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND));
-                stopConnection();
-                CC.verboseLog(cc.getCallId(), "no component found");
-                String cName = cc.getComponentName();
-                //跨app组件调用需要组件所在app满足2个条件：
-                // 1. 开启支持跨app调用 (CC.RESPONSE_FOR_REMOTE_CC = true;//默认为true，设置为false则关闭)
-                // 2. 在系统设置页面中开启自启动权限（根据rom不同，一般在系统的权限设置页面，也可能在一个管家类app中）
-                CC.log("call component:" + cName
-                        + " failed. Could not found that component. "
-                        + "\nPlease make sure the app which contains component(\"" + cName + "\") as below:"
-                        + "\n1. " + cName + " set CC.enableRemoteCC(true) "
-                        + "\n2. Turn on auto start permission in System permission settings page ");
-            }
-        }
-    }
-
-    private void stopConnection() {
-        if (TextUtils.isEmpty(socketName)) {
+    private void connect(List<String> packageNames) {
+        if (packageNames == null || packageNames.isEmpty()) {
             return;
         }
-        if (CC.VERBOSE_LOG) {
-            CC.verboseLog(cc.getCallId(), "stop localServerSocket.accept()");
+        for (String pkg : packageNames) {
+            ComponentManager.threadPool(new ConnectTask(pkg));
         }
-        stopped = true;
-        //通过创建一个无用的client来让ServerSocket跳过accept阻塞，从而中止
-        LocalSocket socket = null;
-        try {
-            socket = new LocalSocket();
-            socket.connect(new LocalSocketAddress(socketName));
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (socket != null) {
-                try {
-                    socket.close();
-                } catch (Exception ignored) {
-                }
+    }
+
+    class ConnectTask implements Runnable {
+        String packageName;
+
+        ConnectTask(String packageName) {
+            this.packageName = packageName;
+        }
+
+        @Override
+        public void run() {
+            IRemoteCCService service = getMultiProcessService(packageName);
+            if (service != null) {
+                REMOTE_CONNECTIONS.put(packageName, service);
             }
         }
+    }
+
+    private static final int MAX_CONNECT_TIME_DURATION = 1000;
+    @Override
+    protected IRemoteCCService getMultiProcessService(String packageName) {
+        long start = System.currentTimeMillis();
+        IRemoteCCService service = null;
+        while (System.currentTimeMillis() - start < MAX_CONNECT_TIME_DURATION) {
+            service = RemoteCCService.get(packageName);
+            if (service != null) {
+                break;
+            }
+            SystemClock.sleep(50);
+        }
+        CC.log("connect remote app '%s' %s. cost time=%d"
+                , packageName
+                , service == null ? "failed" : "success"
+                , (System.currentTimeMillis() - start));
+        return service;
     }
 
 }
