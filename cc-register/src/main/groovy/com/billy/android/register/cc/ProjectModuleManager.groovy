@@ -19,7 +19,7 @@ class ProjectModuleManager {
     static final String DEBUG_DIR = "src/main/debug/"
     //主app，一直以application方式编译
     static final String MODULE_MAIN_APP = "mainApp" 
-    //apply了cc-settings.gradle的module，但不是组件，而是一直作为library被其它组件依赖
+    //apply了cc-settings-2.gradle的module，但不是组件，而是一直作为library被其它组件依赖
     static final String MODULE_ALWAYS_LIBRARY = "alwaysLib" 
     
 

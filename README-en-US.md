@@ -99,7 +99,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.android.application'
 
 //replace to
-apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+apply from: cc-settings-2.gradle
 ```
 
 see [demo_component_a/build.gradle](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
@@ -113,7 +113,7 @@ demo_component_b=true # run as application for module: demo_component_b
 2.2 modify module/build.gradle: add `ext.runAsApp = true` before `apply from: '...cc-settings.gradle'`,ext.runAsApp priority is higher than local.properties.
 ```groovy
 ext.runAsApp = true
-apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+apply from: cc-settings-2.gradle
 ```
 #### 3. Define a component ([IComponent](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IComponent.java))
 ```java

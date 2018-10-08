@@ -90,7 +90,7 @@
 
         - cc                            组件化框架基础库（主要）
         - cc-register                   CC框架配套的gradle插件（主要）
-        - cc-settings.gradle            组件化开发构建脚本（主要）
+        - cc-settings-2.gradle          组件化开发构建脚本（主要）
         - demo                          demo主程序（调用其它组件，并演示了动态组件的使用）
         - demo_base                     demo公共库(base类、util类、公共Bean等)
         - demo_component_a              demo组件A
@@ -135,7 +135,7 @@ project.dependencies.add('api', "com.billy.android:cc:x.x.x") //CC框架核心�
 ```
 - 使用公共文件的方式
 
-    下载或复制[cc-settings.gradle](cc-settings.gradle)文件放到工程的根目录下，并按如下方式添加修改module的build.gradle
+    下载或复制[cc-settings-2.gradle](cc-settings-2.gradle)文件放到工程的根目录下，并按如下方式添加修改module的build.gradle
     
     这样做的好处是：以后可以在此文件中添加的配置可对所有组件module都生效
 ```groovy
@@ -146,7 +146,7 @@ apply plugin: 'com.android.application'
 //替换成
 //ext.mainApp = true //如果此module为主app module，一直以application方式编译，则启用这一行
 //ext.alwaysLib = true //如果此module为基础库，一直以library方式编译，则启用这一行
-apply from: rootProject.file('cc-settings.gradle')
+apply from: rootProject.file(cc-settings-2.gradle)
 //注意：最好放在build.gradle中代码的第一行
 ```
 
@@ -216,7 +216,7 @@ String callId = CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainTh
 
 ```groovy
 ext.mainApp = true
-apply from: rootProject.file('cc-settings.gradle')
+apply from: rootProject.file(cc-settings-2.gradle)
 
 //...
 

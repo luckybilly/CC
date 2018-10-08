@@ -145,7 +145,7 @@
 - 开启App内部多进程支持
     注：默认情况下未开启App内部多进程的支持
     - 启用App内部多进程
-        可下载`cc-settings.gradle`文件到本地根目录，并在文件最后添加：
+        可下载`cc-settings-2.gradle`文件到本地根目录，并在文件最后添加：
         ```groovy
         ccregister.multiProcessEnabled = true
         ```
@@ -171,7 +171,7 @@
         这将导致一些不含有子进程组件的进程也会生成一个没有任何作用的`RemoteProvider`的子类，这会额外带来一点点内存消耗。
         虽然这种内存消耗是可以基本忽略的，但是还是可以通过如下方式添加配置来避免：
         ```groovy
-        //在cc-settings.gradle中添加以下配置来指定这些进程将不生成对应的RemoteProvider子类
+        //在cc-settings-2.gradle中添加以下配置来指定这些进程将不生成对应的RemoteProvider子类
         ccregister.excludeProcessNames = [':processNameA', ':processNameB']
         ```
     - 动态组件不支持`@SubProcess`及`@AllProcess`注解

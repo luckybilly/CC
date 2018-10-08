@@ -62,8 +62,8 @@
 - 使用ActionProcessor来处理多个action，单独组件作为apk运行时能正常工作，打包到主app中则不能正常工作
 
     ```groovy
-    //某个组件使用自定义的cc-settings.gradle文件添加了额外的配置时，主工程也要使用相同的gradle文件
-    apply from: rootProject.file('cc-settings.gradle')
+    //某个组件使用自定义的cc-settings-2.gradle文件添加了额外的配置时，主工程也要使用相同的gradle文件
+    apply from: rootProject.file(cc-settings-2.gradle)
     ```
     参考[demo/build.gradle](https://github.com/luckybilly/CC/blob/master/demo/build.gradle)中的配置
 
