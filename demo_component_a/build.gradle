@@ -1,6 +1,6 @@
-//apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+//apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings-2.gradle'
 //修改CC框架代码进行本地测试时使用下面的文件
-apply from: rootProject.file('cc-settings.gradle')
+apply from: rootProject.file('cc-settings-demo.gradle')
 
 android {
     compileSdkVersion rootProject.compileVersion

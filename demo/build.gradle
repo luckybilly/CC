@@ -1,5 +1,5 @@
 ext.mainApp = true  //设置为true，表示此module为主app module，一直以application方式编译
-apply from: rootProject.file('cc-settings-demo-b.gradle')
+apply from: rootProject.file('cc-settings-demo.gradle')
 
 android {
     compileSdkVersion rootProject.compileVersion
@@ -32,10 +32,9 @@ android {
 dependencies {
     implementation "com.android.support:appcompat-v7:${rootProject.supportVersion}"
     implementation 'com.google.android:flexbox:0.3.0'
-    implementation project(':component_protect_demo')
 
     //Notice:组件之间不要互相依赖，只在主app module依赖其它组件
-    //使用addComponent(源码在cc-settings.gradle中)添加对组件的依赖可以达到如下效果:
+    //使用addComponent(源码在cc-settings-2.gradle中)添加对组件的依赖可以达到如下效果:
     // 1. 组件切换library和application方式编译时只需在local.properties中进行设置，不需要修改app module中的依赖列表
     //      且运行主app module时会自动将【设置为以app方式编译的组件module】从依赖列表中排除
     // 2. 避免调试时切换library和application方式修改主app中的依赖项被误提交到代码仓库，导致jenkins集成打包时功能缺失
@@ -49,9 +48,9 @@ dependencies {
     //      maven依赖  : 'com.billy.demo:demoB:1.1.0' //如果使用了maven私服，请使用此方式
     addComponent 'demo_component_a'
     addComponent 'demo_component_kt'
+    addComponent 'demo_component_jsbridge'
 
     //单独运行demo_component_b时，只需在local.properties中添加demo_component_b=true即可
     // 此处无需修改，再次运行demo:assembleXxx时将不会把demo_component_b打包进apk
     addComponent 'demo_component_b', project(':demo_component_b') // 这里参数2可以省略
-    implementation project(':demo_base')
 }

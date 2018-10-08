@@ -4,9 +4,9 @@
 
 [![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
-Name|CC|AutoRegister
+Name|CC|cc-register
 ---|---|---
-Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/AutoRegister/images/download.svg)](https://bintray.com/hellobilly/android/AutoRegister/_latestVersion)
+Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/cc-register/images/download.svg)](https://bintray.com/hellobilly/android/cc-register/_latestVersion)
 
 ## demo download
 
@@ -77,8 +77,7 @@ it looks like below via running both of above app on your device and launch demo
         - demo                          demo main app module
         - demo_component_a              demo ComponentA 
         - demo_component_b              demo ComponentB
-        - component_protect_demo        demo for add permission settings，as dependencies within cc-settings-demo-b.gradle
-        - cc-settings-demo-b.gradle     actionProcessor自动注册的配置脚本demo
+        - cc-settings-demo.gradle       actionProcessor自动注册的配置脚本demo
         - demo-debug.apk                demo apk(contains demo and demo_component_a)
         - demo_component_b-debug.apk    apk for demo_component_b only
 
@@ -100,7 +99,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.android.application'
 
 //replace to
-apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+apply from: cc-settings-2.gradle
 ```
 
 see [demo_component_a/build.gradle](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
@@ -114,7 +113,7 @@ demo_component_b=true # run as application for module: demo_component_b
 2.2 modify module/build.gradle: add `ext.runAsApp = true` before `apply from: '...cc-settings.gradle'`,ext.runAsApp priority is higher than local.properties.
 ```groovy
 ext.runAsApp = true
-apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+apply from: cc-settings-2.gradle
 ```
 #### 3. Define a component ([IComponent](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IComponent.java))
 ```java
@@ -259,25 +258,8 @@ dynamic components do not automatically register and work through manual registr
 - Auto register Custom ActionProcessor into component
 
     see[ComponentB](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/ComponentB.java)
-    and[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
+    and[cc-settings-demo.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo.gradle)
 
-- Add custom permission protection to calls across app components
-  - create a new module
-  - add dependence in module/build.gradle: `compile 'com.billy.android:cc:0.3.0'`
-  - modify module/src/main/AndroidManifest: add permission protection for BroadcastReceiver, like this: [component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
-    ```xml
-    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.billy.cc.demo.component.protect" >
-        <permission android:name="cc.permission.com.billy.cc.demo.REMOTE_CC" android:protectionLevel="signature" />
-        <uses-permission android:name="cc.permission.com.billy.cc.demo.REMOTE_CC" />
-        <application>
-            <receiver android:name="com.billy.cc.core.component.ComponentBroadcastReceiver"
-                android:permission="cc.permission.com.billy.cc.demo.REMOTE_CC"
-                />
-        </application>
-    </manifest>
-    ```
-  - other modules dependent on this module
 
 ##### watch the sourcecode of demo, demo_component_a and demo_component_b for more details
 

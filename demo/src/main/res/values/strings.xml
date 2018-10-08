@@ -17,5 +17,9 @@
     <string name="life_cycle_relationship">(Activity/Fragment) lifecycle with login AOP</string>
     <string name="call_fragment_method">send message to fragment</string>
     <string name="call_kotlin_component">kotlin</string>
+    <string name="call_sub_process">call sub process</string>
+    <string name="show_login_user">current login user: %s</string>
+    <string name="observe_login_user">observe</string>
+    <string name="unobserve_login_user">un_observe</string>
 
 </resources>

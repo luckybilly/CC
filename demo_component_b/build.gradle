@@ -1,5 +1,5 @@
 
-apply from: rootProject.file('cc-settings-demo-b.gradle')
+apply from: rootProject.file('cc-settings-demo.gradle')
 
 android {
     compileSdkVersion rootProject.compileVersion
@@ -29,5 +29,4 @@ android {
 
 dependencies {
     implementation "com.android.support:appcompat-v7:${rootProject.supportVersion}"
-    implementation project(':demo_base')
 }

@@ -46,7 +46,7 @@ public class Chain {
             result = cc.getResult();
         } else {
             if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "start interceptor:" + name);
+                CC.verboseLog(callId, "start interceptor:" + name + ", cc:" + cc);
             }
             try {
                 result = interceptor.intercept(this);
