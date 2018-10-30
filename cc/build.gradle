@@ -10,6 +10,7 @@ android {
         versionCode 1
         versionName "1.0"
 
+        consumerProguardFiles 'proguard-rules.pro'
     }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_7
@@ -30,7 +31,7 @@ android {
 
 dependencies {
     //发布到bintray时，要写成compile才行
-    compile "com.billy.android:pools:0.0.5"
+    compile "com.billy.android:pools:0.0.6"
     compileOnly "com.android.support:appcompat-v7:${rootProject.supportVersion}"
     compileOnly project(':android_internal')
 }
