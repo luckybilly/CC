@@ -1,57 +1,32 @@
-apply plugin: 'com.android.library'
+apply plugin: 'groovy'
 
-android {
-    compileSdkVersion rootProject.compileVersion
-    buildToolsVersion rootProject.buildVersion
-
-    defaultConfig {
-        minSdkVersion rootProject.minVersion
-        targetSdkVersion rootProject.compileVersion
-        versionCode 1
-        versionName "1.0"
-
-    }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_7
-        targetCompatibility JavaVersion.VERSION_1_7
-    }
-    buildTypes {
-        release {
-            minifyEnabled false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
-        }
-    }
-
-    lintOptions {
-        abortOnError false
-    }
-
-}
 
 dependencies {
-    //发布到bintray时，要写成compile才行
-    compile "com.billy.android:pools:0.0.5"
-    compileOnly "com.android.support:appcompat-v7:${rootProject.supportVersion}"
-    compileOnly project(':android_internal')
+    compile gradleApi()
+    compile localGroovy()
 }
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+repositories {
+    mavenCentral()
+}
+dependencies {
+    compile 'com.android.tools.build:gradle:2.2.0'
+}
 
 ext {
-    bintrayRepo = 'android'
-    bintrayName = 'cc'
+    bintrayRepo = 'maven'
+    bintrayName = 'cc-register'
 
-    publishedGroupId = 'com.billy.android'
-    libraryName = 'CC'
-    artifact = 'cc'
+    publishedGroupId = 'com.fxiaoke'
+    libraryName = 'CcRegister'
+    artifact = 'cc-register'
 
     libraryDescription = 'android component caller'
 
-    siteUrl = 'https://github.com/luckybilly/CC'
-    gitUrl = 'git@github.com:luckybilly/CC.git'
+    siteUrl = 'https://github.com/fsxiaoke/CC'
+    gitUrl = 'https://github.com/fsxiaoke/CC.git'
 
-    libraryVersion = '2.1.1'
+    libraryVersion = '1.0.0'
 
     developerId = 'billy'
     developerName = 'billy'
@@ -64,7 +39,7 @@ ext {
 
 apply from: rootProject.file('bintray.gradle')
 
-apply plugin: 'maven'
+//apply plugin: 'maven'
 uploadArchives {
     repositories {
         mavenDeployer {
