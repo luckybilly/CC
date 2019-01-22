@@ -81,7 +81,7 @@ ext.addComponent = { dependencyName, realDependency = null ->
         app = 'true' == localProperties.getProperty(dependencyName)
     }
     if (!app) {
-        def dependencyMode = project.gradle.gradleVersion >= "4.1" ? 'api' : 'compile'
+        def dependencyMode = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('4.1') ? 'api' : 'compile'
         if (realDependency) {
             //通过参数传递的依赖方式，如：
             // project(':moduleName')
@@ -144,6 +144,7 @@ android {
         }
     }
 }
+println("gradle version ${GradleVersion.version('4.1')}")
 def dependencyMode =  project.gradle.gradleVersion >= "4.1" ? 'api' : 'compile'
 //project.dependencies.add(dependencyMode, project(":cc"))
 project.dependencies.add(dependencyMode, "com.billy.android:cc:1.1.0")
