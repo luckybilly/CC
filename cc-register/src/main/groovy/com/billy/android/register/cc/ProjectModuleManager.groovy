@@ -139,7 +139,7 @@ class ProjectModuleManager {
             def excludeModule = 'true' == localProperties.getProperty(dependencyName)
             if (!excludeModule) {
                 def componentProject = project.rootProject.subprojects.find { it.name == dependencyName }
-                def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
+                def dependencyMode = project.gradle.gradleVersion >= "4.1" ? 'api' : 'compile'
                 if (realDependency) {
                     //通过参数传递的依赖方式，如：
                     // project(':moduleName')
