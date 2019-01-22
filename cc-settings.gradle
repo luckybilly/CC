@@ -144,7 +144,6 @@ android {
         }
     }
 }
-println("gradle version ${GradleVersion.version('4.1')}")
 def dependencyMode =  project.gradle.gradleVersion >= "4.1" ? 'api' : 'compile'
 //project.dependencies.add(dependencyMode, project(":cc"))
 project.dependencies.add(dependencyMode, "com.billy.android:cc:1.1.0")
