@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Looper;
 import android.support.v4.app.Fragment;
@@ -23,6 +22,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static com.billy.cc.core.component.CCUtil.put;
+import static com.billy.cc.core.component.ComponentManager.ACTION_REGISTER;
+import static com.billy.cc.core.component.ComponentManager.ACTION_UNREGISTER;
+import static com.billy.cc.core.component.ComponentManager.COMPONENT_DYNAMIC_COMPONENT_OPTION;
+import static com.billy.cc.core.component.ComponentManager.KEY_COMPONENT_NAME;
+import static com.billy.cc.core.component.ComponentManager.KEY_PROCESS_NAME;
 
 /**
  * 组件调用
@@ -45,11 +51,7 @@ public class CC {
      * 为了方便开发调试，默认设置为允许响应跨app组件调用
      * 为了安全，app上线时可以将此值设置为false，避免被恶意调用
      */
-    static boolean RESPONSE_FOR_REMOTE_CC = true;
-    /**
-     * 如果调用到当前app内没有的组件，是否尝试去其它app内调用（每人为true）
-     */
-    static boolean CALL_REMOTE_CC_IF_NEED = true;
+    private static boolean REMOTE_CC_ENABLED = false;
 
     private volatile CCResult result;
 
@@ -61,6 +63,7 @@ public class CC {
 
     WeakReference<Fragment> cancelOnDestroyFragment;
 
+    private volatile boolean waiting;
 
     static {
         Application app = CCUtil.initApplication();
@@ -70,16 +73,34 @@ public class CC {
     }
 
     /**
-     * 预留初始化方法(目前版本暂不需要)
+     * 初始化方法
+     * 仅初始化CC，不初始化组件和拦截器
      * 在Application.onCreate(...)中调用
-     * @param app 为了防止反射获取application对象失败，预留此初始化功能
+     * @param app Application
      */
     public static synchronized void init(Application app) {
+        init(app, false, false);
+    }
+
+    /**
+     * 初始化方法
+     * 同时初始化组件和全局拦截器
+     * @param app Application
+     * @param initComponents 如果设置为true则同时初始化组件
+     * @param initGlobalInterceptors 如果设置为true则同时初始化全局拦截器
+     */
+    public static synchronized void init(Application app, boolean initComponents, boolean initGlobalInterceptors) {
         if (application == null && app != null) {
             application = app;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
                 application.registerActivityLifecycleCallbacks(new CCMonitor.ActivityMonitor());
             }
+        }
+        if (initComponents) {
+            ComponentManager.init();
+        }
+        if (initGlobalInterceptors) {
+            GlobalCCInterceptorManager.init();
         }
     }
     
@@ -119,6 +140,7 @@ public class CC {
     private String callId;
     private volatile boolean canceled = false;
     private volatile boolean timeoutStatus = false;
+    private boolean withoutGlobalInterceptor = false;
 
     private CC(String componentName) {
         this.componentName = componentName;
@@ -200,6 +222,11 @@ public class CC {
             return this;
         }
 
+        public Builder withoutGlobalInterceptor() {
+            cr.withoutGlobalInterceptor = true;
+            return this;
+        }
+
         /**
          * 设置组件调用的参数（将清空之前设置的参数列表）
          * @param params 参数 {@link Map} 类型
@@ -269,7 +296,19 @@ public class CC {
             return this;
         }
 
-
+        /**
+         * 直接设置callId
+         * 在跨进程调用时供CC库内部使用，保持跨进程调用的callId一致
+         * 便于跟踪调用流程和cancel、timeout
+         * @param callId 原callId
+         * @return Builder自身
+         */
+        Builder setCallId(String callId) {
+            if (!TextUtils.isEmpty(callId)) {
+                cr.callId = callId;
+            }
+            return this;
+        }
 
         /**
          * 构建CC对象
@@ -311,19 +350,12 @@ public class CC {
         put(json, "componentName", componentName);
         put(json, "actionName", actionName);
         put(json, "timeout", timeout);
+        put(json, "withoutGlobalInterceptor", withoutGlobalInterceptor);
         put(json, "callbackOnMainThread", callbackOnMainThread);
         put(json, "params", CCUtil.convertToJson(params));
         put(json, "interceptors", interceptors);
         put(json, "callback", getCallback());
         return json.toString();
-    }
-
-    private void put(JSONObject json, String key, Object value) {
-        try {
-            json.put(key, value);
-        } catch(Exception e) {
-            e.printStackTrace();
-        }
     }
 
     public Context getContext() {
@@ -336,6 +368,9 @@ public class CC {
         return application;
     }
 
+    void forwardTo(String componentName) {
+        this.componentName = componentName;
+    }
 
     public String getActionName() {
         return actionName;
@@ -412,6 +447,10 @@ public class CC {
         return timeoutStatus;
     }
 
+    boolean isWithoutGlobalInterceptor() {
+        return withoutGlobalInterceptor;
+    }
+
     CCResult getResult() {
         return result;
     }
@@ -425,10 +464,14 @@ public class CC {
         try {
             synchronized (wait4resultLock) {
                 if (VERBOSE_LOG) {
-                    verboseLog(callId, "setResult4Waiting. CCResult:" + result);
+                    verboseLog(callId, "setResult" + (waiting ? "4Waiting" : "")
+                            + ". CCResult:" + result);
                 }
                 setResult(result);
-                wait4resultLock.notifyAll();
+                if (waiting) {
+                    waiting = false;
+                    wait4resultLock.notifyAll();
+                }
             }
         } catch(Exception e) {
             e.printStackTrace();
@@ -441,6 +484,7 @@ public class CC {
             if (!isFinished()) {
                 try {
                     verboseLog(callId, "start waiting for CC.sendCCResult(...)");
+                    waiting = true;
                     wait4resultLock.wait();
                     verboseLog(callId, "end waiting for CC.sendCCResult(...)");
                 } catch (InterruptedException ignored) {
@@ -481,7 +525,7 @@ public class CC {
         }
     }
 
-    String getComponentName() {
+    public String getComponentName() {
         return componentName;
     }
 
@@ -590,11 +634,24 @@ public class CC {
         return finished.compareAndSet(false, true);
     }
 
+    /**
+     * 取消正在执行的CC调用
+     * 要用此功能时，组件实现方需要在执行过程中调用<code>cc.isStopped()</code>以判断是否中止执行
+     * 可参考 demo_component_b 中的 GetNetworkDataProcessor
+     * @param callId 组件调用的Id
+     */
     public static void cancel(String callId) {
         verboseLog(callId, "call CC.cancel()");
         CC cc = CCMonitor.getById(callId);
         if (cc != null) {
             cc.cancel();
+        }
+    }
+    static void timeout(String callId) {
+        verboseLog(callId, "call CC.cancel()");
+        CC cc = CCMonitor.getById(callId);
+        if (cc != null) {
+            cc.timeout();
         }
     }
     void timeout() {
@@ -605,6 +662,14 @@ public class CC {
         } else {
             verboseLog(callId, "call timeout(). but this cc is already finished");
         }
+    }
+
+    /**
+     * 同步调用或设置了回调，则表示调用方需要获得结果
+     * @return 是否需要拿到组件调用结果
+     */
+    public boolean resultRequired() {
+        return !async || callback != null;
     }
 
     /**
@@ -660,7 +725,20 @@ public class CC {
      * @param component 组件对象
      */
     public static void registerComponent(IDynamicComponent component) {
+        if (component == null) {
+            return;
+        }
         ComponentManager.registerComponent(component);
+        //子进程中注册的动态组件要通知主进程
+        //动态组件被注册在当前进程中
+        String curProcessName = CCUtil.getCurProcessName();
+        if (!isMainProcess()) {
+            CC.obtainBuilder(COMPONENT_DYNAMIC_COMPONENT_OPTION)
+                    .setActionName(ACTION_REGISTER)
+                    .addParam(KEY_COMPONENT_NAME, component.getName())
+                    .addParam(KEY_PROCESS_NAME, curProcessName)
+                    .build().callAsync();
+        }
     }
 
     /**
@@ -668,16 +746,50 @@ public class CC {
      * @param component 组件对象
      */
     public static void unregisterComponent(IDynamicComponent component) {
+        if (component == null) {
+            return;
+        }
         ComponentManager.unregisterComponent(component);
+        //子进程中注销的动态组件要通知主进程
+        if (!isMainProcess()) {
+            CC.obtainBuilder(COMPONENT_DYNAMIC_COMPONENT_OPTION)
+                    .setActionName(ACTION_UNREGISTER)
+                    .addParam(KEY_COMPONENT_NAME, component.getName())
+                    .build().callAsync();
+        }
+    }
+
+    /**
+     * 注册一个全局拦截器
+     * 每个拦截器类型只能注册一次
+     * {@link IGlobalCCInterceptor}接口的直接实现类默认会自动注册，无需手动添加
+     * 若不需要自动注册，可使用子接口的方式来定义
+     * @param interceptor 全局拦截器
+     */
+    public static void registerGlobalInterceptor(IGlobalCCInterceptor interceptor) {
+        GlobalCCInterceptorManager.registerGlobalInterceptor(interceptor);
+    }
+
+    /**
+     * 注销一个全局拦截器
+     * @param clazz 拦截器的类型
+     */
+    public static void unregisterGlobalInterceptor(Class<? extends IGlobalCCInterceptor> clazz) {
+        GlobalCCInterceptorManager.unregisterGlobalInterceptor(clazz);
     }
 
     private static String prefix;
     private static AtomicInteger index = new AtomicInteger(1);
     private String nextCallId() {
+        //为了保持跨进程调用时callId一致
+        //如果已设置callId，则不额外生成
+        if (!TextUtils.isEmpty(callId)) {
+            return callId;
+        }
         if (TextUtils.isEmpty(prefix)) {
-            Context context = getContext();
-            if (context != null) {
-                prefix = context.getPackageName() + ":";
+            String curProcessName = CCUtil.getCurProcessName();
+            if (!TextUtils.isEmpty(curProcessName)) {
+                prefix = curProcessName + ":";
             } else {
                 return ":::" + index.getAndIncrement();
             }
@@ -688,21 +800,21 @@ public class CC {
     static void verboseLog(String callId, String s, Object... args) {
         if (VERBOSE_LOG) {
             s = format(s, args);
-            Log.i(CC.VERBOSE_TAG, "(" + Thread.currentThread().getName() + ")"
+            Log.i(CC.VERBOSE_TAG, "(" + CCUtil.getCurProcessName() +")(" + Thread.currentThread().getName() + ")"
                     + callId + " >>>> " + s);
         }
     }
 
-    static void log(String s, Object... args) {
-        if (DEBUG && application != null) {
+    public static void log(String s, Object... args) {
+        if (DEBUG) {
             s = format(s, args);
-            Log.i(CC.TAG, application.getPackageName() + " ---- " + s);
+            Log.i(CC.TAG, s);
         }
     }
     static void logError(String s, Object... args) {
-        if (DEBUG && application != null) {
+        if (DEBUG) {
             s = format(s, args);
-            Log.e(CC.TAG, application.getPackageName() + " ---- " + s);
+            Log.e(CC.TAG, s);
         }
     }
 
@@ -733,21 +845,21 @@ public class CC {
         DEBUG = enable;
     }
     /**
-     * 开关跨app调用组件支持，默认为打开状态
+     * 开关跨app调用组件支持，默认为关闭状态
      *  1. 某个componentName当前app中不存在时，是否尝试调用其它app的此组件
      *  2. 接收到跨app调用时，是否执行本次调用
-     * @param enable 开关（true：会执行，默认值为true； false：不会）
+     *  3. 建议仅在开发阶段调试时打开，正式发布时关闭
+     * @param enable 开关（true：会执行； false：不会）
      */
     public static void enableRemoteCC(boolean enable) {
-        RESPONSE_FOR_REMOTE_CC = enable;
-        CALL_REMOTE_CC_IF_NEED = enable;
-        if (enable && application != null && isMainProcess()) {
-            // 启动":cc"进程
-            // 解决'组件以app运行时在部分设备上由于应用没有自启动权限而无法被其它app调用'的问题
-            Intent intent = new Intent(application.getPackageName()
-                    + ".cc.action.REMOTE_CC.awake");
-            application.sendBroadcast(intent);
+        REMOTE_CC_ENABLED = enable;
+        if (enable && application != null) {
+            RemoteCCInterceptor.getInstance().enableRemoteCC();
         }
+    }
+
+    public static boolean isRemoteCCEnabled() {
+        return REMOTE_CC_ENABLED;
     }
 
     /**

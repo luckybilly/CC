@@ -1,5 +1,7 @@
 package com.billy.cc.core.component;
 
+import android.os.Looper;
+
 /**
  * 调用当前app内组件的拦截器<br>
  * 如果本地找不到该组件，则添加{@link RemoteCCInterceptor}来处理<br>
@@ -33,32 +35,40 @@ class LocalCCInterceptor implements ICCInterceptor {
             );
             return CCResult.error(CCResult.CODE_ERROR_NO_COMPONENT_FOUND);
         }
-        //是否需要wait：异步调用且未设置回调，则不需要wait
-        boolean callbackNecessary = !cc.isAsync() || cc.getCallback() != null;
         try {
             String callId = cc.getCallId();
-            boolean callbackDelay = component.onCall(cc);
             if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, component.getName() + ":"
-                        + component.getClass().getName()
-                        + ".onCall(cc) return:" + callbackDelay
-                        );
+                CC.verboseLog(callId, "start component:%s, cc: %s", component.getClass().getName(), cc.toString());
             }
-            //兼容异步调用时等待回调结果（同步调用时，此时CC.sendCCResult(callId, result)方法已调用）
-            if (!cc.isFinished() && callbackNecessary) {
-                //component.onCall(cc)没报exception并且指定了要延时回调结果才进入正常wait流程
-                if (callbackDelay) {
-                    return chain.proceed();
-                } else {
-                    CC.logError("component.onCall(cc) return false but CC.sendCCResult(...) not called!"
-                            + "\nmaybe: actionName error"
-                            + "\nor if-else not call CC.sendCCResult"
-                            + "\nor switch-case-default not call CC.sendCCResult"
-                            + "\nor try-catch block not call CC.sendCCResult."
-                    );
-                    //没有返回结果，且不是延时回调（也就是说不会收到结果了）
-                    return CCResult.error(CCResult.CODE_ERROR_CALLBACK_NOT_INVOKED);
+            boolean shouldSwitchThread = false;
+            LocalCCRunnable runnable = new LocalCCRunnable(cc, component);
+            if (component instanceof IMainThread) {
+                //当前是否在主线程
+                boolean curIsMainThread = Looper.myLooper() == Looper.getMainLooper();
+                //该action是否应该在主线程运行
+                Boolean runOnMainThread = ((IMainThread) component).shouldActionRunOnMainThread(cc.getActionName(), cc);
+                //是否需要切换线程执行 component.onCall(cc) 方法
+                shouldSwitchThread = runOnMainThread != null && runOnMainThread ^ curIsMainThread;
+                if (shouldSwitchThread) {
+                    runnable.setShouldSwitchThread(true);
+                    if (runOnMainThread) {
+                        //需要在主线程运行，但是当前线程不是主线程
+                        ComponentManager.mainThread(runnable);
+                    } else {
+                        //需要在子线程运行，但当前线程不是子线程
+                        ComponentManager.threadPool(runnable);
+                    }
                 }
+            }
+            if (!shouldSwitchThread) {
+                //不需要切换线程，直接运行
+                runnable.run();
+            }
+            //兼容以下情况：
+            //  1. 不需要切换线程，但需要等待异步实现调用CC.sendCCResult(...)
+            //  2. 需要切换线程，等待切换后的线程调用组件后调用CC.sendCCResult(...)
+            if (!cc.isFinished()) {
+                chain.proceed();
             }
         } catch(Exception e) {
             return CCResult.defaultExceptionResult(e);
@@ -66,4 +76,60 @@ class LocalCCInterceptor implements ICCInterceptor {
         return cc.getResult();
     }
 
+
+    static class LocalCCRunnable implements Runnable {
+        private final String callId;
+        private CC cc;
+        private IComponent component;
+        private boolean shouldSwitchThread;
+
+        LocalCCRunnable(CC cc, IComponent component) {
+            this.cc = cc;
+            this.callId = cc.getCallId();
+            this.component = component;
+        }
+
+        void setShouldSwitchThread(boolean shouldSwitchThread) {
+            this.shouldSwitchThread = shouldSwitchThread;
+        }
+
+        @Override
+        public void run() {
+            if (cc.isFinished()) {
+                return;
+            }
+            try {
+                boolean callbackDelay = component.onCall(cc);
+                if (CC.VERBOSE_LOG) {
+                    CC.verboseLog(callId, component.getName() + ":"
+                            + component.getClass().getName()
+                            + ".onCall(cc) return:" + callbackDelay
+                    );
+                }
+                if (!callbackDelay && !cc.isFinished()) {
+                    CC.logError("component.onCall(cc) return false but CC.sendCCResult(...) not called!"
+                            + "\nmaybe: actionName error"
+                            + "\nor if-else not call CC.sendCCResult"
+                            + "\nor switch-case-default not call CC.sendCCResult"
+                            + "\nor try-catch block not call CC.sendCCResult."
+                    );
+                    //没有返回结果，且不是延时回调（也就是说不会收到结果了）
+                    setResult(CCResult.error(CCResult.CODE_ERROR_CALLBACK_NOT_INVOKED));
+                }
+            } catch(Exception e) {
+                setResult(CCResult.defaultExceptionResult(e));
+            }
+        }
+
+        private void setResult(CCResult result) {
+            if (shouldSwitchThread) {
+                //若出现线程切换
+                // LocalCCInterceptor.intercept会执行chain.proceed()进入wait状态
+                // 需要解除wait状态
+                cc.setResult4Waiting(result);
+            } else {
+                cc.setResult(result);
+            }
+        }
+    }
 }

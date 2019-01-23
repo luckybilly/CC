@@ -1,8 +1,5 @@
 package com.billy.cc.core.component;
 
-import android.os.Handler;
-import android.os.Looper;
-
 import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -54,12 +51,11 @@ class ChainProcessor implements Callable<CCResult> {
         if (result == null) {
             result = CCResult.defaultNullResult();
         }
-        cc.setResult(result);
+        //调用请求处理完成后，CC对象中不存储CCResult
+        cc.setResult(null);
         performCallback(cc, result);
         return result;
     }
-
-    private static final Handler HANDLER = new Handler(Looper.getMainLooper());
 
     private static void performCallback(CC cc, CCResult result) {
         IComponentCallback callback = cc.getCallback();
@@ -71,7 +67,7 @@ class ChainProcessor implements Callable<CCResult> {
             return;
         }
         if (cc.isCallbackOnMainThread()) {
-            HANDLER.post(new CallbackRunnable(callback, cc, result));
+            ComponentManager.mainThread(new CallbackRunnable(callback, cc, result));
         } else {
             try {
                 callback.onResult(cc, result);

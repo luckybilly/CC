@@ -4,9 +4,9 @@
 
 [![Join the chat at https://gitter.im/billy_home/CC](https://badges.gitter.im/billy_home/CC.svg)](https://gitter.im/billy_home/CC?utm_source=share-link&utm_medium=link&utm_campaign=share-link)
 
-Name|CC|AutoRegister
+Name|CC|cc-register
 ---|---|---
-Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/AutoRegister/images/download.svg)](https://bintray.com/hellobilly/android/AutoRegister/_latestVersion)
+Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/images/download.svg)](https://bintray.com/hellobilly/android/cc/_latestVersion)| [![Download](https://api.bintray.com/packages/hellobilly/android/cc-register/images/download.svg)](https://bintray.com/hellobilly/android/cc-register/_latestVersion)
 
 ## demo download
 
@@ -17,7 +17,7 @@ Version| [![Download](https://api.bintray.com/packages/hellobilly/android/cc/ima
 demo shows cc works on component in or not in main app.
 it looks like below via running both of above app on your device and launch demo app.
 
-        
+
         Notice: calling across apps is only compat for develop time
         you need to turnon the permission 'auto start' for Demo_B to make it worked if the process of Demo_B is not alive. 
 
@@ -77,15 +77,14 @@ it looks like below via running both of above app on your device and launch demo
         - demo                          demo main app module
         - demo_component_a              demo ComponentA 
         - demo_component_b              demo ComponentB
-        - component_protect_demo        demo for add permission settings，as dependencies within cc-settings-demo-b.gradle
-        - cc-settings-demo-b.gradle     actionProcessor自动注册的配置脚本demo
+        - cc-settings-demo.gradle       actionProcessor自动注册的配置脚本demo
         - demo-debug.apk                demo apk(contains demo and demo_component_a)
         - demo_component_b-debug.apk    apk for demo_component_b only
 
 ## How to Use
 
 #### 1. add classpath
- 
+
 ```groovy
 buildscript {
     dependencies {
@@ -100,20 +99,21 @@ apply plugin: 'com.android.library'
 apply plugin: 'com.android.application'
 
 //replace to
-apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+apply from: cc-settings-2.gradle
 ```
+
 see [demo_component_a/build.gradle](https://github.com/luckybilly/CC/blob/master/demo_component_a/build.gradle)
- 
+
 module is setting as library by default. there are 2 ways to set as application for single launch apk:
 
 2.1 modify local.properties
 ```properties
 demo_component_b=true # run as application for module: demo_component_b
 ```
-2.2 modify module/build.gradle: add `ext.runAsApp = true` before `apply from: '...cc-settings.gradle'`:
+2.2 modify module/build.gradle: add `ext.runAsApp = true` before `apply from: '...cc-settings.gradle'`,ext.runAsApp priority is higher than local.properties.
 ```groovy
 ext.runAsApp = true
-apply from: 'https://raw.githubusercontent.com/luckybilly/CC/master/cc-settings.gradle'
+apply from: cc-settings-2.gradle
 ```
 #### 3. Define a component ([IComponent](https://github.com/luckybilly/CC/blob/master/cc/src/main/java/com/billy/cc/core/component/IComponent.java))
 ```java
@@ -153,6 +153,17 @@ String callId = CC.obtainBuilder("demo.ComponentA").build().callAsync(new ICompo
 //Asynchronous call, result callback on main thread
 String callId = CC.obtainBuilder("demo.ComponentA").build().callAsyncCallbackOnMainThread(new IComponentCallback(){...});
 ```
+
+#### More: Add dependencies in main app module for all component modules like below:
+
+```groovy
+dependencies {
+    addComponent 'demo_component_a' //default add dependency: project(':demo_component_a')
+    addComponent 'demo_component_kt', project(':demo_component_kt')
+    addComponent 'demo_component_b', 'com.billy.demo:demo_b:1.1.0'
+}
+
+
 ## Advance usage
 
 ```java
@@ -195,7 +206,7 @@ Map<String, Object> data = ccResult.getDataMap();
 if (data != null) {
     Object value = data.get(key)   
 }
-```    
+```
 CCResult code list:
 
 | code        | error status    |
@@ -223,7 +234,7 @@ CCResult code list:
     see demo: [MissYouInterceptor.java](https://github.com/luckybilly/CC/blob/master/demo/src/main/java/com/billy/cc/demo/MissYouInterceptor.java)
     
 - register/unregister dynamic component
-    
+
 Definition: Unlike the static component (IComponent), which is automatically registered to ComponentManager at compile time, 
 dynamic components do not automatically register and work through manual registration/unregistration
 
@@ -231,14 +242,14 @@ dynamic components do not automatically register and work through manual registr
         2. It is necessary to call CC.registerComponent(component) manually, similar to the BroadcastReceiver dynamic registration
         3. It is necessary to call CC.unregisterComponent(component) manually, similar to the BroadcastReceiver dynamic unregistration
         4. Other usage are the same as static components
-        
+
 - You can have multiple modules include in a module
 
-        
+
         In a module, you can have multiple implementation classes for the IComponent interface (or IDynamicComponent interface)
         IComponents are automatically registered to the component management class ComponentManager at compile time
         IDynamicComponents are not
-        
+
 - A component can process multiple actions
 
         In the onCall(CC cc) method, gets actions to handle separately via cc.getActionName()
@@ -247,25 +258,8 @@ dynamic components do not automatically register and work through manual registr
 - Auto register Custom ActionProcessor into component
 
     see[ComponentB](https://github.com/luckybilly/CC/blob/master/demo_component_b/src/main/java/com/billy/cc/demo/component/b/ComponentB.java)
-    and[cc-settings-demo-b.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo-b.gradle)
+    and[cc-settings-demo.gradle](https://github.com/luckybilly/CC/blob/master/cc-settings-demo.gradle)
 
-- Add custom permission protection to calls across app components
-  - create a new module
-  - add dependence in module/build.gradle: `compile 'com.billy.android:cc:0.3.0'`
-  - modify module/src/main/AndroidManifest: add permission protection for BroadcastReceiver, like this: [component_protect_demo](https://github.com/luckybilly/CC/blob/master/component_protect_demo/src/main/AndroidManifest.xml)
-    ```xml
-    <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.billy.cc.demo.component.protect" >
-        <permission android:name="cc.permission.com.billy.cc.demo.REMOTE_CC" android:protectionLevel="signature" />
-        <uses-permission android:name="cc.permission.com.billy.cc.demo.REMOTE_CC" />
-        <application>
-            <receiver android:name="com.billy.cc.core.component.ComponentBroadcastReceiver"
-                android:permission="cc.permission.com.billy.cc.demo.REMOTE_CC"
-                />
-        </application>
-    </manifest>
-    ```
-  - other modules dependent on this module
 
 ##### watch the sourcecode of demo, demo_component_a and demo_component_b for more details
 

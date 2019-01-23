@@ -1,17 +1,41 @@
-//先读取build.gradle中的ext.runAsApp设置
+///////////////////////////////////////////////////////////////////////////////////////////////
+//
+//                  注意： 本文件从2.0.0版本开始已废弃
+//
+//      1.1.0版及以前使用此cc-settings.gradle文件
+//      2.0.0版及以后使用新版cc-settings-2.gradle文件
+//      此文件保留是为了不影响以前通过apply github上的此文件使用CC的用户
+//      2.0.0版本以后，不推荐使用github上的文件，建议复制或下载cc-settings-2.gradle的内容到工程根目录使用
+//
+//
+///////////////////////////////////////////////////////////////////////////////////////////////
+
+import java.util.regex.Pattern
+
+//先加载local.properties文件
+Properties localProperties = new Properties()
+try {
+    def localFile = project.rootProject.file('local.properties')
+    if (localFile != null && localFile.exists()) {
+        localProperties.load(localFile.newDataInputStream())
+    }
+} catch (Exception ignored) {
+    println("local.properties not found")
+}
+//读取build.gradle中的设置
+// 2018-04-06修改：
+//  为了更利于理解，将ext.runAsApp 改名为 ext.mainApp
+//  ext.mainApp的将仅代表是否作为主app，为true时以application方式编译，为false或未配置时以local.properties中的配置为准
+//  兼容以前的runAsApp设置，ext.runAsApp的功能保持不变，runAsApp优先级高于local.properties
 def runAsApp = ext.has('runAsApp')
 if (runAsApp) {
     runAsApp = ext.runAsApp
+} else if(ext.has('mainApp') && ext.mainApp) { //ext.mainApp为true时，代表以app方式运行
+    runAsApp = true
 } else {
-    //再读取local.properties中配置，例如： demo_component_a=true
-    Properties localProperties = new Properties()
-    try {
-        def localFile = project.rootProject.file('local.properties')
-        if (localFile != null && localFile.exists()) {
-            localProperties.load(localFile.newDataInputStream())
-        }
-    } catch (Exception ignored) {
-    }
+    //build.gradle中没有配置runAsApp，且ext.mainApp=false或未配置
+    //再从local.properties中读取配置，例如： demo_component_a=true
+    //注：如果采用local.properties读取配置，每次修改需要重新同步(Sync Project)一下
     runAsApp = 'true' == localProperties.getProperty(project.name)
 }
 //设置到ext中，供module的build.gradle使用（例如用于设置sourceSets配置）
@@ -22,6 +46,65 @@ if (runAsApp) {
     apply plugin: 'com.android.library'
 }
 
+//对组件库的依赖格式： addComponent dependencyName [, realDependency]
+// 使用示例见demo/build.gradle
+//  dependencyName: 组件库的名称，推荐直接使用使用module的名称
+//  realDependency(可选): 组件库对应的实际依赖，可以是module依赖，也可以是maven依赖
+//    如果未配置realDependency，将自动依赖 project(":$dependencyName")
+//    realDependency可以为如下2种中的一种:
+//      module依赖 : project(':demo_component_b') //如果module名称跟dependencyName相同，可省略(推荐)
+//      maven依赖  : 'com.billy.demo:demoB:1.1.0' //如果使用了maven私服，请使用此方式
+ext.addComponent = { dependencyName, realDependency = null ->
+    def curModuleIsBuildingApk = false //当前task是否为给本module打apk包
+    def taskNames = project.gradle.startParameter.taskNames
+    def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)).*"
+    def taskBuildApkPattern = Pattern.compile(regex)
+    for (String task : taskNames) {
+        if (taskBuildApkPattern.matcher(task.toUpperCase()).matches()) {
+            curModuleIsBuildingApk = true
+            break
+        }
+    }
+    //不是在为本app module打apk包，不添加对组件的依赖
+    if (!curModuleIsBuildingApk)
+        return
+    def componentProject = rootProject.subprojects.find { it.name == dependencyName }
+    def app  //dependencyName指定的module是否为配置为以application方式编译
+    if (componentProject && componentProject.ext.has('runAsApp')) {
+        //兼容以前的ext.runAsApp=true的配置方式，runAsApp的优先级高
+        app = componentProject.ext.runAsApp
+    } else if (componentProject && componentProject.ext.has('mainApp') && componentProject.ext.mainApp) {
+        //仅ext.mainApp为true时，确定为application方式编译，若为false，则读取local.properties中的配置
+        app = true
+    } else {
+        //local.properties中配置为true代表该module以application方式编译
+        app = 'true' == localProperties.getProperty(dependencyName)
+    }
+    if (!app) {
+        def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
+        if (realDependency) {
+            //通过参数传递的依赖方式，如：
+            // project(':moduleName')
+            // 或
+            // 'com.billy.demo:demoA:1.1.0'
+            project.dependencies.add(dependencyMode, realDependency)
+            println "CC >>>> add $realDependency to ${project.name}'s dependencies"
+        } else if (componentProject) {
+            //第二个参数未传，默认为按照module来进行依赖
+            project.dependencies.add(dependencyMode, project(":$dependencyName"))
+            println "CC >>>> add project(\":$dependencyName\") to ${project.name}'s dependencies"
+        } else {
+            throw new RuntimeException(
+                    "CC >>>> add dependency by [ addComponent '$dependencyName' ] occurred an error:" +
+                    "\n'$dependencyName' is not a module in current project" +
+                    " and the 2nd param is not specified for realDependency" +
+                    "\nPlease make sure the module name is '$dependencyName'" +
+                    "\nelse" +
+                    "\nyou can specify the real dependency via add the 2nd param, for example: " +
+                    "addComponent '$dependencyName', 'com.billy.demo:demoB:1.1.0'")
+        }
+    }
+}
 repositories {
     maven { url rootProject.file("repo-local") }
     jcenter()
@@ -43,8 +126,12 @@ android {
                     exclude 'debug/**'
                 }
             }
-            // 注：2018-03-12推荐：将源码放到src/main/debug/java目录下
+            // 注：2018-03-12推荐：将组件单独以app运行时的测试代码及资源放到src/main/debug/目录下
             if (runAsApp) {
+                //debug模式下，如果存在src/main/debug/assets，则自动将其添加到assets源码目录
+                if (project.file('src/main/debug/assets').exists()) {
+                    assets.srcDirs = ['src/main/assets', 'src/main/debug/assets']
+                }
                 //debug模式下，如果存在src/main/debug/java，则自动将其添加到java源码目录
                 if (project.file('src/main/debug/java').exists()) {
                     java.srcDirs = ['src/main/java', 'src/main/debug/java']
@@ -57,10 +144,9 @@ android {
         }
     }
 }
-dependencies {
-    compile "com.billy.android:cc:0.5.0"
-//    compile project(":cc")
-}
+def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
+//project.dependencies.add(dependencyMode, project(":cc"))
+project.dependencies.add(dependencyMode, "com.billy.android:cc:1.1.0")
 
 
 
@@ -84,15 +170,31 @@ dependencies {
   }
  */
 project.apply plugin: 'auto-register'
-autoregister {
-    registerInfo = [
-        [
-            'scanInterface'             : 'com.billy.cc.core.component.IComponent'
-            , 'codeInsertToClassName'   : 'com.billy.cc.core.component.ComponentManager'
-            , 'registerMethodName'      : 'registerComponent'
-            , 'exclude'                 : [//排除的类，支持正则表达式（包分隔符需要用/表示，不能用.）
-                'com.billy.cc.core.component.'.replaceAll("\\.", "/") + ".*"
-            ]
+project.ext.registerInfoList = [
+    [ //自动注册组件
+        'scanInterface'             : 'com.billy.cc.core.component.IComponent'
+        , 'codeInsertToClassName'   : 'com.billy.cc.core.component.ComponentManager'
+        , 'registerMethodName'      : 'registerComponent'
+        , 'exclude'                 : [//排除的类，支持正则表达式（包分隔符需要用/表示，不能用.）
+            'com.billy.cc.core.component.'.replaceAll("\\.", "/") + ".*"
+        ]
+    ],[//自动注册全局拦截器
+        'scanInterface'             : 'com.billy.cc.core.component.IGlobalCCInterceptor'
+        , 'codeInsertToClassName'   : 'com.billy.cc.core.component.GlobalCCInterceptorManager'
+        , 'registerMethodName'      : 'registerGlobalInterceptor'
+        , 'exclude'                 : [//排除的类，支持正则表达式（包分隔符需要用/表示，不能用.）
+            'com.billy.cc.core.component.'.replaceAll("\\.", "/") + ".*"
+        ]
+    ],[//自动注册跨进程通信时自定义类型的json转换器，可以用Gson、FastJson等工具来实现
+       // 参考： demo_base/src/main/java/com.billy.cc.demo.base.GsonParamConverter
+        'scanInterface'             : 'com.billy.cc.core.component.IParamJsonConverter'
+        , 'codeInsertToClassName'   : 'com.billy.cc.core.component.RemoteParamUtil'
+        , 'registerMethodName'      : 'initRemoteCCParamJsonConverter'
+        , 'exclude'                 : [//排除的类，支持正则表达式（包分隔符需要用/表示，不能用.）
+            'com.billy.cc.core.component.'.replaceAll("\\.", "/") + ".*"
         ]
     ]
+]
+autoregister {
+    registerInfo = registerInfoList
 }

@@ -3,6 +3,7 @@ package com.billy.cc.demo.component.b;
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
 import com.billy.cc.core.component.IComponent;
+import com.billy.cc.core.component.IMainThread;
 import com.billy.cc.demo.component.b.processor.IActionProcessor;
 
 import java.util.HashMap;
@@ -17,27 +18,19 @@ import java.util.concurrent.atomic.AtomicBoolean;
  *  2. 在普通方法中注册： 可以自定义调用时机
  *  本类示例的是第2种方式，在onCall方法中注册，在组件第一次被调用时才注册，类似于懒加载
  *
- *      自定义cc-settings.gradle, 在autoregister.registerInfo中添加配置，例如(cc-settings-demo-b.gradle)：
+ *      在cc-settings-2.gradle文件中添加自动注册的配置信息（支持添加多个）,参考cc-settings-demo.gradle
  *
-     autoregister {
-         registerInfo = [
-             [
-             'scanInterface'             : 'com.billy.cc.core.component.IComponent'
-             , 'codeInsertToClassName'   : 'com.billy.cc.core.component.ComponentManager'
-             , 'registerMethodName'      : 'registerComponent'
-             ],
-             [
-             'scanInterface'             : 'com.billy.cc.demo.component.b.processor.IActionProcessor'
-             , 'codeInsertToClassName'   : 'com.billy.cc.demo.component.b.ComponentB'
-             , 'codeInsertToMethodName'  : 'initProcessors'
-             , 'registerMethodName'      : 'add'
-             ]
-         ]
-     }
+     ccregister.registerInfo.add([
+         //在自动注册组件的基础上增加：自动注册组件B的processor
+         'scanInterface'             : 'com.billy.cc.demo.component.b.processor.IActionProcessor'
+         , 'codeInsertToClassName'   : 'com.billy.cc.demo.component.b.ComponentB'
+         , 'codeInsertToMethodName'  : 'initProcessors'
+         , 'registerMethodName'      : 'add'
+     ])
  * @author billy.qi
  * @since 17/11/20 21:00
  */
-public class ComponentB implements IComponent {
+public class ComponentB implements IComponent, IMainThread {
 
     private AtomicBoolean initialized = new AtomicBoolean(false);
     private final HashMap<String, IActionProcessor> map = new HashMap<>(4);
@@ -70,4 +63,11 @@ public class ComponentB implements IComponent {
         return false;
     }
 
+    @Override
+    public Boolean shouldActionRunOnMainThread(String actionName, CC cc) {
+        if ("login".equals(actionName)) {
+            return true;
+        }
+        return null;
+    }
 }

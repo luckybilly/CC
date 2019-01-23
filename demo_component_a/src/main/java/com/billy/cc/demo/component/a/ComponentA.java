@@ -1,11 +1,8 @@
 package com.billy.cc.demo.component.a;
 
-import android.app.Activity;
-import android.content.Context;
-import android.content.Intent;
-
 import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.CCResult;
+import com.billy.cc.core.component.CCUtil;
 import com.billy.cc.core.component.IComponent;
 
 /**
@@ -76,13 +73,7 @@ public class ComponentA implements IComponent {
     }
 
     private void openActivity(CC cc) {
-        Context context = cc.getContext();
-        Intent intent = new Intent(context, ActivityA.class);
-        if (!(context instanceof Activity)) {
-            //调用方没有设置context或app间组件跳转，context为application
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        }
-        context.startActivity(intent);
+        CCUtil.navigateTo(cc, ActivityA.class);
         CC.sendCCResult(cc.getCallId(), CCResult.success());
     }
 }

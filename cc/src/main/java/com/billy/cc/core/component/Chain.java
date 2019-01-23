@@ -18,7 +18,7 @@ public class Chain {
         this.index = 0;
     }
 
-    void addInterceptors(Collection<ICCInterceptor> interceptors) {
+    void addInterceptors(Collection<? extends ICCInterceptor> interceptors) {
         if (interceptors != null && !interceptors.isEmpty()) {
             this.interceptors.addAll(interceptors);
         }
@@ -46,7 +46,7 @@ public class Chain {
             result = cc.getResult();
         } else {
             if (CC.VERBOSE_LOG) {
-                CC.verboseLog(callId, "start interceptor:" + name);
+                CC.verboseLog(callId, "start interceptor:" + name + ", cc:" + cc);
             }
             try {
                 result = interceptor.intercept(this);

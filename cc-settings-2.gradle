@@ -1,0 +1,19 @@
+
+//注： 从CC 1.x升级到CC 2.x的用户，用此文件替换原来的cc-settings.gradle的同时，需要在根目录build.gradle中将插件地址按照如下方式更换一下：
+// classpath 'com.billy.android:autoregister:x.x.x' -> classpath 'com.billy.android:cc-register:x.x.x'
+//cc-register extension:
+// 功能介绍：
+//  完成组件、拦截器及跨进程json解释器等CC库自身需要的自动注册功能
+//  支持新增自定义的其它自动注册功能，参考AutoRegister，用法参考cc-settings-demo.gradle
+project.apply plugin: 'cc-register'
+def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
+//project.dependencies.add(dependencyMode, project(":cc"))
+project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.1")
+
+//此文件是作为组件化配置的公共gradle脚本文件，在每个组件中都apply此文件，下载到工程根目录后，可以在下方添加一些自己工程中通用的配置
+// 可参考cc-settings-demo.gradle
+// 例如：
+//      1. 添加全局拦截器、下沉的公共类库等一些公共基础库的依赖；
+//      2. 添加自定义的通过cc-register实现的自动注册配置
+//      3. 开启app内部多进程支持
+//      4. 其它公共配置信息

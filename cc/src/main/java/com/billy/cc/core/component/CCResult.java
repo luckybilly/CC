@@ -51,12 +51,15 @@ public class CCResult {
      */
     public static final int CODE_ERROR_NO_COMPONENT_FOUND = -5;
     /**
-     * context 为null，通过反射获取application失败
+     * context 为null，自动获取application失败。
+     * 需要在首次调用CC之前手动执行CC的初始化： CC.init(application);
      */
     public static final int CODE_ERROR_CONTEXT_NULL = -6;
     /**
      * 跨app调用组件时，LocalSocket连接出错
+     * @deprecated CC 2.0版对跨进程通信进行了重构，不再使用LocalSocket，也就不会再出现这个code
      */
+    @Deprecated
     public static final int CODE_ERROR_CONNECT_FAILED = -7;
     /**
      * 取消
@@ -70,6 +73,10 @@ public class CCResult {
      * 未调用CC.sendCCResult(callId, ccResult)方法
      */
     public static final int CODE_ERROR_CALLBACK_NOT_INVOKED = -10;
+    /**
+     * 跨进程组件调用时对象传输出错，可能是自定义类型没有共用
+     */
+    public static final int CODE_ERROR_REMOTE_CC_DELIVERY_FAILED = -11;
 
     /**
      * CC调用是否成功
@@ -158,7 +165,6 @@ public class CCResult {
      * 快捷构建一个CC调用成功的CCResult
      * success=true, code=0 ({@link #CODE_SUCCESS})
      * 可以通过CCResult.addData(key, value)来继续添加更多的返回信息
-     * @return 构造的CCResult对象
      * @param data 返回的信息
      * @return 构造的CCResult对象
      */
@@ -184,7 +190,9 @@ public class CCResult {
      * 尝试将json字符串转成CCResult对象
      * @param str json字符串
      * @return CCResult对象
+     * @deprecated
      */
+    @Deprecated
     public static CCResult fromString(String str) {
         if (!TextUtils.isEmpty(str)) {
             try{
@@ -196,6 +204,7 @@ public class CCResult {
         }
         return null;
     }
+    @Deprecated
     private static CCResult fromJSONObject(JSONObject json) {
         CCResult result = null;
         if (json != null) {

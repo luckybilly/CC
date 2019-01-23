@@ -21,11 +21,18 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+
+    lintOptions {
+        abortOnError false
+    }
+
 }
 
 dependencies {
+    //发布到bintray时，要写成compile才行
     compile "com.billy.android:pools:0.0.5"
-    provided "com.android.support:appcompat-v7:${rootProject.supportVersion}"
+    compileOnly "com.android.support:appcompat-v7:${rootProject.supportVersion}"
+    compileOnly project(':android_internal')
 }
 
 sourceCompatibility = 1.7
@@ -44,7 +51,7 @@ ext {
     siteUrl = 'https://github.com/luckybilly/CC'
     gitUrl = 'git@github.com:luckybilly/CC.git'
 
-    libraryVersion = '0.5.0'
+    libraryVersion = '2.1.1'
 
     developerId = 'billy'
     developerName = 'billy'
@@ -56,3 +63,15 @@ ext {
 }
 
 apply from: rootProject.file('bintray.gradle')
+
+apply plugin: 'maven'
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('../repo-local')) //deploy到本地仓库
+            pom.groupId = publishedGroupId
+            pom.artifactId = artifact
+            pom.version = libraryVersion + '-SNAPSHOT'
+        }
+    }
+}
