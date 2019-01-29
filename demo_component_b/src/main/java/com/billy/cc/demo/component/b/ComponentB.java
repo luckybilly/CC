@@ -59,7 +59,7 @@ public class ComponentB implements IComponent, IMainThread {
         if (processor != null) {
             return processor.onActionCall(cc);
         }
-        CC.sendCCResult(cc.getCallId(), CCResult.error("has not support for action:" + cc.getActionName()));
+        CC.sendCCResult(cc.getCallId(), CCResult.errorUnsupportedActionName());
         return false;
     }
 

@@ -8,6 +8,8 @@ import org.json.JSONObject;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.billy.cc.core.component.CC.CC_NULL_KEY;
+
 /**
  * 组件调用的结果
  * 根据success来判断是否成功
@@ -77,6 +79,10 @@ public class CCResult {
      * 跨进程组件调用时对象传输出错，可能是自定义类型没有共用
      */
     public static final int CODE_ERROR_REMOTE_CC_DELIVERY_FAILED = -11;
+    /**
+     * 组件不支持该actionName
+     */
+    public static final int CODE_ERROR_UNSUPPORTED_ACTION_NAME = -12;
 
     /**
      * CC调用是否成功
@@ -131,6 +137,14 @@ public class CCResult {
         return result;
     }
 
+    /**
+     * 构建一个CC调用失败的CCResult：组件调用到了，但是该组件不能处理当前actionName
+     * @return 构造的CCResult对象
+     */
+    public static CCResult errorUnsupportedActionName() {
+        return error(CODE_ERROR_UNSUPPORTED_ACTION_NAME);
+    }
+
     static CCResult error(int code) {
         CCResult result = new CCResult();
         result.code = code;
@@ -149,6 +163,18 @@ public class CCResult {
     public static CCResult success(String key, Object value) {
         Map<String, Object> data = new HashMap<>(2);
         data.put(key, value);
+        return success(data);
+    }
+    /**
+     * 快捷构建一个CC调用成功的CCResult
+     * success=true, code=0 ({@link #CODE_SUCCESS})
+     * 可以通过CCResult.addData(key, value)来继续添加更多的返回信息
+     * @param value 存放在data中的value
+     * @return 构造的CCResult对象
+     */
+    public static CCResult successWithNoKey(Object value) {
+        Map<String, Object> data = new HashMap<>(2);
+        data.put(CC_NULL_KEY, value);
         return success(data);
     }
     /**
@@ -321,6 +347,34 @@ public class CCResult {
         return data;
     }
 
+    /**
+     *
+     * 获取通过 {@link #successWithNoKey(Object)} 设置的data
+     * @param defaultValue 默认值
+     * @param <T> 泛型类型
+     * @return 未设置key（使用默认key）的data
+     */
+    public <T> T getDataItemWithNoKey(T defaultValue) {
+        return getDataItem(CC_NULL_KEY, defaultValue);
+    }
+
+    /**
+     *
+     * 获取通过 {@link #successWithNoKey(Object)} 设置的data
+     * @param <T> 泛型类型
+     * @return 未设置key（使用默认key）的data
+     */
+    public <T> T getDataItemWithNoKey() {
+        return getDataItem(CC_NULL_KEY);
+    }
+
+    /**
+     * 获取返回data中的信息，根据key取value，若为null则返回默认值
+     * @param key 需要取的key
+     * @param defaultValue 默认值
+     * @param <T> 泛型类型
+     * @return 根据key取的value，进行泛型转换，为null则返回默认值
+     */
     public <T> T getDataItem(String key, T defaultValue) {
         T item = getDataItem(key);
         if (item == null) {
@@ -328,6 +382,12 @@ public class CCResult {
         }
         return item;
     }
+    /**
+     * 获取返回data中的信息，根据key取value
+     * @param key 需要取的key
+     * @param <T> 泛型类型
+     * @return 根据key取的value，进行泛型转换
+     */
     public <T> T getDataItem(String key) {
         if (data != null) {
             try {

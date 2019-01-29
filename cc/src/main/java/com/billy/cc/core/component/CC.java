@@ -40,6 +40,7 @@ import static com.billy.cc.core.component.ComponentManager.KEY_PROCESS_NAME;
 public class CC {
     private static final String TAG = "ComponentCaller";
     private static final String VERBOSE_TAG = "ComponentCaller_VERBOSE";
+    public static final String CC_NULL_KEY = "CC_NULL_KEY";
     /**
      * 默认超时时间为2秒
      */
@@ -236,6 +237,16 @@ public class CC {
             cr.params.clear();
             return addParams(params);
         }
+        /**
+         * 设置组件调用的参数（使用默认Key）<br>
+         * 适用于只有单个参数时省略key的情况下使用 <br>
+         * （与其它参数不冲突，后续若有其它参数仍然通过addParam添加即可）
+         * @param param 参数
+         * @return Builder自身
+         */
+        public Builder setParamWithNoKey(Object param) {
+            return addParam(CC_NULL_KEY, param);
+        }
 
         /**
          * 向组件调用的参数列表中添加参数
@@ -382,6 +393,25 @@ public class CC {
      */
     public Map<String, Object> getParams() {
         return params;
+    }
+
+    /**
+     * 获取通过 {@link Builder#setParamWithNoKey(Object)} 设置的参数
+     * @param defaultValue 默认值
+     * @param <T> 泛型，返回值的类型
+     * @return 未设置key（使用默认key）的参数
+     */
+    public <T> T getParamItemWithNoKey(T defaultValue) {
+        return getParamItem(CC_NULL_KEY, defaultValue);
+    }
+
+    /**
+     * 获取通过 {@link Builder#setParamWithNoKey(Object)} 设置的参数
+     * @param <T> 泛型，返回值的类型
+     * @return 未设置key（使用默认key）的参数
+     */
+    public <T> T getParamItemWithNoKey() {
+        return getParamItem(CC_NULL_KEY);
     }
 
     /**
@@ -867,5 +897,9 @@ public class CC {
      */
     public static boolean isMainProcess(){
         return CCUtil.isMainProcess();
+    }
+
+    public static boolean isDebugMode() {
+        return DEBUG;
     }
 }
