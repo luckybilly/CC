@@ -146,7 +146,7 @@ apply plugin: 'com.android.application'
 //替换成
 //ext.mainApp = true //如果此module为主app module，一直以application方式编译，则启用这一行
 //ext.alwaysLib = true //如果此module为基础库，一直以library方式编译，则启用这一行
-apply from: rootProject.file(cc-settings-2.gradle)
+apply from: rootProject.file('cc-settings-2.gradle')
 //注意：最好放在build.gradle中代码的第一行
 ```
 
