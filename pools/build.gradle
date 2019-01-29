@@ -27,7 +27,7 @@ ext {
     siteUrl = 'https://github.com/luckybilly/CC'
     gitUrl = 'git@github.com:luckybilly/CC.git'
 
-    libraryVersion = '0.0.5' //要发布到 jcenter 上的版本号
+    libraryVersion = '0.0.6' //要发布到 jcenter 上的版本号
 
     developerId = 'billy'
     developerName = 'billy'
