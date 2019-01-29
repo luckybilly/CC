@@ -238,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //在进入此处时，当前线程一定为主线程（是在shouldActionRunOnMainThread方法中指定的）
                 return onLoginUserChanged(cc);
             }
-            CC.sendCCResult(cc.getCallId(), CCResult.error("unsupported action:" + actionName));
+            CC.sendCCResult(cc.getCallId(), CCResult.errorUnsupportedActionName());
             return false;
         }
 

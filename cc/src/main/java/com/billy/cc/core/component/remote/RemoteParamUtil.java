@@ -6,10 +6,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
+import android.text.TextUtils;
 import android.util.Size;
 import android.util.SizeF;
 import android.util.SparseArray;
 
+import com.billy.cc.core.component.CC;
 import com.billy.cc.core.component.IParamJsonConverter;
 
 import org.json.JSONArray;
@@ -43,6 +45,13 @@ public class RemoteParamUtil {
             return paramJsonConverter.object2Json(object);
         }
         return object == null ? null : object.toString();
+    }
+
+    public static <T> T convertJson2Object(String json, Class<T> clazz) {
+        if (!TextUtils.isEmpty(json) && clazz != null && paramJsonConverter != null) {
+            return paramJsonConverter.json2Object(json, clazz);
+        }
+        return null;
     }
 
     /**
@@ -143,7 +152,13 @@ public class RemoteParamUtil {
 
         BaseParam(Parcel in) {
             hashCode = in.readInt();
-            clazz = (Class<?>) in.readSerializable();
+            try {
+                clazz = (Class<?>) in.readSerializable();
+            } catch(Exception e) {
+                if (CC.isDebugMode()) {
+                    e.printStackTrace();
+                }
+            }
         }
 
         @Override
