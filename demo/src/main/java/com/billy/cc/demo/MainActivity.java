@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void removeDynamicComponent() {
         if (loginUserObserverComponent != null) {
             //从CC框架中注销此动态组件
-            CC.registerComponent(loginUserObserverComponent);
+            CC.unregisterComponent(loginUserObserverComponent);
             //从ComponentB的登录状态监听列表中移除此动态组件：此后，登录状态改变将不再尝试通知此动态组件
             CC.obtainBuilder("ComponentB")
                     .setActionName("removeLoginObserver")

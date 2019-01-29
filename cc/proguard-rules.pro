@@ -26,6 +26,7 @@
 
 
 -dontwarn android.app.**
+-dontwarn android.support.**
 
 #保持实现Parcelable的类不被混淆
 -keep class * implements android.os.Parcelable {
