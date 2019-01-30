@@ -26,6 +26,8 @@ public interface IComponent {
      * cc.getCallId() 调用id，用于取消调用
      * @param cc 调用信息
      * @return 是否延迟回调结果 {@link CC#sendCCResult(String, CCResult)}
+     *          false:否(同步实现，在return之前回调结果)
+     *          true:是(异步实现，本次CC调用将等待回调结果)
      */
     boolean onCall(CC cc);
 

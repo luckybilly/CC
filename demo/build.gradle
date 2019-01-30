@@ -13,15 +13,29 @@ android {
         versionName "1.0"
     }
 
-    sourceSets {
-        main {
-            manifest.srcFile 'src/main/AndroidManifest.xml'
+    signingConfigs {
+        releaseconfig {
+            storeFile rootProject.file('cc.keystore')
+            storePassword 'cc-demo'
+            keyAlias 'cc-demo'
+            keyPassword 'cc-demo'
         }
     }
     buildTypes {
-        release {
+
+        debug {
             minifyEnabled false
+            debuggable true
+            signingConfig signingConfigs.releaseconfig
+        }
+
+        release {
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            zipAlignEnabled true
+            signingConfig signingConfigs.releaseconfig
+            debuggable false
+            shrinkResources true
         }
     }
     lintOptions {

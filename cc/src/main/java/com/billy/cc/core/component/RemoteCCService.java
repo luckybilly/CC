@@ -58,7 +58,8 @@ public class RemoteCCService extends IRemoteCCService.Stub {
                 .setActionName(remoteCC.getActionName())
                 .setParams(remoteCC.getParams())
                 .setCallId(remoteCC.getCallId())
-                .withoutGlobalInterceptor()
+                .withoutGlobalInterceptor() //为了不重复调用拦截器，全局拦截器需要下沉复用，只在调用方进程中执行
+                .setNoTimeout() //超时逻辑在调用方进程中处理
                 .build();
         if (remoteCC.isMainThreadSyncCall()) {
             mainThreadHandler.post(new Runnable() {

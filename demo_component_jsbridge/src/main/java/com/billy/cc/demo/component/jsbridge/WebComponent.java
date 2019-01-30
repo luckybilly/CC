@@ -24,7 +24,7 @@ public class WebComponent implements IComponent {
             case "openUrl":
                 return openUrl(cc);
             default:
-                CC.sendCCResult(cc.getCallId(), CCResult.error("unsupported action:" + actionName));
+                CC.sendCCResult(cc.getCallId(), CCResult.errorUnsupportedActionName());
                 break;
         }
 

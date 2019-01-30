@@ -146,7 +146,7 @@ apply plugin: 'com.android.application'
 //替换成
 //ext.mainApp = true //如果此module为主app module，一直以application方式编译，则启用这一行
 //ext.alwaysLib = true //如果此module为基础库，一直以library方式编译，则启用这一行
-apply from: rootProject.file(cc-settings-2.gradle)
+apply from: rootProject.file('cc-settings-2.gradle')
 //注意：最好放在build.gradle中代码的第一行
 ```
 
@@ -266,6 +266,7 @@ module_name=true #module_name为具体每个module的名称，设置为true代�
 | -9 | 已超时 |
 | -10 | component.onCall(cc) return false, 未调用CC.sendCCResult(callId, ccResult)方法 |
 | -11 | 跨app组件调用时对象传输出错，可能是自定义类型没有共用，请查看Logcat |
+| -12 | 组件不支持该actionName。在IComponent.onCall(cc)方法中通过CCResult.errorUnsupportedActionName()来返回该error,参考[ComponentB](../demo_component_b/src/main/java/com/billy/cc/demo/component/b/ComponentB.java#L51:1) |
 
 
 ## 进阶用法

@@ -72,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void removeDynamicComponent() {
         if (loginUserObserverComponent != null) {
             //从CC框架中注销此动态组件
-            CC.registerComponent(loginUserObserverComponent);
+            CC.unregisterComponent(loginUserObserverComponent);
             //从ComponentB的登录状态监听列表中移除此动态组件：此后，登录状态改变将不再尝试通知此动态组件
             CC.obtainBuilder("ComponentB")
                     .setActionName("removeLoginObserver")
@@ -238,7 +238,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 //在进入此处时，当前线程一定为主线程（是在shouldActionRunOnMainThread方法中指定的）
                 return onLoginUserChanged(cc);
             }
-            CC.sendCCResult(cc.getCallId(), CCResult.error("unsupported action:" + actionName));
+            CC.sendCCResult(cc.getCallId(), CCResult.errorUnsupportedActionName());
             return false;
         }
 

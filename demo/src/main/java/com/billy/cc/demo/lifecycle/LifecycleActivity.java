@@ -93,7 +93,7 @@ public class LifecycleActivity extends AppCompatActivity implements View.OnClick
         public void onResult(CC cc, CCResult result) {
             if (result.isSuccess()) {
                 //call component a for LifecycleFragment success
-                Fragment fragment = result.getDataItem("fragment");
+                Fragment fragment = result.getDataItemWithNoKey();
                 if (fragment != null) {
                     showFragment(fragment);
                 }

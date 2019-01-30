@@ -89,5 +89,16 @@
         - 适用于使用频次较低且对性能要求不是十分敏感的场景
         
     demo_component_b中的模拟登录功能[演示了自定义类型的传递](../demo_component_b/src/main/java/com/billy/cc/demo/component/b/LoginActivity.java#L89:20)
+   
+- 主module可以实现IComponent 让其他组件来调用吗？
+
+
+        可以，参考demo里的LifecycleComponent
+        就是通过这种方式，让组件module可以调用到未解耦出来的业务，从而达到渐进式组件化的目的
+        
+- 在A Module 的 a 界面 尝试跳转到 B Module 的 b 界面，跳转结果却是再次跳转到 a 界面，是怎么回事呢？
+    
+    
+        请确认是不是布局文件重名了，比如：main_activity.xml
         
 未完待续...

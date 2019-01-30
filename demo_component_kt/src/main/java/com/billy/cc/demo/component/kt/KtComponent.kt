@@ -20,8 +20,7 @@ class KtComponent : IComponent {
         when (cc.actionName){
            "showActivity" -> openActivity(cc)
             //确保每个逻辑分支上都会调用CC.sendCCResult将结果发送给调用方
-            else -> CC.sendCCResult(cc.callId
-                    , CCResult.error("actionName ${cc.actionName} does not support"))
+            else -> CC.sendCCResult(cc.callId, CCResult.errorUnsupportedActionName())
         }
         return false
     }

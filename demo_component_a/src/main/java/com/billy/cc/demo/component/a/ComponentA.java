@@ -62,9 +62,7 @@ public class ComponentA implements IComponent {
     }
 
     private void getLifecycleFragment(CC cc) {
-        CC.sendCCResult(cc.getCallId(), CCResult.success("fragment", new LifecycleFragment())
-            .addData("int", 1)
-        );
+        CC.sendCCResult(cc.getCallId(), CCResult.successWithNoKey(new LifecycleFragment()));
     }
 
     private void getInfo(CC cc) {

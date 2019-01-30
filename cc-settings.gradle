@@ -57,7 +57,7 @@ if (runAsApp) {
 ext.addComponent = { dependencyName, realDependency = null ->
     def curModuleIsBuildingApk = false //当前task是否为给本module打apk包
     def taskNames = project.gradle.startParameter.taskNames
-    def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)).*"
+    def regex = "((.*:)?${project.name.toUpperCase()}:)?((ASSEMBLE)|(INSTALL)|((BUILD)?TINKER)|(RESGUARD)).*"
     def taskBuildApkPattern = Pattern.compile(regex)
     for (String task : taskNames) {
         if (taskBuildApkPattern.matcher(task.toUpperCase()).matches()) {
@@ -144,7 +144,7 @@ android {
         }
     }
 }
-def dependencyMode = (project.gradle.gradleVersion as float) >= 4.1F ? 'api' : 'compile'
+def dependencyMode = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('4.1') ? 'api' : 'compile'
 //project.dependencies.add(dependencyMode, project(":cc"))
 project.dependencies.add(dependencyMode, "com.billy.android:cc:1.1.0")
 

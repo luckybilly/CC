@@ -113,7 +113,12 @@ public class CCUtil {
                 ) {
             return v;
         } else {
-            jsonString = RemoteParamUtil.convertObject2JsonString(v);
+            try {
+                jsonString = RemoteParamUtil.convertObject2JsonString(v);
+            } catch(Exception e) {
+                e.printStackTrace();
+                jsonString = null;
+            }
         }
         if (jsonString == null) {
             return null;
