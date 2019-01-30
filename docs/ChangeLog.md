@@ -1,6 +1,29 @@
 
 # 更新日志
 
+- 2019.01.30 V2.1.2
+
+~~~
+1. 修复主线程同步调用跨进程组件时超时设置失效的问题
+2. 修复gradle版本号有多个小数点（如：4.10.1）时cc-register插件报错的问题
+3. 新增一个错误码：-12（组件不支持该actionName）
+      在IComponent.onCall(cc)方法中通过CC.sendCCResult(callId, CCResult.errorUnsupportedActionName())来返回该error
+4. CC支持不使用Key设置一个param，CCResult支持不使用Key设置一个data (建议：仅在只有1个参数的时候使用)：
+
+      //通过setParamWithNoKey添加一个无key的参数（只支持1个）
+      CC.obtainBuilder("ComponentA")...setParamWithNoKey("billy")...build().callAsync();
+      //对应的取值方式为
+      String name = cc.getParamItemWithNoKey();
+      //支持取值时提供一个默认值
+      String name = cc.getParamItemWithNoKey("");
+      
+      //通过successWithNoKey构建一个无key返回值的CCResult（只支持1个）
+      CCResult.successWithNoKey("billy");
+      //对应的取值方式为
+      String name = result.getDataItemWithNoKey();
+      //支持取值时提供一个默认值
+      String name = result.getDataItemWithNoKey("");
+~~~
 - 2018.10.05 V2.1.0
 
 

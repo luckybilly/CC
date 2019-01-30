@@ -74,6 +74,25 @@
     
     ```    
 
+- 从2.1.2版本开始，构建CC和CCResult对象时可以设置一个无key的参数或返回值(**建议：仅在只有1个参数的时候使用**)：
+    ```java
+      //通过setParamWithNoKey添加一个无key的参数（只支持1个）
+      CC.obtainBuilder("ComponentA")...setParamWithNoKey("billy")...build().callAsync();
+      //对应的取值方式为
+      String name = cc.getParamItemWithNoKey();
+      //支持取值时提供一个默认值
+      String name = cc.getParamItemWithNoKey("");
+    ```
+    ```java
+      //通过successWithNoKey构建一个无key返回值的CCResult（只支持1个）
+      CCResult.successWithNoKey("billy");
+      //对应的取值方式为
+      String name = result.getDataItemWithNoKey();
+      //支持取值时提供一个默认值
+      String name = result.getDataItemWithNoKey("");
+    ```
+
+
 - 自定义拦截器[ICCInterceptor](../cc/src/main/java/com/billy/cc/core/component/ICCInterceptor.java)
 
         1. 实现ICCInterceptor接口( 只有一个方法: intercept(Chain chain) )
@@ -109,7 +128,7 @@
 
         在同一个module中，可以有多个IComponent接口(或IDynamicComponent接口)的实现类
         IComponent接口的实现类会在编译时自动注册到组件管理类ComponentManager中
-        IDynamicComponent接口的实现类会在编译时自动注册到组件管理类ComponentManager中
+        IDynamicComponent接口的实现类则不会在编译时自动注册到组件管理类ComponentManager中
 - 一个组件可以处理多个action
 
         在onCall(CC cc)方法中cc.getActionName()获取action来分别处理
