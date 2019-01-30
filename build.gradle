@@ -24,6 +24,7 @@ buildscript {
 
 allprojects {
     repositories {
+        maven{ url rootProject.file("repo-local") }
         maven { url "https://jitpack.io" }
         google()
         jcenter()
@@ -38,7 +39,7 @@ ext {
     supportVersion = '25.3.1'
 
     deps = [
-        cc       : 'com.billy.android:cc:2.1.1'
+        cc       : 'com.billy.android:cc:2.1.2'
 //        cc       : project(':cc')
     ]
 }
