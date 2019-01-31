@@ -216,7 +216,7 @@ String callId = CC.obtainBuilder("ComponentA").build().callAsyncCallbackOnMainTh
 
 ```groovy
 ext.mainApp = true
-apply from: rootProject.file(cc-settings-2.gradle)
+apply from: rootProject.file('cc-settings-2.gradle')
 
 //...
 
