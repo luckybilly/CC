@@ -16,6 +16,16 @@ class ProjectModuleManager {
     
     //为区别于组件单独以app方式运行的task，将组件module打包成aar时，在local.properties文件中添加 assemble_aar_for_cc_component=true
     static final String ASSEMBLE_AAR_FOR_CC_COMPONENT = "assemble_aar_for_cc_component"
+    /**
+     * 手动在gradle命令中指定当前是为哪一个module打apk
+     * 主要用途：
+     *      1. 插件化打包 （由于gradle命令不在正则表达式 {@link #TASK_TYPES}范围内，但需要集成打包）
+     *          ./gradlew :demo:xxxxx -PccMain=demo
+     *      2. 打aar包，相反的用途，指定ccMain为一个不存在的module名称即可，可替代assemble_aar_for_cc_component的作用
+     *          ./gradlew :demo_component_b:assembleRelease -PccMain=nobody
+     *          注意：此用法对于ext.mainApp=true的module无效，对于ext.alwaysLib=true的module来说无意义
+     */
+    static final String ASSEMBLE_APK_FOR_CC_COMPONENT = "ccMain"
     //组件单独以app方式运行时使用的测试代码所在目录(manifest/java/assets/res等),这个目录下的文件不会打包进主app
     static final String DEBUG_DIR = "src/main/debug/"
     //主app，一直以application方式编译
@@ -55,7 +65,7 @@ class ProjectModuleManager {
             runAsApp = true
         }
         project.ext.runAsApp = runAsApp
-        println "${PLUGIN_NAME}: project=${project.name}, runAsApp=${runAsApp} . taskIsAssemble:${taskIsAssemble}. " +
+        println "${PLUGIN_NAME}: mainModuleName=${mainModuleName}, project=${project.name}, runAsApp=${runAsApp} . taskIsAssemble:${taskIsAssemble}. " +
                 "settings(mainApp:${mainApp}, alwaysLib:${alwaysLib}, assembleThisModule:${assembleFor}, buildingAar:${buildingAar})"
         if (runAsApp) {
             project.apply plugin: 'com.android.application'
@@ -90,6 +100,16 @@ class ProjectModuleManager {
     //需要集成打包相关的task
     static final String TASK_TYPES = ".*((((ASSEMBLE)|(BUILD)|(INSTALL)|((BUILD)?TINKER)|(RESGUARD)).*)|(ASR)|(ASD))"
     static void initByTask(Project project) {
+        //先检查是否手动在当前gradle命令的参数中设置了mainModule的名称
+        //设置方式如：
+        //  ./gradlew :demo:xxxBuildPatch -PccMain=demo //用某插件化框架脚本为demo打补丁包
+        //  ./gradlew :demo_component_b:assembleRelease -PccMain=anyothermodules //为demo_b打aar包
+        def projectProps = project.gradle.startParameter.projectProperties
+        if (projectProps && projectProps.containsKey(ASSEMBLE_APK_FOR_CC_COMPONENT)) {
+            mainModuleName = projectProps.get(ASSEMBLE_APK_FOR_CC_COMPONENT)
+            taskIsAssemble = true
+            return
+        }
         def taskNames = project.gradle.startParameter.taskNames
         def allModuleBuildApkPattern = Pattern.compile(TASK_TYPES)
         for (String task : taskNames) {
