@@ -3,6 +3,7 @@
     package="com.billy.cc.demo.component.kt">
 
     <application
+        android:name="debug.kt.MyApp"
         android:label="demo_kt"
         android:theme="@style/Theme.AppCompat.Light.DarkActionBar"
         >

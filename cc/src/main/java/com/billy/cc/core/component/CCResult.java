@@ -107,8 +107,8 @@ public class CCResult {
     //下面提供一些便于构造的CCResult对象
 
     /**
-     * 构建一个CC调用成功，但业务失败的CCResult
-     * success=true, code=1 ({@link #CODE_ERROR_BUSINESS})
+     * 构建一个CC调用到了组件，但业务失败的CCResult
+     * success=false, code=1 ({@link #CODE_ERROR_BUSINESS})
      * 可以通过CCResult.addData(key, value)来继续添加更多的返回信息
      * @param message 错误信息
      * @return 构造的CCResult对象
@@ -121,8 +121,8 @@ public class CCResult {
         return result;
     }
     /**
-     * 构建一个CC调用成功，但业务失败的CCResult，没有errorMessage
-     * success=true, code=1 ({@link #CODE_ERROR_BUSINESS})
+     * 构建一个CC调用到了组件，但业务失败的CCResult，没有errorMessage
+     * success=false, code=1 ({@link #CODE_ERROR_BUSINESS})
      * 可以通过CCResult.addData(key, value)来继续添加更多的返回信息
      * @param key 存放在data中的key
      * @param value 存放在data中的value
