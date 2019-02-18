@@ -6,8 +6,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
-import android.util.Size;
-import android.util.SizeF;
 import android.util.SparseArray;
 
 import com.billy.cc.core.component.CC;
@@ -112,7 +110,7 @@ public class RemoteParamUtil {
                 || v instanceof Bundle
                 || v instanceof Parcelable              || v instanceof Parcelable[]
                 || v instanceof CharSequence[]          || v instanceof IBinder
-                || v instanceof Size                    || v instanceof SizeF ) {
+                ) {
             return v;
         } else if (v instanceof SparseArray) {
             SparseArray sa = (SparseArray) v;
