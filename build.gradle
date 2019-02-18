@@ -39,7 +39,7 @@ ext {
     supportVersion = '25.3.1'
 
     deps = [
-        cc       : 'com.billy.android:cc:2.1.2'
+        cc       : 'com.billy.android:cc:2.1.4'
 //        cc       : project(':cc')
     ]
 }
