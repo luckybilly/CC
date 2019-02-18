@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.Size;
@@ -110,7 +109,7 @@ public class RemoteParamUtil {
                 || v instanceof String[]                || v instanceof int[]
                 || v instanceof byte[]                  || v instanceof long[]
                 || v instanceof double[]                || v instanceof boolean[]
-                || v instanceof Bundle                  || v instanceof PersistableBundle
+                || v instanceof Bundle
                 || v instanceof Parcelable              || v instanceof Parcelable[]
                 || v instanceof CharSequence[]          || v instanceof IBinder
                 || v instanceof Size                    || v instanceof SizeF ) {

@@ -23,7 +23,7 @@ public interface IComponent {
      * cc.getContext() android的context
      * cc.getAction() 调用的action
      * cc.getParams() 调用参数
-     * cc.getCallId() 调用id，用于取消调用
+     * cc.getCallId() 调用id，用于通过CC向调用方发送调用结果
      * @param cc 调用信息
      * @return 是否延迟回调结果 {@link CC#sendCCResult(String, CCResult)}
      *          false:否(同步实现，在return之前回调结果)

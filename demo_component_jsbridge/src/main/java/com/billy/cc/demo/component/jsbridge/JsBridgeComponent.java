@@ -27,7 +27,7 @@ public class JsBridgeComponent implements IComponent {
                 // 在任意进程可以调用此action来创建一个新的面向组件封装的WebView
                 return createWebView(cc);
             default:
-                CC.sendCCResult(cc.getCallId(), CCResult.error("unsupported action name:" + actionName));
+                CC.sendCCResult(cc.getCallId(), CCResult.errorUnsupportedActionName());
                 break;
         }
         return false;
@@ -35,9 +35,7 @@ public class JsBridgeComponent implements IComponent {
 
     private boolean createWebView(CC cc) {
         BridgeWebView webView = BridgeWebViewHelper.createWebView(cc.getContext());
-        CCResult result = CCResult.success()
-                .addData("webView", webView);
-        CC.sendCCResult(cc.getCallId(), result);
+        CC.sendCCResult(cc.getCallId(), CCResult.success("webView", webView));
         return false;
     }
 }
