@@ -22,7 +22,7 @@ class RegisterTransform extends Transform {
     Project project
     RegisterExtension extension;
     def cacheEnabled
-    def isReAllScan = false
+    def isAllScan = false
     Map<String, ScanJarHarvest> cacheMap = null
 
     RegisterTransform(Project project) {
@@ -88,7 +88,7 @@ class RegisterTransform extends Transform {
             }.getType())
 
             if (cacheMap.isEmpty()) {
-                isReAllScan = true
+                isAllScan = true
             }
         }
 
@@ -190,7 +190,7 @@ class RegisterTransform extends Transform {
             root += File.separator
 
         // changedFiles 为空 或者 关闭缓存
-        if (directoryInput.changedFiles.isEmpty() || !cacheEnabled || isReAllScan) {
+        if (directoryInput.changedFiles.isEmpty() || !cacheEnabled || isAllScan) {
             //遍历目录下的每个文件
             directoryInput.file.eachFileRecurse { File file ->
                 def path = file.absolutePath.replace(root, '')
