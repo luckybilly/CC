@@ -7,7 +7,9 @@
 //
 //-----------------------------------------------------------
 
-apply from: rootProject.file('cc-settings-2.gradle')
+project.apply plugin: 'cc-register'
+def dependencyMode = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('4.1') ? 'api' : 'compile'
+project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.5") //用最新版
 
 dependencies {
     implementation project(':demo_base')
