@@ -21,6 +21,9 @@ class RegisterTransform extends Transform {
 
     Project project
     RegisterExtension extension;
+    def cacheEnabled
+    def isAllScan = false
+    Map<String, ScanJarHarvest> cacheMap = null
 
     RegisterTransform(Project project) {
         this.project = project
@@ -50,6 +53,7 @@ class RegisterTransform extends Transform {
     boolean isIncremental() {
         return true
     }
+    def classFolder = null
 
     @Override
     void transform(Context context, Collection<TransformInput> inputs
@@ -66,13 +70,12 @@ class RegisterTransform extends Transform {
         }
 
         long time = System.currentTimeMillis()
-        boolean leftSlash = File.separator == '/'
 
 
-        def cacheEnabled = extension.cacheEnabled
+        cacheEnabled = extension.cacheEnabled
         println("${PLUGIN_NAME}-----------isIncremental:${isIncremental}--------extension.cacheEnabled:${cacheEnabled}--------------------\n")
 
-        Map<String, ScanJarHarvest> cacheMap = null
+
         File cacheFile = null
         Gson gson = null
 
@@ -83,11 +86,13 @@ class RegisterTransform extends Transform {
                 cacheFile.delete()
             cacheMap = RegisterCache.readToMap(cacheFile, new TypeToken<HashMap<String, ScanJarHarvest>>() {
             }.getType())
+
+            if (cacheMap.isEmpty()) {
+                isAllScan = true
+            }
         }
 
         CodeScanner scanProcessor = new CodeScanner(extension.list, cacheMap)
-
-        def classFolder = null
 
         // 遍历输入文件
         inputs.each { TransformInput input ->
@@ -100,30 +105,9 @@ class RegisterTransform extends Transform {
             }
             // 遍历目录
             input.directoryInputs.each { DirectoryInput directoryInput ->
-                long dirTime = System.currentTimeMillis();
-                // 获得产物的目录
-                File dest = outputProvider.getContentLocation(directoryInput.name, directoryInput.contentTypes, directoryInput.scopes, Format.DIRECTORY)
-                classFolder = dest
-                String root = directoryInput.file.absolutePath
-                if (!root.endsWith(File.separator))
-                    root += File.separator
-                //遍历目录下的每个文件
-                directoryInput.file.eachFileRecurse { File file ->
-                    def path = file.absolutePath.replace(root, '')
-                    if (file.isFile()) {
-                        def entryName = path
-                        if (!leftSlash) {
-                            entryName = entryName.replaceAll("\\\\", "/")
-                        }
-                        scanProcessor.checkInitClass(entryName, new File(dest.absolutePath + File.separator + path))
-                        if (scanProcessor.shouldProcessClass(entryName)) {
-                            scanProcessor.scanClass(file)
-                        }
-                    }
-                }
-                long scanTime = System.currentTimeMillis();
-                // 处理完后拷到目标文件
-                FileUtils.copyDirectory(directoryInput.file, dest)
+                long dirTime = System.currentTimeMillis()
+                def root = scanClass(outputProvider, directoryInput, scanProcessor)
+                long scanTime = System.currentTimeMillis()
                 println "${PLUGIN_NAME} cost time: ${System.currentTimeMillis() - dirTime}, scan time: ${scanTime - dirTime}. path=${root}"
             }
         }
@@ -155,7 +139,7 @@ class RegisterTransform extends Transform {
         project.logger.error("${PLUGIN_NAME} insert code cost time: " + (System.currentTimeMillis() - scanFinishTime) + " ms")
         if (extension.multiProcessEnabled && classFolder) {
             def processNames = ManifestGenerator.getCachedProcessNames(project.name, context.variantName)
-            processNames.each {processName ->
+            processNames.each { processName ->
                 if (processName) {
                     ProviderGenerator.generateProvider(processName, classFolder)
                 }
@@ -194,6 +178,73 @@ class RegisterTransform extends Transform {
         // 获得输出文件
         File dest = outputProvider.getContentLocation(destName + "_" + hexName, jarInput.contentTypes, jarInput.scopes, Format.JAR)
         return dest
+    }
+
+    def scanClass(TransformOutputProvider outputProvider, DirectoryInput directoryInput, CodeScanner scanProcessor) {
+        boolean leftSlash = File.separator == '/'
+        // 获得产物的目录
+        File dest = outputProvider.getContentLocation(directoryInput.name, directoryInput.contentTypes, directoryInput.scopes, Format.DIRECTORY)
+        classFolder = dest
+        String root = directoryInput.file.absolutePath
+        if (!root.endsWith(File.separator))
+            root += File.separator
+
+        // changedFiles 为空 或者 关闭缓存
+        if (directoryInput.changedFiles.isEmpty() || !cacheEnabled || isAllScan) {
+            //遍历目录下的每个文件
+            directoryInput.file.eachFileRecurse { File file ->
+                def path = file.absolutePath.replace(root, '')
+                if (file.isFile()) {
+                    def entryName = path
+                    if (!leftSlash) {
+                        entryName = entryName.replaceAll("\\\\", "/")
+                    }
+                    scanProcessor.checkInitClass(entryName, new File(dest.absolutePath + File.separator + path))
+                    if (scanProcessor.shouldProcessClass(entryName)) {
+                        scanProcessor.scanClass(file)
+                    }
+                }
+            }
+        } else {
+
+            //移除发生改变的缓存
+            directoryInput.changedFiles.each { fileList ->
+                cacheMap.remove(fileList.key.absolutePath)
+            }
+
+            cacheMap.each { cache ->
+                if (cache.key.endsWith(".class")) {
+                    scanProcessor.hitCache(cache.key, dest)
+                }
+            }
+            //扫描发生改变的文件
+            directoryInput.changedFiles.each { fileList ->
+                def file = fileList.key
+                if (fileList.value == Status.CHANGED || fileList.value == Status.ADDED) {
+
+                    def path = file.absolutePath.replace(root, '')
+                    if (!file.isFile()) return
+
+                    def entryName = path
+                    if (!leftSlash) {
+                        entryName = entryName.replaceAll("\\\\", "/")
+                    }
+                    scanProcessor.checkInitClass(entryName, new File(dest.absolutePath + File.separator + path))
+                    if (scanProcessor.shouldProcessClass(entryName)) {
+                        scanProcessor.scanClass(file)
+                    }
+
+                }
+                //     println "-------path of changedFile: " + fileList.key.absolutePath + "  Status:" + fileList.value
+            }
+
+
+        }
+
+        // 处理完后拷到目标文件
+        FileUtils.copyDirectory(directoryInput.file, dest)
+        return root
+
     }
 
 }
