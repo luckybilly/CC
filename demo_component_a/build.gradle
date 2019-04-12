@@ -4,10 +4,9 @@ apply from: rootProject.file('cc-settings-demo.gradle')
 
 android {
     compileSdkVersion rootProject.compileVersion
-    buildToolsVersion rootProject.buildVersion
 
     defaultConfig {
-        minSdkVersion 9 // support v7 minSdkVersion is 9
+        minSdkVersion rootProject.minVersion // support v7 minSdkVersion is 9
         targetSdkVersion rootProject.compileVersion
         if (project.ext.runAsApp) {
             applicationId 'com.billy.cc.demo.component.a'
@@ -27,5 +26,5 @@ android {
 }
 
 dependencies {
-    implementation "com.android.support:appcompat-v7:${rootProject.supportVersion}"
+    implementation "androidx.appcompat:appcompat:${rootProject.xVersion}"
 }

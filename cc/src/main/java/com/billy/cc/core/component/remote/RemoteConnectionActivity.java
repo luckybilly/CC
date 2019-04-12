@@ -2,7 +2,7 @@ package com.billy.cc.core.component.remote;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 /**
  * 用于跨app探索组件及唤醒app的activity

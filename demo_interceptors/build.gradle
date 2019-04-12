@@ -3,10 +3,9 @@ apply from: rootProject.file('cc-settings-2.gradle')
 
 android {
     compileSdkVersion rootProject.compileVersion
-    buildToolsVersion rootProject.buildVersion
 
     defaultConfig {
-        minSdkVersion 8
+        minSdkVersion rootProject.minVersion
         targetSdkVersion rootProject.compileVersion
         versionCode 1
         versionName "1.0"
