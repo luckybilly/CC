@@ -1,6 +1,8 @@
 
 # 更新日志
 
+[点击这里查看最新的更新日志](https://luckybilly.github.io/CC-website/#/changelog)
+
 - 2019.01.30 V2.1.2
 
 ~~~

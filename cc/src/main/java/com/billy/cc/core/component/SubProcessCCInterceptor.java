@@ -129,6 +129,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
                     }
                 });
             } catch (DeadObjectException e) {
+                RemoteCCService.remove(processName);
                 connectionCache.remove(processName);
                 call(remoteCC);
             } catch (Exception e) {

@@ -7,8 +7,7 @@
 //  支持新增自定义的其它自动注册功能，参考AutoRegister，用法参考cc-settings-demo.gradle
 project.apply plugin: 'cc-register'
 def dependencyMode = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('4.1') ? 'api' : 'compile'
-//project.dependencies.add(dependencyMode, project(":cc"))
-project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.4") //用最新版
+project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.5") //用最新版
 
 //此文件是作为组件化配置的公共gradle脚本文件，在每个组件中都apply此文件，下载到工程根目录后，可以在下方添加一些自己工程中通用的配置
 // 可参考cc-settings-demo.gradle
@@ -19,12 +18,14 @@ project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.4") //用最�
 //      4. 其它公共配置信息
 
 //开启app内部多进程组件调用时启用下面这行代码
+//文档地址：https://luckybilly.github.io/CC-website/#/manual-multi-process
 //ccregister.multiProcessEnabled = true
 
 //开启app内部多进程组件调用时，可以启用下方的配置排除一些进程
 //ccregister.excludeProcessNames = [':pushservice', ':processNameB']
 
 //按照如下格式添加自定义注册项，可添加多个（也可每次add一个，add多次）
+// 文档地址： https://luckybilly.github.io/CC-website/#/manual-IActionProcessor
 //ccregister.registerInfo.add([
 //        //在自动注册组件的基础上增加：自动注册组件B的processor
 //        'scanInterface'             : 'com.billy.cc.demo.component.b.processor.IActionProcessor'
