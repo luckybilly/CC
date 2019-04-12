@@ -12,7 +12,7 @@ import com.github.lzyzsd.jsbridge.BridgeWebView;
  * @since 18/9/15 10:33
  */
 @AllProcess
-public class JsBridgeComponent implements IComponent {
+public class  JsBridgeComponent implements IComponent {
     @Override
     public String getName() {
         return "jsBridge";
