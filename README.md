@@ -70,7 +70,7 @@ CC的设计灵感来源于服务端的服务化架构，将组件之间的关系
 
 ## 创建组件
 
-创建一个组件也十分简单：只要创建一个`IComponent`接口的实现类，在onCall方法中实现组件暴露的服务即可
+创建一个组件很简单：只要创建一个`IComponent`接口的实现类，在onCall方法中实现组件暴露的服务即可
 
 ```java
 public class ComponentA implements IComponent {

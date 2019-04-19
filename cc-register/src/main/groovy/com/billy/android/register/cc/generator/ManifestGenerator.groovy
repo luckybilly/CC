@@ -27,7 +27,7 @@ class ManifestGenerator {
     static void generateManifestFileContent(Project project, ArrayList<String> excludeProcessNames) {
         def android = project.extensions.getByType(AppExtension)
         android.applicationVariants.all { variant ->
-            String pkgName = [variant.mergedFlavor.applicationId, variant.buildType.applicationIdSuffix].findAll().join()
+            String pkgName = [variant.mergedFlavor.applicationId, variant.mergedFlavor.applicationIdSuffix, variant.buildType.applicationIdSuffix].findAll().join()
             variant.outputs.each { output ->
                 output.processManifest.doLast {
                     output.processManifest.outputs.files.each { File file ->
