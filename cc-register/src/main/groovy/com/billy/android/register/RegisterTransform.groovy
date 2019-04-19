@@ -214,7 +214,7 @@ class RegisterTransform extends Transform {
 
             cacheMap.each { cache ->
                 if (cache.key.endsWith(".class")) {
-                    scanProcessor.hitCache(cache.key, dest)
+                    scanProcessor.hitCache(new File(cache.key), dest)
                 }
             }
             //扫描发生改变的文件
