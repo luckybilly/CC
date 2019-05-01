@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Debug;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 
@@ -84,7 +85,11 @@ class CCMonitor {
                             long timeoutAt = cc.timeoutAt;
                             if (timeoutAt > 0) {
                                 if (timeoutAt < now) {
-                                    cc.timeout();
+                                    //注意：如果处于程序调试状态，不执行超时 timeout()
+                                    if(!Debug.isDebuggerConnected()){
+                                        cc.timeout();
+                                    }
+
                                 } else if (timeoutAt < min) {
                                     min = timeoutAt;
                                 }

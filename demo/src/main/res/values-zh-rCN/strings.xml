@@ -21,4 +21,5 @@
     <string name="show_login_user">当前登录用户: %s</string>
     <string name="observe_login_user">添加动态组件</string>
     <string name="unobserve_login_user">注销动态组件</string>
+    <string name="call_timeout">测试超时</string>
 </resources>
