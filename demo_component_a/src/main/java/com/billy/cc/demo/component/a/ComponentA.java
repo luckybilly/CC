@@ -42,13 +42,7 @@ public class ComponentA implements IComponent {
                 getInfo(cc);
                 break;
             case "testTimeout":
-                // 测试超时，注意:如果处于程序调试状态，不会执行超时 timeout()
-                try {
-                    Thread.sleep(3000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                CC.sendCCResult(cc.getCallId(), CCResult.success());
+               testTimeout(cc);
             default:
                 //这个逻辑分支上没有调用CC.sendCCResult(...),是一种错误的示例
                 //并且方法的返回值为false，代表不会异步调用CC.sendCCResult(...)
@@ -82,4 +76,19 @@ public class ComponentA implements IComponent {
         CCUtil.navigateTo(cc, ActivityA.class);
         CC.sendCCResult(cc.getCallId(), CCResult.success());
     }
+
+    /**
+     * 测试超时，注意:如果处于程序调试状态，不会执行超时{@link CC#timeout()}
+     * 默认超时是{@link CC#DEFAULT_TIMEOUT} 秒
+     * @param cc 组件调用对象
+     */
+    private void testTimeout(CC cc) {
+        try {
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        CC.sendCCResult(cc.getCallId(), CCResult.success());
+    }
+
 }
