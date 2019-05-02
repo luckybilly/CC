@@ -78,8 +78,10 @@ public class ComponentA implements IComponent {
     }
 
     /**
-     * 测试超时，注意:如果处于程序调试状态，不会执行超时{@link CC#timeout()}
-     * 默认超时是{@link CC#DEFAULT_TIMEOUT} 秒
+     * 测试超时
+     * 注意：如果处于程序调试状态和CC.DEBUG是true，两个都满足情况下，
+     * 不执行超时 timeout(){@link CC#timeout()}。
+     * 默认超时是{@link CC#DEFAULT_TIMEOUT} 毫秒。
      * @param cc 组件调用对象
      */
     private void testTimeout(CC cc) {
