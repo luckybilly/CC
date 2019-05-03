@@ -48,6 +48,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 , R.id.componentKt
                 , R.id.test_sub_process
                 , R.id.login_user_state_observer
+                , R.id.test_timeout
         );
     }
 
@@ -183,6 +184,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 } else {
                     removeDynamicComponent();
                 }
+                break;
+            case R.id.test_timeout:
+                cc = CC.obtainBuilder(COMPONENT_NAME_A)
+                        .setActionName("testTimeout")
+                        .build();
+                result = cc.call();
                 break;
             default:
                 break;

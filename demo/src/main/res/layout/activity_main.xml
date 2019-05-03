@@ -102,6 +102,12 @@
                 android:layout_height="wrap_content"
                 android:text="@string/life_cycle_relationship"
                 />
+            <Button
+                android:id="@+id/test_timeout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/call_timeout"
+                />
         </com.google.android.flexbox.FlexboxLayout>
     </ScrollView>
 
