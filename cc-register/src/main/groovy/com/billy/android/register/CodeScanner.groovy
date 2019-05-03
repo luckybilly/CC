@@ -215,7 +215,7 @@ class CodeScanner {
      * @param srcFilePath
      */
     private void addToCacheMap(String interfaceName, String name, String srcFilePath) {
-        if (!srcFilePath.endsWith(".jar") || cacheMap == null) return
+        if (!srcFilePath.endsWith(".jar") &&!srcFilePath.endsWith(".class")|| cacheMap == null) return
         def jarHarvest = cacheMap.get(srcFilePath)
         if (!jarHarvest) {
             jarHarvest = new ScanJarHarvest()
