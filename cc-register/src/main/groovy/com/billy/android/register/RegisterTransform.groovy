@@ -23,7 +23,7 @@ class RegisterTransform extends Transform {
     RegisterExtension extension;
     def cacheEnabled
     def isAllScan = false
-    Map<String, ScanJarHarvest> cacheMap = null
+    Map<String, ScanHarvest> cacheMap = null
 
     RegisterTransform(Project project) {
         this.project = project
@@ -84,7 +84,7 @@ class RegisterTransform extends Transform {
             cacheFile = RegisterCache.getRegisterCacheFile(project)
             if (clearCache && cacheFile.exists())
                 cacheFile.delete()
-            cacheMap = RegisterCache.readToMap(cacheFile, new TypeToken<HashMap<String, ScanJarHarvest>>() {
+            cacheMap = RegisterCache.readToMap(cacheFile, new TypeToken<HashMap<String, ScanHarvest>>() {
             }.getType())
 
             if (cacheMap.isEmpty()) {
@@ -193,58 +193,46 @@ class RegisterTransform extends Transform {
         if (directoryInput.changedFiles.isEmpty() || !cacheEnabled || isAllScan) {
             //遍历目录下的每个文件
             directoryInput.file.eachFileRecurse { File file ->
-                def path = file.absolutePath.replace(root, '')
-                if (file.isFile()) {
-                    def entryName = path
-                    if (!leftSlash) {
-                        entryName = entryName.replaceAll("\\\\", "/")
-                    }
-                    scanProcessor.checkInitClass(entryName, new File(dest.absolutePath + File.separator + path))
-                    if (scanProcessor.shouldProcessClass(entryName)) {
-                        scanProcessor.scanClass(file)
-                    }
-                }
+                scanClassFile(file, root, leftSlash, scanProcessor, dest)
             }
         } else {
-
             //移除发生改变的缓存
             directoryInput.changedFiles.each { fileList ->
                 cacheMap.remove(fileList.key.absolutePath)
             }
-
             cacheMap.each { cache ->
                 if (cache.key.endsWith(".class")) {
-                    scanProcessor.hitCache(new File(cache.key), dest)
+                    def path = cache.key.replace(root, '')
+                    scanProcessor.hitCache(new File(cache.key), new File(dest, path))
                 }
             }
             //扫描发生改变的文件
             directoryInput.changedFiles.each { fileList ->
                 def file = fileList.key
                 if (fileList.value == Status.CHANGED || fileList.value == Status.ADDED) {
-
-                    def path = file.absolutePath.replace(root, '')
-                    if (!file.isFile()) return
-
-                    def entryName = path
-                    if (!leftSlash) {
-                        entryName = entryName.replaceAll("\\\\", "/")
-                    }
-                    scanProcessor.checkInitClass(entryName, new File(dest.absolutePath + File.separator + path))
-                    if (scanProcessor.shouldProcessClass(entryName)) {
-                        scanProcessor.scanClass(file)
-                    }
-
+                    scanClassFile(file, root, leftSlash, scanProcessor, dest)
                 }
-                //     println "-------path of changedFile: " + fileList.key.absolutePath + "  Status:" + fileList.value
             }
-
-
         }
 
         // 处理完后拷到目标文件
         FileUtils.copyDirectory(directoryInput.file, dest)
         return root
 
+    }
+
+    private static void scanClassFile(File file, String root, boolean leftSlash, CodeScanner scanProcessor, File dest) {
+        def path = file.absolutePath.replace(root, '')
+        if (file.isFile()) {
+            def entryName = path
+            if (!leftSlash) {
+                entryName = entryName.replaceAll("\\\\", "/")
+            }
+            scanProcessor.checkInitClass(entryName, new File(dest.absolutePath + File.separator + path), file.absolutePath)
+            if (scanProcessor.shouldProcessClass(entryName)) {
+                scanProcessor.scanClass(file)
+            }
+        }
     }
 
 }

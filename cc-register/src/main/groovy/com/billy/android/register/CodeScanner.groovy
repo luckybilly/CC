@@ -13,10 +13,10 @@ import java.util.regex.Pattern
 class CodeScanner {
 
     ArrayList<RegisterInfo> infoList
-    Map<String, ScanJarHarvest> cacheMap
+    Map<String, ScanHarvest> cacheMap
     Set<String> cachedJarContainsInitClass = new HashSet<>()
 
-    CodeScanner(ArrayList<RegisterInfo> infoList, Map<String, ScanJarHarvest> cacheMap) {
+    CodeScanner(ArrayList<RegisterInfo> infoList, Map<String, ScanHarvest> cacheMap) {
         this.infoList = infoList
         this.cacheMap = cacheMap
     }
@@ -73,7 +73,7 @@ class CodeScanner {
         infoList.each { ext ->
             if (ext.initClassName == entryName) {
                 ext.fileContainsInitClass = destFile
-                if (destFile.name.endsWith(".jar")) {
+                if (destFile.name.endsWith(".jar") || destFile.name.endsWith(".class")) {
                     addToCacheMap(null, entryName, srcFilePath)
                     found = true
                 }
@@ -215,18 +215,18 @@ class CodeScanner {
      * @param srcFilePath
      */
     private void addToCacheMap(String interfaceName, String name, String srcFilePath) {
-        if (!srcFilePath.endsWith(".jar") &&!srcFilePath.endsWith(".class")|| cacheMap == null) return
-        def jarHarvest = cacheMap.get(srcFilePath)
-        if (!jarHarvest) {
-            jarHarvest = new ScanJarHarvest()
-            cacheMap.put(srcFilePath, jarHarvest)
+        if (!srcFilePath.endsWith(".jar") && !srcFilePath.endsWith(".class")|| cacheMap == null) return
+        def scanHarvest = cacheMap.get(srcFilePath)
+        if (!scanHarvest) {
+            scanHarvest = new ScanHarvest()
+            cacheMap.put(srcFilePath, scanHarvest)
         }
         if (name) {
-            ScanJarHarvest.Harvest harvest = new ScanJarHarvest.Harvest()
+            ScanHarvest.Harvest harvest = new ScanHarvest.Harvest()
             harvest.setIsInitClass(interfaceName == null)
             harvest.setInterfaceName(interfaceName)
             harvest.setClassName(name)
-            jarHarvest.harvestList.add(harvest)
+            scanHarvest.harvestList.add(harvest)
         }
     }
 
@@ -243,10 +243,10 @@ class CodeScanner {
     boolean hitCache(File jarFile, File destFile) {
         def jarFilePath = jarFile.absolutePath
         if (cacheMap != null) {
-            ScanJarHarvest scanJarHarvest = cacheMap.get(jarFilePath)
-            if (scanJarHarvest) {
+            ScanHarvest scanHarvest = cacheMap.get(jarFilePath)
+            if (scanHarvest) {
                 infoList.each { info ->
-                    scanJarHarvest.harvestList.each { harvest ->
+                    scanHarvest.harvestList.each { harvest ->
                         //       println("----ccMainHarvest-------"+ccMainHarvest.className)
                         if (harvest.isInitClass) {
                             if (info.initClassName == harvest.className) {
