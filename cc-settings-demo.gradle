@@ -8,8 +8,8 @@
 //-----------------------------------------------------------
 
 project.apply plugin: 'cc-register'
-def dependencyMode = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('4.1') ? 'api' : 'compile'
-project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.5") //用最新版
+//project.dependencies.add('api', project(':cc')) //用最新版
+project.dependencies.add('api', "com.billy.android:cc:2.1.5") //用最新版
 
 dependencies {
     implementation project(':demo_base')
