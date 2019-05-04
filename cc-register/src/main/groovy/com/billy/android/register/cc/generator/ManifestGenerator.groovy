@@ -28,19 +28,11 @@ class ManifestGenerator {
      */
     static void generateManifestFileContent(Project project, ArrayList<String> excludeProcessNames) {
         def android = project.extensions.getByType(AppExtension)
-        def gradleAbove5 = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('5.0.0')
-
         android.applicationVariants.all { variant ->
             String pkgName = [variant.mergedFlavor.applicationId, variant.mergedFlavor.applicationIdSuffix, variant.buildType.applicationIdSuffix].findAll().join()
             variant.outputs.each { output ->
-                def processManifest = null
-                if (gradleAbove5 ) {
-                    processManifest = output.processManifestProvider
-                } else {
-                    processManifest = output.processManifest
-                }
-                processManifest.doLast {
-                    processManifest.outputs.files.each { File file ->
+                output.processManifest.doLast {
+                    output.processManifest.outputs.files.each { File file ->
                         //在gradle plugin 3.0.0之前，file是文件，且文件名为AndroidManifest.xml
                         //在gradle plugin 3.0.0之后，file是目录，AndroidManifest.xml文件在此目录下
                         def manifestFile = null
