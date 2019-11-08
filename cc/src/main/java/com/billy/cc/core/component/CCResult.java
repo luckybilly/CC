@@ -206,9 +206,7 @@ public class CCResult {
     }
 
     static CCResult defaultExceptionResult(Throwable e) {
-        if (e != null) {
-            e.printStackTrace();
-        }
+        CCUtil.printStackTrace(e);
         return error(CODE_ERROR_EXCEPTION_RESULT);
     }
 
@@ -225,7 +223,7 @@ public class CCResult {
                 JSONObject json = new JSONObject(str);
                 return fromJSONObject(json);
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
         return null;
@@ -257,7 +255,7 @@ public class CCResult {
         try {
             return json.toString();
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return "";
     }
@@ -267,7 +265,7 @@ public class CCResult {
                 json.put(key, value);
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
     }
 
@@ -393,7 +391,7 @@ public class CCResult {
             try {
                 return (T) data.get(key);
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
         return null;

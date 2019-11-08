@@ -69,7 +69,7 @@ class RemoteCCInterceptor extends SubProcessCCInterceptor {
                             processName = service.getComponentProcessName(componentName);
                             REMOTE_CONNECTIONS.put(processNameTo, service);
                         } catch(Exception ex) {
-                            ex.printStackTrace();
+                            CCUtil.printStackTrace(ex);
                         }
                     }
                 }
@@ -78,7 +78,7 @@ class RemoteCCInterceptor extends SubProcessCCInterceptor {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return processName;
     }

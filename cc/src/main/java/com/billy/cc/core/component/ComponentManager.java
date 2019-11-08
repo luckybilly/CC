@@ -91,7 +91,7 @@ class ComponentManager {
                     }
                 }
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
     }

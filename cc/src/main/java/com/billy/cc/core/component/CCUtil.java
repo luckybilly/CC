@@ -56,12 +56,12 @@ public class CCUtil {
                         }
                         params.put(key, value);
                     } catch(Exception e) {
-                        e.printStackTrace();
+                        CCUtil.printStackTrace(e);
                     }
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return params;
     }
@@ -116,7 +116,7 @@ public class CCUtil {
             try {
                 jsonString = RemoteParamUtil.convertObject2JsonString(v);
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
                 jsonString = null;
             }
         }
@@ -133,7 +133,7 @@ public class CCUtil {
                 return jsonString;
             }
         } catch (JSONException e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
             return null;
         }
     }
@@ -163,7 +163,7 @@ public class CCUtil {
                 }
                 return json;
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
         return null;
@@ -209,7 +209,7 @@ public class CCUtil {
                 }
             }
         } catch (Exception e){
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return PROCESS_UNKNOWN;
     }
@@ -230,7 +230,7 @@ public class CCUtil {
                 }
             }
         } catch (Exception e){
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return null;
     }
@@ -247,7 +247,7 @@ public class CCUtil {
                 return app;
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         try {
             //兼容android P，直接调用@hide注解的方法来获取application对象
@@ -256,7 +256,7 @@ public class CCUtil {
                 return app;
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return null;
     }
@@ -265,7 +265,7 @@ public class CCUtil {
         try {
             json.put(key, value);
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
     }
 
@@ -362,10 +362,16 @@ public class CCUtil {
             return (T) o;
         } catch (ClassCastException e) {
             if (CC.DEBUG) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
                 CC.logError("get cc param from bundle failed: class cast failed! key=%s, returns defaultValue:" + defaultValue, key);
             }
             return defaultValue;
+        }
+    }
+
+    public static void printStackTrace(Throwable t) {
+        if (CC.DEBUG && t != null) {
+            t.printStackTrace();
         }
     }
 }

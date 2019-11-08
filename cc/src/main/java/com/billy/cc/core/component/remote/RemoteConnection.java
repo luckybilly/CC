@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 
 import com.billy.cc.core.component.CC;
+import com.billy.cc.core.component.CCUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +58,7 @@ public class RemoteConnection {
             CC.log("wakeup remote app '%s' success. time=%d", packageName, (System.currentTimeMillis() - time));
             return true;
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
             CC.log("wakeup remote app '%s' failed. time=%d", packageName, (System.currentTimeMillis() - time));
             return false;
         }

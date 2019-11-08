@@ -439,7 +439,7 @@ public class CC {
         try {
             return (T) params.get(key);
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return null;
     }
@@ -504,7 +504,7 @@ public class CC {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
     }
 
@@ -854,7 +854,7 @@ public class CC {
                 s = String.format(s, args);
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return s;
     }
