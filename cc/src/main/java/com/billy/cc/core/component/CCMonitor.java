@@ -53,7 +53,7 @@ class CCMonitor {
     }
 
     static CC getById(String callId) {
-        return CC_MAP.get(callId);
+        return callId == null ? null : CC_MAP.get(callId);
     }
 
     static void removeById(String callId) {
