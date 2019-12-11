@@ -1,6 +1,10 @@
 package com.billy.android.register
 
-import org.objectweb.asm.*
+
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -144,13 +148,38 @@ class CodeScanner {
 
     //refer hack class when object init
     boolean scanClass(InputStream inputStream, String filePath) {
-        ClassReader cr = new ClassReader(inputStream)
-        ClassWriter cw = new ClassWriter(cr, 0)
-        ScanClassVisitor cv = new ScanClassVisitor(Opcodes.ASM5, cw, filePath)
-        cr.accept(cv, ClassReader.EXPAND_FRAMES)
-        inputStream.close()
+        try {
+            ClassReader cr = new ClassReader(inputStream)
+            ClassWriter cw = new ClassWriter(cr, 0)
+            int api = getAsmApiLevel()
+            ScanClassVisitor cv = new ScanClassVisitor(api, cw, filePath)
+            cr.accept(cv, ClassReader.EXPAND_FRAMES)
+            inputStream.close()
 
-        return cv.found
+            return cv.found
+        } catch (Throwable throwable) {
+            println(">>>>>>>>>>>>An error occurred while scanning:" + filePath)
+            throw throwable
+        }
+    }
+
+
+    private static int ASM_LEVEL = 0
+    static int getAsmApiLevel() {
+        if (ASM_LEVEL > 0) return ASM_LEVEL
+        int api = Opcodes.ASM5
+        for (i in (10..5)) {
+            try {
+                def field = Opcodes.class.getDeclaredField("ASM" + i)
+                if (field != null) {
+                    api = field.get(null)
+                    break
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        ASM_LEVEL = api
+        return ASM_LEVEL
     }
 
     class ScanClassVisitor extends ClassVisitor {

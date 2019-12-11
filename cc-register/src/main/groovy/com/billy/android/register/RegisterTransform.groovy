@@ -73,6 +73,8 @@ class RegisterTransform extends Transform {
 
 
         cacheEnabled = extension.cacheEnabled
+        int asmApiLevel = CodeScanner.getAsmApiLevel()
+        println("${PLUGIN_NAME} current ASM level is: ASM" + (asmApiLevel >> 16) )
         println("${PLUGIN_NAME}-----------isIncremental:${isIncremental}--------extension.cacheEnabled:${cacheEnabled}--------------------\n")
 
 
