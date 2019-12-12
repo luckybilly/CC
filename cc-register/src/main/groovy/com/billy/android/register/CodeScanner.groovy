@@ -148,18 +148,44 @@ class CodeScanner {
 
     //refer hack class when object init
     boolean scanClass(InputStream inputStream, String filePath) {
+        int api = getAsmApiLevel()
         try {
-            ClassReader cr = new ClassReader(inputStream)
+            ClassReader cr = new MyClassReader(inputStream)
             ClassWriter cw = new ClassWriter(cr, 0)
-            int api = getAsmApiLevel()
             ScanClassVisitor cv = new ScanClassVisitor(api, cw, filePath)
             cr.accept(cv, ClassReader.EXPAND_FRAMES)
             inputStream.close()
 
             return cv.found
         } catch (Throwable throwable) {
-            println(">>>>>>>>>>>>An error occurred while scanning:" + filePath)
+            System.err.println("\n>>>>>>>>>>>>ERROR: An error occurred while scanning class file(built by jdk: $lastClassBuildVersion):" +
+                    "\n\t" + filePath)
+            if (throwable instanceof IllegalArgumentException) {
+                System.err.println("Maybe the current ASM(${api >> 16}.x) version is not compatible with the jdk version that compiled this class. " +
+                        "\nTo resolve this problem, please update your gradle version to use higher ASM version, " +
+                        "or rebuild your class/jar with lower level JDK." +
+                        "\n\nFor example: We first encountered this problem with Gson 2.8.6 which built by jdk version 53 (JDK9), " +
+                        "\nwe need ASM6 to scan its classes(update android gradle plugin to 3.2.0 or higher)\n")
+            }
             throw throwable
+        }
+    }
+    short lastClassBuildVersion;
+
+    class MyClassReader extends ClassReader {
+
+        MyClassReader(InputStream is) throws IOException {
+            super(is)
+        }
+
+        @Override
+        short readShort(int index) {
+            def s = super.readShort(index)
+            if (index == 6) {
+                // cache the last class file compiled JDK version before crash happens
+                lastClassBuildVersion = s
+            }
+            return s
         }
     }
 

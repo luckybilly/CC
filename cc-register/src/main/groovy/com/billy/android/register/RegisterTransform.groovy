@@ -2,6 +2,7 @@ package com.billy.android.register
 
 import com.android.build.api.transform.*
 import com.android.build.gradle.internal.pipeline.TransformManager
+import com.android.builder.model.Version
 import com.billy.android.register.cc.generator.ManifestGenerator
 import com.billy.android.register.cc.generator.ProviderGenerator
 import com.billy.android.register.cc.generator.RegistryCodeGenerator
@@ -74,8 +75,11 @@ class RegisterTransform extends Transform {
 
         cacheEnabled = extension.cacheEnabled
         int asmApiLevel = CodeScanner.getAsmApiLevel()
-        println("${PLUGIN_NAME} current ASM level is: ASM" + (asmApiLevel >> 16) )
-        println("${PLUGIN_NAME}-----------isIncremental:${isIncremental}--------extension.cacheEnabled:${cacheEnabled}--------------------\n")
+        println("${PLUGIN_NAME}----------- work environment ----------------\n" )
+        println(">>>> gradle version: ${project.gradle.gradleVersion}")
+        println(">>>> gradle plugin version:${Version.ANDROID_GRADLE_PLUGIN_VERSION}")
+        println(">>>> current ASM level: ASM${(asmApiLevel >> 16)}")
+        println("\n${PLUGIN_NAME}-----------isIncremental:${isIncremental}--------extension.cacheEnabled:${cacheEnabled}--------------------\n")
 
 
         File cacheFile = null
