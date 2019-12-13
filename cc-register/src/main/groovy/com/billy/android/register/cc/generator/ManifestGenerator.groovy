@@ -1,10 +1,13 @@
 package com.billy.android.register.cc.generator
 
 import com.android.build.gradle.AppExtension
+import com.android.builder.model.Version
 import com.billy.android.register.RegisterPlugin
 import groovy.util.slurpersupport.GPathResult
 import groovy.xml.MarkupBuilder
 import org.gradle.api.Project
+import org.gradle.util.GradleVersion
+
 /**
  * 生成provider类
  */
@@ -29,8 +32,22 @@ class ManifestGenerator {
         android.applicationVariants.all { variant ->
             String pkgName = [variant.mergedFlavor.applicationId, variant.mergedFlavor.applicationIdSuffix, variant.buildType.applicationIdSuffix].findAll().join()
             variant.outputs.each { output ->
-                output.processManifest.doLast {
-                    output.processManifest.outputs.files.each { File file ->
+                def processManifest = null
+                def gradlePluginAfter_3_3_0 = GradleVersion.version(Version.ANDROID_GRADLE_PLUGIN_VERSION) >= GradleVersion.version('3.3.0')
+                //fix warning:
+                //  WARNING: API 'variantOutput.getProcessManifest()' is obsolete and has
+                //  been replaced with 'variantOutput.getProcessManifestProvider()'.
+                //  It will be removed at the end of 2019.
+                if (gradlePluginAfter_3_3_0) {
+                    try {
+                        processManifest = output.processManifestProvider.get()
+                    } catch(Throwable ignored){}
+                }
+                if(processManifest == null) {
+                    processManifest = output.processManifest
+                }
+                processManifest.doLast {
+                    processManifest.outputs.files.each { File file ->
                         //在gradle plugin 3.0.0之前，file是文件，且文件名为AndroidManifest.xml
                         //在gradle plugin 3.0.0之后，file是目录，AndroidManifest.xml文件在此目录下
                         def manifestFile = null

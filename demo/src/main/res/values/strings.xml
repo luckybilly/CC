@@ -21,5 +21,4 @@
     <string name="show_login_user">current login user: %s</string>
     <string name="observe_login_user">observe</string>
     <string name="unobserve_login_user">un_observe</string>
-
 </resources>

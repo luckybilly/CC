@@ -8,11 +8,14 @@
 //-----------------------------------------------------------
 
 project.apply plugin: 'cc-register'
-def dependencyMode = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('4.1') ? 'api' : 'compile'
-project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.5") //用最新版
+//project.dependencies.add('api', project(':cc')) //用最新版
+project.dependencies.add('api', "com.billy.android:cc:2.1.6") //用最新版
 
 dependencies {
-    implementation project(':demo_base')
+    //其它apply当前gradle文件的module统一添加对demo_base的依赖
+    if (project.name != 'demo_base'){
+        implementation project(':demo_base')
+    }
     //2018-06-03新增：这里是为了示例添加全局拦截器
     if (project.ext.has('runAsApp') && project.ext.runAsApp) {
         //说明：需要兼容的情况有3种(单独组件作为app运行、打包在主app内、组件在多个app上复用但全局拦截器不同)

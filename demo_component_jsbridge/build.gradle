@@ -5,7 +5,7 @@ android {
     buildToolsVersion rootProject.buildVersion
 
     defaultConfig {
-        minSdkVersion 9 // support v7 minSdkVersion is 9
+        minSdkVersion rootProject.demoMinSdkVersion // support v7 minSdkVersion is 9
         targetSdkVersion rootProject.compileVersion
         versionCode 1
         versionName "1.0"

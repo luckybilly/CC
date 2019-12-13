@@ -123,7 +123,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
                             }
                             setResult(remoteCCResult.toCCResult());
                         } catch(Exception e) {
-                            e.printStackTrace();
+                            CCUtil.printStackTrace(e);
                             setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
                         }
                     }
@@ -133,7 +133,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
                 connectionCache.remove(processName);
                 call(remoteCC);
             } catch (Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
                 setResult(CCResult.error(CCResult.CODE_ERROR_REMOTE_CC_DELIVERY_FAILED));
             }
         }
@@ -146,7 +146,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
             try {
                 service.cancel(cc.getCallId());
             } catch (Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
 
@@ -154,7 +154,7 @@ class SubProcessCCInterceptor implements ICCInterceptor {
             try {
                 service.timeout(cc.getCallId());
             } catch (Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
     }

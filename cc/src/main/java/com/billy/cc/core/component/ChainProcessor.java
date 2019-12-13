@@ -72,7 +72,7 @@ class ChainProcessor implements Callable<CCResult> {
             try {
                 callback.onResult(cc, result);
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
     }
@@ -92,7 +92,7 @@ class ChainProcessor implements Callable<CCResult> {
             try {
                 callback.onResult(cc, result);
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
         }
     }

@@ -1,6 +1,14 @@
-apply plugin: 'com.jfrog.bintray'
 
-version = libraryVersion
+Properties properties = new Properties()
+try {
+    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+} catch(Exception ignored) {
+    return
+}
+
+if (!properties.getProperty("is_repo_owner")) {
+    return
+}
 
 if (project.hasProperty("android")) { // Android libraries
     task sourcesJar(type: Jar) {
@@ -29,70 +37,32 @@ artifacts {
     archives sourcesJar
 }
 
+project.tasks.withType(Javadoc) {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    options.addStringOption('encoding', 'UTF-8')
+}
+
 // Bintray
-Properties properties = new Properties()
-properties.load(project.rootProject.file('local.properties').newDataInputStream())
+apply plugin: 'com.novoda.bintray-release'
+publish {
+    repoName = 'android'
+    userOrg = properties.getProperty("bintray.userOrg")
+    groupId = publishedGroupId
+    artifactId = artifact
+    publishVersion = libraryVersion
+    desc = libraryDescription
+    website = siteUrl
+}
 
-bintray {
-    user = properties.getProperty("bintray.user")
-    key = properties.getProperty("bintray.apikey")
-
-    configurations = ['archives']
-    pkg {
-        repo = bintrayRepo
-        name = bintrayName
-        userOrg = properties.getProperty("bintray.userOrg") // Bintray的用户名，2016年11月更新。
-        desc = libraryDescription
-        websiteUrl = siteUrl
-        vcsUrl = gitUrl
-        licenses = allLicenses
-        publish = true
-        publicDownloadNumbers = true
-        version {
-            desc = libraryDescription
+apply plugin: 'maven'
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: uri('../repo-local')) //deploy到本地仓库
+            pom.groupId = publishedGroupId
+            pom.artifactId = artifact
+            pom.version = libraryVersion + '-SNAPSHOT'
         }
     }
 }
 
-apply plugin: 'com.github.dcendents.android-maven'
-
-group = publishedGroupId                               // Maven Group ID for the artifact
-
-install {
-    repositories.mavenInstaller {
-        // This generates POM.xml with proper parameters
-        pom {
-            project {
-                packaging 'aar'
-                groupId publishedGroupId
-                artifactId artifact
-
-                // Add your description here
-                name libraryName
-                description libraryDescription
-                url siteUrl
-
-                // Set your license
-                licenses {
-                    license {
-                        name licenseName
-                        url licenseUrl
-                    }
-                }
-                developers {
-                    developer {
-                        id developerId
-                        name developerName
-                        email developerEmail
-                    }
-                }
-                scm {
-                    connection gitUrl
-                    developerConnection gitUrl
-                    url siteUrl
-
-                }
-            }
-        }
-    }
-}

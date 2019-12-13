@@ -69,7 +69,7 @@ class RemoteCCInterceptor extends SubProcessCCInterceptor {
                             processName = service.getComponentProcessName(componentName);
                             REMOTE_CONNECTIONS.put(processNameTo, service);
                         } catch(Exception ex) {
-                            ex.printStackTrace();
+                            CCUtil.printStackTrace(ex);
                         }
                     }
                 }
@@ -78,7 +78,7 @@ class RemoteCCInterceptor extends SubProcessCCInterceptor {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return processName;
     }
@@ -150,9 +150,9 @@ class RemoteCCInterceptor extends SubProcessCCInterceptor {
     private static final int MAX_CONNECT_TIME_DURATION = 1000;
     @Override
     protected IRemoteCCService getMultiProcessService(String packageName) {
-        long start = System.currentTimeMillis();
+        long start = SystemClock.elapsedRealtime();
         IRemoteCCService service = null;
-        while (System.currentTimeMillis() - start < MAX_CONNECT_TIME_DURATION) {
+        while (SystemClock.elapsedRealtime() - start < MAX_CONNECT_TIME_DURATION) {
             service = RemoteCCService.get(packageName);
             if (service != null) {
                 break;
@@ -162,7 +162,7 @@ class RemoteCCInterceptor extends SubProcessCCInterceptor {
         CC.log("connect remote app '%s' %s. cost time=%d"
                 , packageName
                 , service == null ? "failed" : "success"
-                , (System.currentTimeMillis() - start));
+                , (SystemClock.elapsedRealtime() - start));
         return service;
     }
 

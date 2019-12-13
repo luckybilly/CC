@@ -6,8 +6,7 @@
 //  完成组件、拦截器及跨进程json解释器等CC库自身需要的自动注册功能
 //  支持新增自定义的其它自动注册功能，参考AutoRegister，用法参考cc-settings-demo.gradle
 project.apply plugin: 'cc-register'
-def dependencyMode = GradleVersion.version(project.gradle.gradleVersion) >= GradleVersion.version('4.1') ? 'api' : 'compile'
-project.dependencies.add(dependencyMode, "com.billy.android:cc:2.1.5") //用最新版
+project.dependencies.add('api', "com.billy.android:cc:2.1.5") //用最新版
 
 //此文件是作为组件化配置的公共gradle脚本文件，在每个组件中都apply此文件，下载到工程根目录后，可以在下方添加一些自己工程中通用的配置
 // 可参考cc-settings-demo.gradle

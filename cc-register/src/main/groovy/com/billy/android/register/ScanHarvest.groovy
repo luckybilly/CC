@@ -4,7 +4,7 @@ package com.billy.android.register
  * @author zhangkb
  * @since 2018/04/17
  */
-class ScanJarHarvest {
+class ScanHarvest {
     List<Harvest> harvestList = new ArrayList<>()
     class Harvest {
         String className

@@ -8,7 +8,7 @@ import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.util.SparseArray;
 
-import com.billy.cc.core.component.CC;
+import com.billy.cc.core.component.CCUtil;
 import com.billy.cc.core.component.IParamJsonConverter;
 
 import org.json.JSONArray;
@@ -152,9 +152,7 @@ public class RemoteParamUtil {
             try {
                 clazz = (Class<?>) in.readSerializable();
             } catch(Exception e) {
-                if (CC.isDebugMode()) {
-                    e.printStackTrace();
-                }
+                CCUtil.printStackTrace(e);
             }
         }
 
@@ -349,7 +347,7 @@ public class RemoteParamUtil {
                 }
                 return o;
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
             return null;
         }
@@ -416,7 +414,7 @@ public class RemoteParamUtil {
                 }
                 return o;
             } catch(Exception e) {
-                e.printStackTrace();
+                CCUtil.printStackTrace(e);
             }
             return null;
         }

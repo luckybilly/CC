@@ -74,4 +74,5 @@ public class ComponentA implements IComponent {
         CCUtil.navigateTo(cc, ActivityA.class);
         CC.sendCCResult(cc.getCallId(), CCResult.success());
     }
+
 }

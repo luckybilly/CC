@@ -6,6 +6,7 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
@@ -439,7 +440,7 @@ public class CC {
         try {
             return (T) params.get(key);
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return null;
     }
@@ -504,7 +505,7 @@ public class CC {
                 }
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
     }
 
@@ -637,7 +638,7 @@ public class CC {
      */
     private void setTimeoutAt() {
         if (timeout > 0) {
-            timeoutAt = System.currentTimeMillis() + timeout;
+            timeoutAt = SystemClock.elapsedRealtime() + timeout;
         } else {
             timeoutAt = 0;
         }
@@ -854,7 +855,7 @@ public class CC {
                 s = String.format(s, args);
             }
         } catch(Exception e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
         }
         return s;
     }

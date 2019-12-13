@@ -100,7 +100,7 @@ public class RemoteCCService extends IRemoteCCService.Stub {
             }
             callback.callback(remoteCCResult);
         } catch (RemoteException e) {
-            e.printStackTrace();
+            CCUtil.printStackTrace(e);
             CC.verboseLog(callId, "remote doCallback failed!");
         }
     }
@@ -173,7 +173,7 @@ public class RemoteCCService extends IRemoteCCService.Stub {
                 try {
                     cursor.close();
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    CCUtil.printStackTrace(e);
                 }
             }
         }

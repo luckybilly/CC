@@ -52,7 +52,7 @@ ext {
     siteUrl = 'https://github.com/luckybilly/CC'
     gitUrl = 'git@github.com:luckybilly/CC.git'
 
-    libraryVersion = '2.1.5'
+    libraryVersion = '2.1.6'
 
     developerId = 'billy'
     developerName = 'billy'
@@ -64,15 +64,3 @@ ext {
 }
 
 apply from: rootProject.file('bintray.gradle')
-
-apply plugin: 'maven'
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            repository(url: uri('../repo-local')) //deploy到本地仓库
-            pom.groupId = publishedGroupId
-            pom.artifactId = artifact
-            pom.version = libraryVersion + '-SNAPSHOT'
-        }
-    }
-}

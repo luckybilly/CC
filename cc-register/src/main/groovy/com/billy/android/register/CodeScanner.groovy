@@ -1,6 +1,10 @@
 package com.billy.android.register
 
-import org.objectweb.asm.*
+
+import org.objectweb.asm.ClassReader
+import org.objectweb.asm.ClassVisitor
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.Opcodes
 
 import java.util.jar.JarEntry
 import java.util.jar.JarFile
@@ -13,10 +17,10 @@ import java.util.regex.Pattern
 class CodeScanner {
 
     ArrayList<RegisterInfo> infoList
-    Map<String, ScanJarHarvest> cacheMap
+    Map<String, ScanHarvest> cacheMap
     Set<String> cachedJarContainsInitClass = new HashSet<>()
 
-    CodeScanner(ArrayList<RegisterInfo> infoList, Map<String, ScanJarHarvest> cacheMap) {
+    CodeScanner(ArrayList<RegisterInfo> infoList, Map<String, ScanHarvest> cacheMap) {
         this.infoList = infoList
         this.cacheMap = cacheMap
     }
@@ -73,7 +77,7 @@ class CodeScanner {
         infoList.each { ext ->
             if (ext.initClassName == entryName) {
                 ext.fileContainsInitClass = destFile
-                if (destFile.name.endsWith(".jar")) {
+                if (destFile.name.endsWith(".jar") || destFile.name.endsWith(".class")) {
                     addToCacheMap(null, entryName, srcFilePath)
                     found = true
                 }
@@ -144,13 +148,64 @@ class CodeScanner {
 
     //refer hack class when object init
     boolean scanClass(InputStream inputStream, String filePath) {
-        ClassReader cr = new ClassReader(inputStream)
-        ClassWriter cw = new ClassWriter(cr, 0)
-        ScanClassVisitor cv = new ScanClassVisitor(Opcodes.ASM5, cw, filePath)
-        cr.accept(cv, ClassReader.EXPAND_FRAMES)
-        inputStream.close()
+        int api = getAsmApiLevel()
+        try {
+            ClassReader cr = new MyClassReader(inputStream)
+            ClassWriter cw = new ClassWriter(cr, 0)
+            ScanClassVisitor cv = new ScanClassVisitor(api, cw, filePath)
+            cr.accept(cv, ClassReader.EXPAND_FRAMES)
+            inputStream.close()
 
-        return cv.found
+            return cv.found
+        } catch (Throwable throwable) {
+            System.err.println("\n>>>>>>>>>>>>ERROR: An error occurred while scanning class file(built by jdk: $lastClassBuildVersion):" +
+                    "\n\t" + filePath)
+            if (throwable instanceof IllegalArgumentException) {
+                System.err.println("Maybe the current ASM(${api >> 16}.x) version is not compatible with the jdk version that compiled this class. " +
+                        "\nTo resolve this problem, please update your gradle version to use higher ASM version, " +
+                        "or rebuild your class/jar with lower level JDK." +
+                        "\n\nFor example: We first encountered this problem with Gson 2.8.6 which built by jdk version 53 (JDK9), " +
+                        "\nwe need ASM6 to scan its classes(update android gradle plugin to 3.2.0 or higher)\n")
+            }
+            throw throwable
+        }
+    }
+    short lastClassBuildVersion;
+
+    class MyClassReader extends ClassReader {
+
+        MyClassReader(InputStream is) throws IOException {
+            super(is)
+        }
+
+        @Override
+        short readShort(int index) {
+            def s = super.readShort(index)
+            if (index == 6) {
+                // cache the last class file compiled JDK version before crash happens
+                lastClassBuildVersion = s
+            }
+            return s
+        }
+    }
+
+
+    private static int ASM_LEVEL = 0
+    static int getAsmApiLevel() {
+        if (ASM_LEVEL > 0) return ASM_LEVEL
+        int api = Opcodes.ASM5
+        for (i in (10..5)) {
+            try {
+                def field = Opcodes.class.getDeclaredField("ASM" + i)
+                if (field != null) {
+                    api = field.get(null)
+                    break
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        ASM_LEVEL = api
+        return ASM_LEVEL
     }
 
     class ScanClassVisitor extends ClassVisitor {
@@ -215,18 +270,18 @@ class CodeScanner {
      * @param srcFilePath
      */
     private void addToCacheMap(String interfaceName, String name, String srcFilePath) {
-        if (!srcFilePath.endsWith(".jar") || cacheMap == null) return
-        def jarHarvest = cacheMap.get(srcFilePath)
-        if (!jarHarvest) {
-            jarHarvest = new ScanJarHarvest()
-            cacheMap.put(srcFilePath, jarHarvest)
+        if (!srcFilePath.endsWith(".jar") && !srcFilePath.endsWith(".class")|| cacheMap == null) return
+        def scanHarvest = cacheMap.get(srcFilePath)
+        if (!scanHarvest) {
+            scanHarvest = new ScanHarvest()
+            cacheMap.put(srcFilePath, scanHarvest)
         }
         if (name) {
-            ScanJarHarvest.Harvest harvest = new ScanJarHarvest.Harvest()
+            ScanHarvest.Harvest harvest = new ScanHarvest.Harvest()
             harvest.setIsInitClass(interfaceName == null)
             harvest.setInterfaceName(interfaceName)
             harvest.setClassName(name)
-            jarHarvest.harvestList.add(harvest)
+            scanHarvest.harvestList.add(harvest)
         }
     }
 
@@ -243,10 +298,10 @@ class CodeScanner {
     boolean hitCache(File jarFile, File destFile) {
         def jarFilePath = jarFile.absolutePath
         if (cacheMap != null) {
-            ScanJarHarvest scanJarHarvest = cacheMap.get(jarFilePath)
-            if (scanJarHarvest) {
+            ScanHarvest scanHarvest = cacheMap.get(jarFilePath)
+            if (scanHarvest) {
                 infoList.each { info ->
-                    scanJarHarvest.harvestList.each { harvest ->
+                    scanHarvest.harvestList.each { harvest ->
                         //       println("----ccMainHarvest-------"+ccMainHarvest.className)
                         if (harvest.isInitClass) {
                             if (info.initClassName == harvest.className) {

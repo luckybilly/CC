@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 
 buildscript {
-    ext.kotlin_version = '1.1.51'
+    ext.kotlin_version = '1.2.51'
     
     repositories {
         maven{ url rootProject.file("repo-local") }
@@ -13,9 +13,8 @@ buildscript {
         classpath 'com.android.tools.build:gradle:3.0.1'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
 
-        classpath 'com.jfrog.bintray.gradle:gradle-bintray-plugin:1.7.3'
-        classpath 'com.github.dcendents:android-maven-gradle-plugin:1.5'
-        classpath 'com.billy.android:cc-register:1.0.9'
+        classpath 'com.novoda:bintray-release:0.9.2'
+        classpath 'com.billy.android:cc-register:1.1.2'
 
         // NOTE: Do not place your application dependencies here; they belong
         // in the individual module build.gradle files
@@ -32,16 +31,13 @@ allprojects {
 }
 
 ext {
-    compileVersion = 26
-    buildVersion = '27.0.3'
+    compileVersion = 28
+    buildVersion = '28.0.3'
     minVersion = 8
 
-    supportVersion = '25.3.1'
-
-    deps = [
-        cc       : 'com.billy.android:cc:2.1.5'
-//        cc       : project(':cc')
-    ]
+    // support v7(28.0.0) minSdkVersion is 14
+    demoMinSdkVersion = 14
+    supportVersion = '28.0.0'
 }
 task clean(type: Delete) {
     delete rootProject.buildDir

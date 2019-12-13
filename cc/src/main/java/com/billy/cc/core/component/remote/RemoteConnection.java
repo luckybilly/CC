@@ -5,8 +5,10 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
+import android.os.SystemClock;
 
 import com.billy.cc.core.component.CC;
+import com.billy.cc.core.component.CCUtil;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -48,17 +50,17 @@ public class RemoteConnection {
      * @return 成功与否（true:app存在，false: 不存在）
      */
     public static boolean tryWakeup(String packageName) {
-        long time = System.currentTimeMillis();
+        long time = SystemClock.elapsedRealtime();
         Intent intent = new Intent();
         intent.setClassName(packageName, RemoteConnectionActivity.class.getName());
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
             CC.getApplication().startActivity(intent);
-            CC.log("wakeup remote app '%s' success. time=%d", packageName, (System.currentTimeMillis() - time));
+            CC.log("wakeup remote app '%s' success. time=%d", packageName, (SystemClock.elapsedRealtime() - time));
             return true;
         } catch(Exception e) {
-            e.printStackTrace();
-            CC.log("wakeup remote app '%s' failed. time=%d", packageName, (System.currentTimeMillis() - time));
+            CCUtil.printStackTrace(e);
+            CC.log("wakeup remote app '%s' failed. time=%d", packageName, (SystemClock.elapsedRealtime() - time));
             return false;
         }
     }
