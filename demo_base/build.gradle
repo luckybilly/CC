@@ -1,11 +1,12 @@
-apply plugin: 'com.android.library'
+ext.alwaysLib = true //虽然apply了cc-settings-2.gradle，但一直作为library编译，否则别的组件依赖此module时会报错
+apply from: rootProject.file('cc-settings-demo.gradle')
 
 android {
     compileSdkVersion rootProject.compileVersion
     buildToolsVersion rootProject.buildVersion
 
     defaultConfig {
-        minSdkVersion 9
+        minSdkVersion rootProject.demoMinSdkVersion
         targetSdkVersion rootProject.compileVersion
         versionCode 1
         versionName "1.0"
@@ -23,5 +24,4 @@ android {
 
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.4'
-    api rootProject.ext.deps.cc
 }
