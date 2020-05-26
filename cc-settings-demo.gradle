@@ -11,6 +11,24 @@ project.apply plugin: 'cc-register'
 //project.dependencies.add('api', project(':cc')) //用最新版
 project.dependencies.add('api', "com.billy.android:cc:2.1.6") //用最新版
 
+android {
+    signingConfigs {
+        releaseconfig {
+            storeFile rootProject.file('cc.keystore')
+            storePassword 'cc-demo'
+            keyAlias 'cc-demo'
+            keyPassword 'cc-demo'
+        }
+    }
+    buildTypes {
+
+        debug {
+            minifyEnabled false
+            debuggable true
+            signingConfig signingConfigs.releaseconfig
+        }
+    }
+}
 dependencies {
     //其它apply当前gradle文件的module统一添加对demo_base的依赖
     if (project.name != 'demo_base'){
