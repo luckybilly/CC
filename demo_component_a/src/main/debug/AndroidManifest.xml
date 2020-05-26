@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.billy.cc.demo.component.a" >
+    package="com.billy.cc.demo.component.a"
+    android:sharedUserId="com.billy.cc" >
 
     <application
         android:name="debug.MyApp"

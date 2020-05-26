@@ -1,6 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    package="com.billy.cc.demo.component.jsbridge">
+    package="com.billy.cc.demo.component.jsbridge"
+    android:sharedUserId="com.billy.cc">
 
     <application
         android:name="debug.jsbridge.MyApp"
