@@ -1,7 +1,9 @@
 package com.billy.android.register.cc.generator
 
 import com.billy.android.register.RegisterTransform
-import org.objectweb.asm.*
+import org.objectweb.asm.ClassWriter
+import org.objectweb.asm.MethodVisitor
+import org.objectweb.asm.Opcodes
 
 /**
  * 生成provider类

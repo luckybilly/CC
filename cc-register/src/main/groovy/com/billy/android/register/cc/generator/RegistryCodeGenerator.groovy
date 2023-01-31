@@ -102,7 +102,7 @@ class RegistryCodeGenerator {
     private byte[] doGenerateCode(InputStream inputStream) {
         ClassReader cr = new ClassReader(inputStream)
         ClassWriter cw = new ClassWriter(cr, 0)
-        ClassVisitor cv = new MyClassVisitor(Opcodes.ASM5, cw)
+        ClassVisitor cv = new MyClassVisitor(Opcodes.ASM9, cw)
         cr.accept(cv, ClassReader.EXPAND_FRAMES)
         return cw.toByteArray()
     }
@@ -123,7 +123,7 @@ class RegistryCodeGenerator {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions)
             if (name == extension.initMethodName) { //注入代码到指定的方法之中
                 boolean _static = (access & Opcodes.ACC_STATIC) > 0
-                mv = new MyMethodVisitor(Opcodes.ASM5, mv, _static)
+                mv = new MyMethodVisitor(Opcodes.ASM9, mv, _static)
             }
             return mv
         }
