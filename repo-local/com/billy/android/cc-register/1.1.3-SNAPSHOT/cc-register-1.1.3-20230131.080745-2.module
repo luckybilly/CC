@@ -1,0 +1,90 @@
+{
+  "formatVersion": "1.1",
+  "component": {
+    "group": "com.billy.android",
+    "module": "cc-register",
+    "version": "1.1.3-SNAPSHOT",
+    "attributes": {
+      "org.gradle.status": "integration"
+    }
+  },
+  "createdBy": {
+    "gradle": {
+      "version": "7.4"
+    }
+  },
+  "variants": [
+    {
+      "name": "apiElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-api"
+      },
+      "files": [
+        {
+          "name": "cc-register-1.1.3-SNAPSHOT.jar",
+          "url": "cc-register-1.1.3-SNAPSHOT.jar",
+          "size": 144829,
+          "sha512": "5fc234edff6ab0f00582ad57ed51704ec7760ef4d1ada4b1e9973566cc2186041493e92b909d9664674332b128f780481273ed59441c627cdb626f07e80b0fe7",
+          "sha256": "6fff5a0a8d00ebc0c5f65ad35835f8fd0e507d8904ba9feeeee42bf5c252fbbc",
+          "sha1": "91cd0e358368fdcbf70e8679667b02e381541743",
+          "md5": "6e6cdd8e7f5c253c46ac7824552c5688"
+        }
+      ]
+    },
+    {
+      "name": "runtimeElements",
+      "attributes": {
+        "org.gradle.category": "library",
+        "org.gradle.dependency.bundling": "external",
+        "org.gradle.jvm.version": 11,
+        "org.gradle.libraryelements": "jar",
+        "org.gradle.usage": "java-runtime"
+      },
+      "dependencies": [
+        {
+          "group": "com.android.tools.build",
+          "module": "gradle",
+          "version": {
+            "requires": "7.2.1"
+          }
+        },
+        {
+          "group": "com.google.code.gson",
+          "module": "gson",
+          "version": {
+            "requires": "2.9.0"
+          }
+        },
+        {
+          "group": "commons-codec",
+          "module": "commons-codec",
+          "version": {
+            "requires": "1.15"
+          }
+        },
+        {
+          "group": "commons-io",
+          "module": "commons-io",
+          "version": {
+            "requires": "2.11.0"
+          }
+        }
+      ],
+      "files": [
+        {
+          "name": "cc-register-1.1.3-SNAPSHOT.jar",
+          "url": "cc-register-1.1.3-SNAPSHOT.jar",
+          "size": 144829,
+          "sha512": "5fc234edff6ab0f00582ad57ed51704ec7760ef4d1ada4b1e9973566cc2186041493e92b909d9664674332b128f780481273ed59441c627cdb626f07e80b0fe7",
+          "sha256": "6fff5a0a8d00ebc0c5f65ad35835f8fd0e507d8904ba9feeeee42bf5c252fbbc",
+          "sha1": "91cd0e358368fdcbf70e8679667b02e381541743",
+          "md5": "6e6cdd8e7f5c253c46ac7824552c5688"
+        }
+      ]
+    }
+  ]
+}

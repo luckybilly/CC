@@ -193,7 +193,7 @@ class CodeScanner {
     private static int ASM_LEVEL = 0
     static int getAsmApiLevel() {
         if (ASM_LEVEL > 0) return ASM_LEVEL
-        int api = Opcodes.ASM5
+        int api = Opcodes.ASM9
         for (i in (10..5)) {
             try {
                 def field = Opcodes.class.getDeclaredField("ASM" + i)

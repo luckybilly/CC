@@ -54,15 +54,33 @@ publish {
     website = siteUrl
 }
 
-apply plugin: 'maven'
-uploadArchives {
+//apply plugin: 'maven'
+//uploadArchives {
+//    repositories {
+//        mavenDeployer {
+//            repository(url: uri('../repo-local')) //deploy到本地仓库
+//            pom.groupId = publishedGroupId
+//            pom.artifactId = artifact
+//            pom.version = libraryVersion + '-SNAPSHOT'
+//        }
+//    }
+//}
+
+apply plugin: 'maven-publish'
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = publishedGroupId
+            artifactId = artifact
+            version = libraryVersion + '-SNAPSHOT'
+            from components.java
+        }
+    }
     repositories {
-        mavenDeployer {
-            repository(url: uri('../repo-local')) //deploy到本地仓库
-            pom.groupId = publishedGroupId
-            pom.artifactId = artifact
-            pom.version = libraryVersion + '-SNAPSHOT'
+        maven {
+            url = uri('../repo-local')
         }
     }
 }
+
 

@@ -1,6 +1,6 @@
 package com.billy.android.register
 
-import com.android.builder.model.AndroidProject
+
 import com.google.gson.Gson
 import org.gradle.api.Project
 
@@ -77,7 +77,7 @@ class RegisterCache {
     }
 
     private static String getCacheFileDir(Project project) {
-        return project.getBuildDir().absolutePath + File.separator + AndroidProject.FD_INTERMEDIATES + File.separator + CACHE_INFO_DIR + File.separator
+        return project.getBuildDir().absolutePath + File.separator + "intermediates" + File.separator + CACHE_INFO_DIR + File.separator
     }
 
     /**

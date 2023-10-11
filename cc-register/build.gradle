@@ -2,15 +2,18 @@ apply plugin: 'groovy'
 
 
 dependencies {
-    compile gradleApi()
-    compile localGroovy()
+    implementation gradleApi()
+    implementation localGroovy()
 }
 
 repositories {
     mavenCentral()
 }
 dependencies {
-    compile 'com.android.tools.build:gradle:2.2.0'
+    implementation 'com.android.tools.build:gradle:7.2.1'
+    implementation 'com.google.code.gson:gson:2.9.0'
+    implementation 'commons-codec:commons-codec:1.15'
+    implementation 'commons-io:commons-io:2.11.0'
 }
 
 ext {
@@ -26,7 +29,7 @@ ext {
     siteUrl = 'https://github.com/luckybilly/CC'
     gitUrl = 'https://github.com/luckybilly/CC.git'
 
-    libraryVersion = '1.1.2'
+    libraryVersion = '1.1.3'
 
     developerId = 'billy'
     developerName = 'billy'
@@ -37,4 +40,23 @@ ext {
     allLicenses = ["Apache-2.0"]
 }
 
-apply from: rootProject.file('bintray.gradle')
+
+//apply from: rootProject.file('bintray.gradle')
+
+// 写在 bintray.gradle 不会生成 gradle task
+apply plugin: 'maven-publish'
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = publishedGroupId
+            artifactId = artifact
+            version = libraryVersion + '-SNAPSHOT'
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = uri('../repo-local')
+        }
+    }
+}
